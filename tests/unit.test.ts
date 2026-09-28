@@ -121,3 +121,11 @@ describe('helpers', () => {
   })
   it('parses CSV with quotes and semicolons', () => expect(parseCsv('a;b\n"x;1";"he said ""hi"""\n')).toEqual([['a', 'b'], ['x;1', 'he said "hi"']]))
 })
+
+describe('translation keys with a colon', () => {
+  it('resolves scope labels such as tokens.scope.ingest:read', async () => {
+    const { initI18n, i18next } = await import('../src/i18n')
+    await initI18n('en')
+    expect(i18next.t('tokens.scope.ingest:read')).toBe('read what is published')
+  })
+})

@@ -44,6 +44,8 @@ export function initI18n(lang: Lang = detectLanguage()) {
       fallbackLng: SOURCE_LANG,
       interpolation: { escapeValue: false },
       returnNull: false,
+      // Keys contain scope values such as "ingest:read"; one namespace, so ':' is never a separator.
+      nsSeparator: false,
       showSupportNotice: false,
     })
     .then(() => setLanguage(lang, { remember: false }))
