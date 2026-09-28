@@ -12,6 +12,7 @@ import { IconChevronLeft, IconPlus } from '../../ui/icons'
 import { ApiKeyList } from '../shared/ApiKeys'
 import { RetailerFields } from './RetailerNew'
 import { EventLine } from './Stats'
+import { UserStatusButton } from '../shared/UserStatusButton'
 
 export function RetailerDetailScreen() {
   const { t, i18n } = useTranslation()
@@ -149,9 +150,7 @@ function Accounts({ retailer: r }: { retailer: Retailer }) {
                 </Button>
               )}
               {u.status !== 'invited' && (
-                <Button size="sm" variant="ghost" onClick={() => m.update.mutate({ id: u.id, patch: { status: u.status === 'blocked' ? 'active' : 'blocked' } })}>
-                  {u.status === 'blocked' ? t('users.unblock') : t('users.block')}
-                </Button>
+                <UserStatusButton user={u} />
               )}
               <ConfirmButton size="sm" label={t('common.delete')} title={t('users.deleteTitle', { email: u.email })} body={t('users.deleteBody')} confirmLabel={t('common.delete')} onConfirm={() => m.remove.mutateAsync(u.id)} />
             </li>

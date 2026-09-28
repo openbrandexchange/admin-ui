@@ -21,6 +21,7 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 
 - Every screen that loads data shows a "Try again" button when loading fails (not for errors that would fail again, such as "not found"). The dashboard shows "—" for numbers it could not load instead of "…" forever.
 - The catalog says when the selection is full instead of ignoring the tick; failed selection changes show an inline error.
+- Blocking an account and removing the brand logo ask for confirmation first (unblocking does not). A logo over 5 MB gets an inline message instead of being ignored.
 - Keyboard: a "Skip to content" link on every page, arrow keys in tab lists, focus moves to the new content after a page change and returns to the button that opened a dialog, a visible focus ring on article tiles, and scrollable tables and code blocks can be reached with Tab.
 - A tab left open while the portal is upgraded reloads once to the new version instead of failing on a file of the old one.
 - `dist/THIRD-PARTY-LICENSES.txt`, `dist/LICENSE` and `dist/NOTICE`, so every vendored copy carries its licences.

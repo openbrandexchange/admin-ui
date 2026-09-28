@@ -8,7 +8,7 @@ import { localizedPatch } from '../../../lib/localized'
 import { emailProblem, hexProblem, urlProblem } from '../../../lib/validate'
 import { useLogoMutations, useUpdateSettings } from '../../../queries/admin'
 import { Button, Field, Saved, Section, SelectField, TextField } from '../../../ui/controls'
-import { ErrorNote } from '../../../ui/feedback'
+import { ConfirmButton, ErrorNote } from '../../../ui/feedback'
 import { BrandMark } from '../../../shell/common'
 import { LocalizedInput } from '../product/LocalizedInput'
 
@@ -24,6 +24,7 @@ export function BrandTab({ settings }: { settings: Settings }) {
   const [accent, setAccent] = useState(b.accent_color ?? '#334155')
   const [welcome, setWelcome] = useState<Record<string, string>>({ ...(b.welcome_text ?? {}) })
   const [touched, setTouched] = useState(false)
+  const [logoTooBig, setLogoTooBig] = useState(false)
   const errs = {
     name: touched && !company.name.trim() ? t('validate.required') : null,
     website: touched && company.website.trim() && urlProblem(company.website) ? t('validate.url') : null,
@@ -49,18 +50,22 @@ export function BrandTab({ settings }: { settings: Settings }) {
                 onChange={(e) => {
                   const f = e.target.files?.[0]
                   e.target.value = ''
+                  setLogoTooBig(!!f && f.size > maxLogo)
                   if (f && f.size <= maxLogo) logo.upload.mutate(f)
                 }}
               />
             </label>
             {b.logo_url && (
-              <Button variant="ghost" loading={logo.remove.isPending} onClick={() => logo.remove.mutate()}>
-                {t('settings.removeLogo')}
-              </Button>
+              <ConfirmButton variant="secondary" label={t('settings.removeLogo')} title={t('settings.removeLogoTitle')} body={t('settings.removeLogoBody')} confirmLabel={t('settings.removeLogo')} onConfirm={() => logo.remove.mutateAsync()} />
             )}
           </div>
           <p className="w-full text-xs text-stone-500">{t('settings.logoHint')}</p>
-          <ErrorNote error={logo.upload.error ?? logo.remove.error} />
+          {logoTooBig && (
+            <p role="alert" className="w-full text-xs font-medium text-red-700">
+              {t('errors.payload_too_large')}
+            </p>
+          )}
+          <ErrorNote error={logo.upload.error} />
         </div>
         <Field label={t('setup.accent')} hint={t('setup.accentHint')} error={errs.accent}>
           {(p) => (

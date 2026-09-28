@@ -10,6 +10,7 @@ import { Badge, Button, Loading, Section, TextField } from '../../../ui/controls
 import { ConfirmButton, ErrorNote } from '../../../ui/feedback'
 import { IconPlus } from '../../../ui/icons'
 import { InviteLink } from '../RetailerDetail'
+import { UserStatusButton } from '../../shared/UserStatusButton'
 
 /** The brand's own colleagues with admin access. */
 export function TeamTab() {
@@ -50,9 +51,7 @@ export function TeamTab() {
                       {t('users.resend')}
                     </Button>
                   ) : (
-                    <Button size="sm" variant="ghost" onClick={() => m.update.mutate({ id: u.id, patch: { status: u.status === 'blocked' ? 'active' : 'blocked' } })}>
-                      {u.status === 'blocked' ? t('users.unblock') : t('users.block')}
-                    </Button>
+                    <UserStatusButton user={u} />
                   )}
                   <ConfirmButton size="sm" label={t('common.delete')} title={t('users.deleteTitle', { email: u.email })} body={t('users.deleteAdminBody')} confirmLabel={t('common.delete')} onConfirm={() => m.remove.mutateAsync(u.id)} />
                 </>

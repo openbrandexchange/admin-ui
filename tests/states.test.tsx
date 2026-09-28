@@ -112,3 +112,32 @@ describe('forms send merge patches that really clear what was removed', () => {
     await waitFor(() => expect(db().settings.branding?.welcome_text).toBeUndefined())
   })
 })
+
+describe('destructive actions ask first', () => {
+  it('blocks an account only after confirming, and unblocks without asking', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    const buyer = db().users.find((u) => u.email === DEMO.retailer.email)!
+    await r.router.navigate({ to: '/admin/retailers/$id', params: { id: buyer.retailer_id! } })
+    await r.user.click(await screen.findByRole('button', { name: /^block$/i }))
+    const dialog = await screen.findByRole('dialog', { name: `Block ${DEMO.retailer.email}?` })
+    await r.user.click(within(dialog).getByRole('button', { name: /cancel/i }))
+    expect(buyer.status).toBe('active')
+    await r.user.click(screen.getByRole('button', { name: /^block$/i }))
+    await r.user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^block$/i }))
+    await waitFor(() => expect(db().users.find((u) => u.id === buyer.id)!.status).toBe('blocked'))
+    await r.user.click(await screen.findByRole('button', { name: /^unblock$/i }))
+    await waitFor(() => expect(db().users.find((u) => u.id === buyer.id)!.status).toBe('active'))
+  })
+
+  it('removes the logo only after confirming', async () => {
+    Object.assign(db().settings.branding!, { logo_url: 'http://localhost/logo.png' })
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/settings' })
+    await r.user.click(await screen.findByRole('button', { name: /remove logo/i }))
+    const dialog = await screen.findByRole('dialog', { name: /remove the logo\?/i })
+    await r.user.click(within(dialog).getByRole('button', { name: /remove logo/i }))
+    await waitFor(() => expect(db().settings.branding?.logo_url ?? null).toBeNull())
+  })
+})
