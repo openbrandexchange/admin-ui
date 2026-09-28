@@ -6,13 +6,14 @@ import type { QueryClient } from '@tanstack/react-query'
 import { sessionQuery } from './queries/session'
 import { Root } from './shell/Root'
 import { PublicShell } from './shell/PublicShell'
+import { NotFound, RouteError } from './shell/Fallbacks'
 import type { PortalFilter } from './api/types'
 
 export interface RouterContext {
   queryClient: QueryClient
 }
 
-const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Root })
+const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Root, errorComponent: RouteError, notFoundComponent: NotFound })
 
 const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
 const strs = (v: unknown) => {

@@ -1280,5 +1280,12 @@
       "expiry": "This link works once and is valid for one hour.",
       "ignore": "Didn't ask for this? Then you can ignore this email; your password stays the same."
     }
+  },
+  "fallback": {
+    "errorTitle": "This page could not be loaded",
+    "reload": "Try again",
+    "notFoundTitle": "Page not found",
+    "notFound": "This address does not exist (any more).",
+    "home": "Go to the start page"
   }
 }
