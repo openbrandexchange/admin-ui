@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { api, req, ApiError } from '../../api/client'
 import type { SetupInput } from '../../api/types'
@@ -14,6 +14,11 @@ import { PublicCard } from './PublicCard'
 
 type Step = 0 | 1 | 2 | 3
 
+/** An installer may hand over the setup code in the address fragment (#code=…), which never reaches the server. */
+function codeFromHash(hash: string): string {
+  return new URLSearchParams(hash.replace(/^#/, '')).get('code')?.trim() ?? ''
+}
+
 /** First-run wizard: setup code → company → languages & look → admin account. Never a default password. */
 export function SetupScreen() {
   const { t, i18n } = useTranslation()
@@ -22,7 +27,8 @@ export function SetupScreen() {
   const uiLang = isLang(i18n.language) ? i18n.language : 'en'
   const [step, setStep] = useState<Step>(0)
   const [touched, setTouched] = useState(false)
-  const [code, setCode] = useState('')
+  const hash = useLocation({ select: (l) => l.hash })
+  const [code, setCode] = useState(() => codeFromHash(hash))
   const [company, setCompany] = useState({ name: '', first_brand_name: '', website: '', contact_email: '' })
   const [defaultLang, setDefaultLang] = useState<string>(uiLang)
   const [languages, setLanguages] = useState<string[]>(uiLang === 'en' ? ['en'] : [uiLang, 'en'])
