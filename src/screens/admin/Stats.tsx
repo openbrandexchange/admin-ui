@@ -18,7 +18,7 @@ export function EventLine({ event: e }: { event: DownloadEvent }) {
       <span className="min-w-0">
         <span className="block truncate">
           <span className="font-medium">{e.retailer_name ?? e.actor_name ?? t('stats.unknown')}</span>{' '}
-          <span className="text-stone-600">{t(`stats.kind.${e.kind}`)}</span>
+          <span className="text-stone-600">{t(`stats.kind.${e.kind}`, { defaultValue: t('stats.unknown') })}</span>
           {!!e.files && e.files > 1 && <span className="text-stone-500"> · {t('portal.tile.images', { count: e.files })}</span>}
           {e.variant && <span className="text-stone-500"> · {t(`portal.variant.${e.variant}`, { defaultValue: e.variant })}</span>}
         </span>
