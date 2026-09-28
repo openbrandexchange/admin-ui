@@ -4,6 +4,20 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
+## [Unreleased]
+
+### Added
+
+- The setup wizard takes over a setup code from the address fragment (`/setup#code=…`), so a node's installer can open the wizard with the code filled in. The fragment never reaches the server.
+- Settings → About this installation shows the cron address (and when it was last called) on nodes that report `settings.node.cron`.
+
+### Changed
+
+- Downloads start as the web version until the retailer picks another one: ready for a webshop and much smaller than originals.
+- Download texts no longer promise an e-mail (a portal without e-mail sends none); they point to Downloads.
+- The invitation says the brand gave the shop access and invited you; several languages read "on behalf of the shop" before.
+- The setup code hint no longer says the code is only in the log.
+
 ## [0.1.1] - 2026-09-28
 
 ### Fixed

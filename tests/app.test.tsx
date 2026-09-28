@@ -111,6 +111,12 @@ describe('first-run wizard', () => {
     expect(await screen.findByRole('heading', { name: /hello iris/i })).toBeInTheDocument()
     expect(db().users[0]).toMatchObject({ email: 'iris@kestrel.example', role: 'admin' })
   })
+
+  it('takes over the setup code an installer put in the address fragment', async () => {
+    resetDb('fresh')
+    await renderApp(`/setup#code=${DEMO.setupCode}`)
+    expect(await screen.findByLabelText(/setup code/i)).toHaveValue(DEMO.setupCode)
+  })
 })
 
 describe('retailer portal', () => {
@@ -158,6 +164,15 @@ describe('retailer portal', () => {
     expect(await screen.findByText(/1 article added/i)).toBeInTheDocument()
   })
 
+  it('offers the web version first, even when originals are allowed', async () => {
+    const r = await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    await r.user.click(screen.getAllByRole('link', { name: /KO-1001/ })[0])
+    const versions = await screen.findByRole('radiogroup', { name: /file version/i })
+    expect(within(versions).getByRole('radio', { name: /original/i })).not.toBeChecked()
+    expect(within(versions).getByRole('radio', { name: /web/i })).toBeChecked()
+  })
+
   it('hides original downloads when the brand does not allow them', async () => {
     db().settings.portal!.allow_original_download = false
     const r = await loginAs('retailer')
@@ -178,6 +193,15 @@ describe('retailer portal', () => {
 })
 
 describe('brand admin', () => {
+  it('shows the cron address again on a portal that needs one', async () => {
+    db().settings.node!.cron = { url: 'https://brands.kestrel.example/cron?key=abc123', command: null, last_run_at: null }
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/settings', search: { tab: 'system' } })
+    expect(await screen.findByText('https://brands.kestrel.example/cron?key=abc123')).toBeInTheDocument()
+    expect(screen.getByText(/not called yet/i)).toBeInTheDocument()
+  })
+
   it('approves an access request and shows the invitation link when email is off', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
