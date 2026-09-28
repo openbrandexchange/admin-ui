@@ -16,11 +16,14 @@ import { IconDownload } from '../../ui/icons'
 export type DownloadVariant = 'original' | 'web' | 'square'
 const VARIANTS = ['original', 'web', 'square'] as const
 
-/** The remembered variant, never "original" when the viewer may not download originals. */
+/**
+ * The remembered variant, never "original" when the viewer may not download originals. Until the
+ * viewer picks one it is "web": ready for a webshop and much smaller than the brand's originals.
+ */
 export function useVariant(): [DownloadVariant, (v: DownloadVariant) => void, DownloadVariant[]] {
   const viewer = useViewer()
   const allowed: DownloadVariant[] = viewer.data?.permissions.original_download ? [...VARIANTS] : ['web', 'square']
-  const [v, setV] = usePref<DownloadVariant>('obx.variant', VARIANTS, allowed[0])
+  const [v, setV] = usePref<DownloadVariant>('obx.variant', VARIANTS, 'web')
   return [allowed.includes(v) ? v : allowed[0], setV, allowed]
 }
 
@@ -91,7 +94,7 @@ export function CsvButton({ path, query, children }: { path: string; query?: Rec
   )
 }
 
-/** "Prepare a zip" dialog for big sets: built in the background, the user gets an e-mail. */
+/** "Prepare a zip" dialog for big sets: built in the background, then listed under Downloads (and e-mailed when the portal sends e-mail). */
 export function BackgroundZipDialog({
   open,
   onClose,
