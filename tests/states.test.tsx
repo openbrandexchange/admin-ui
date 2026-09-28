@@ -87,7 +87,7 @@ describe('invitation page', () => {
     d.invites.inv_test = 'usr_new'
     localStorage.setItem('obx.lang', 'en')
     await renderApp('/invite/inv_test')
-    expect(await screen.findByText(new RegExp(`^Kestrel has invited you, for ${d.retailers[0].name}, to see its product images`))).toBeInTheDocument()
+    expect(await screen.findByText(new RegExp(`^Kestrel has given ${d.retailers[0].name} access to its product images and article data, and invited you`))).toBeInTheDocument()
   })
 })
 
