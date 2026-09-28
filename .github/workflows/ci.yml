@@ -88,31 +88,36 @@ jobs:
     # OBX_READ_TOKEN secret (fine-grained PAT, Contents: read on openbrandexchange/spec).
     # Without it the job only warns, so forks and a fresh setup stay green.
     env:
-      HAS_TOKEN: ${{ secrets.OBX_READ_TOKEN != '' }}
+      OBX_READ_TOKEN: ${{ secrets.OBX_READ_TOKEN }}
     steps:
       - uses: actions/checkout@v7
-      - if: env.HAS_TOKEN != 'true'
-        run: echo "::warning::OBX_READ_TOKEN is not set; skipping the API-type and glossary check against openbrandexchange/spec."
+      - name: Access to spec (the OBX_READ_TOKEN secret while it is private; none once it is public)
+        run: |
+          if [ -n "$OBX_READ_TOKEN" ] || GIT_TERMINAL_PROMPT=0 git ls-remote --heads https://github.com/openbrandexchange/spec >/dev/null 2>&1; then
+            echo "OBX_ACCESS=yes" >> "$GITHUB_ENV"
+          else
+            echo "::notice::openbrandexchange/spec is private and OBX_READ_TOKEN is not set; the API-type and glossary check against the spec is skipped."
+          fi
       - uses: actions/checkout@v7
-        if: env.HAS_TOKEN == 'true'
+        if: env.OBX_ACCESS == 'yes'
         with:
           repository: openbrandexchange/spec
           path: spec
-          token: ${{ secrets.OBX_READ_TOKEN }}
+          token: ${{ secrets.OBX_READ_TOKEN || github.token }}
       - uses: actions/setup-node@v7
-        if: env.HAS_TOKEN == 'true'
+        if: env.OBX_ACCESS == 'yes'
         with:
           node-version: 22
           cache: npm
-      - if: env.HAS_TOKEN == 'true'
+      - if: env.OBX_ACCESS == 'yes'
         run: npm ci
       - name: Generated API types match the spec's OpenAPI files
-        if: env.HAS_TOKEN == 'true'
+        if: env.OBX_ACCESS == 'yes'
         run: |
           npm run gen:api -- spec
           git diff --exit-code -- src/api || { echo "::error::src/api is out of date: run 'npm run gen:api -- ../spec' and commit."; exit 1; }
       - name: Glossary matches spec/docs/glossary.md
-        if: env.HAS_TOKEN == 'true'
+        if: env.OBX_ACCESS == 'yes'
         working-directory: spec
         run: |
           npm ci
