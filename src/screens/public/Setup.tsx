@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { api, req, ApiError } from '../../api/client'
 import type { SetupInput } from '../../api/types'
 import { DEFAULT_ACCENT, applyAccent } from '../../lib/accent'
-import { emailProblem, hexProblem, passwordProblem, urlProblem } from '../../lib/validate'
+import { emailProblem, hexProblem, passwordProblem, urlProblem, withScheme } from '../../lib/validate'
 import { LANGUAGES, isLang } from '../../i18n/languages'
 import { useSessionSetter } from '../../queries/session'
 import { Button, Checkbox, Field, SelectField, TextField, cx } from '../../ui/controls'
@@ -46,7 +46,7 @@ export function SetupScreen() {
           languages: langs,
           accent_color: accent,
           ...(company.first_brand_name.trim() && { first_brand_name: company.first_brand_name.trim() }),
-          ...(company.website.trim() && { website: company.website.trim() }),
+          ...(company.website.trim() && { website: withScheme(company.website) }),
           ...(company.contact_email.trim() && { contact_email: company.contact_email.trim() }),
         },
         admin: { name: admin.name.trim(), email: admin.email.trim(), password: admin.password },
@@ -65,7 +65,7 @@ export function SetupScreen() {
   const server = submit.error instanceof ApiError ? submit.error.fieldErrors() : {}
   const codeErr = (touched && code.trim().length < 6 ? t('setup.codeShort') : null) ?? (submit.error instanceof ApiError && submit.error.code === 'forbidden' ? t('setup.codeWrong') : server['/setup_code'])
   const nameErr = touched && !company.name.trim() ? t('validate.required') : server['/company/name']
-  const siteErr = touched && company.website.trim() && urlProblem(company.website) ? t('validate.url') : null
+  const siteErr = touched && company.website.trim() && urlProblem(withScheme(company.website)) ? t('validate.url') : null
   const contactErr = touched && company.contact_email.trim() && emailProblem(company.contact_email) ? t('validate.email') : null
   const hexErr = touched && hexProblem(accent) ? t('validate.hex') : null
   const adminNameErr = touched && !admin.name.trim() ? t('validate.required') : null
@@ -125,7 +125,7 @@ export function SetupScreen() {
           <>
             <TextField label={t('setup.companyName')} value={company.name} onChange={(e) => setCompany({ ...company, name: e.target.value })} error={nameErr} autoFocus autoComplete="organization" />
             <TextField label={t('setup.firstBrand')} hint={t('setup.firstBrandHint')} value={company.first_brand_name} onChange={(e) => setCompany({ ...company, first_brand_name: e.target.value })} placeholder={company.name} />
-            <TextField label={t('setup.website')} type="url" value={company.website} onChange={(e) => setCompany({ ...company, website: e.target.value })} error={siteErr} placeholder="https://" />
+            <TextField label={t('setup.website')} type="url" value={company.website} onChange={(e) => setCompany({ ...company, website: e.target.value })} onBlur={() => setCompany({ ...company, website: withScheme(company.website) })} error={siteErr} placeholder="https://" />
             <TextField label={t('setup.contactEmail')} hint={t('setup.contactEmailHint')} type="email" value={company.contact_email} onChange={(e) => setCompany({ ...company, contact_email: e.target.value })} error={contactErr} />
           </>
         )}
@@ -201,4 +201,4 @@ export function SetupScreen() {
   )
 }
 
-const siteErrNow = (v: string) => !!v.trim() && !!urlProblem(v)
+const siteErrNow = (v: string) => !!v.trim() && !!urlProblem(withScheme(v))

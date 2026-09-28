@@ -3,7 +3,7 @@ import { localized, cleanLocalized, localizedPatch } from '../src/lib/localized'
 import { mergePatch } from '../src/mock/mergePatch'
 import { csvDelimiter, pickLanguage } from '../src/i18n/languages'
 import { formatMaterials, parseMaterials, unbalancedParts } from '../src/lib/materials'
-import { gtinValid, splitCodes, passwordProblem, slugify } from '../src/lib/validate'
+import { gtinValid, splitCodes, passwordProblem, slugify, urlProblem, withScheme } from '../src/lib/validate'
 import { accentVars, contrast, parseHex } from '../src/lib/accent'
 import { fit, planRenditions } from '../src/lib/renditions'
 import { automationSnippets } from '../src/lib/snippets'
@@ -23,6 +23,16 @@ describe('LocalizedText fallback: user language → en → first available', () 
     expect(cleanLocalized({ nl: ' ', en: 'x ' })).toEqual({ en: 'x' })
     expect(cleanLocalized({ nl: '' })).toBeNull()
   })
+})
+
+describe('website addresses typed without https://', () => {
+  it('adds https:// to a bare domain', () => expect(withScheme(' www.kestrel.example ')).toBe('https://www.kestrel.example'))
+  it('keeps an address that has a scheme', () => {
+    expect(withScheme('http://shop.example/nl')).toBe('http://shop.example/nl')
+    expect(withScheme('HTTPS://Shop.example')).toBe('HTTPS://Shop.example')
+  })
+  it('leaves an empty field empty', () => expect(withScheme('  ')).toBe(''))
+  it('makes a bare domain pass the address check', () => expect(urlProblem(withScheme('kestrel.example'))).toBeNull())
 })
 
 describe('language detection', () => {

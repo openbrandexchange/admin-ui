@@ -5,7 +5,7 @@ import { applyAccent } from '../../../lib/accent'
 import { COUNTRIES } from '../../../lib/countries'
 import { countryName } from '../../../lib/format'
 import { localizedPatch } from '../../../lib/localized'
-import { emailProblem, hexProblem, urlProblem } from '../../../lib/validate'
+import { emailProblem, hexProblem, urlProblem, withScheme } from '../../../lib/validate'
 import { useLogoMutations, useUpdateSettings } from '../../../queries/admin'
 import { Button, Field, Saved, Section, SelectField, TextField } from '../../../ui/controls'
 import { ConfirmButton, ErrorNote } from '../../../ui/feedback'
@@ -27,7 +27,7 @@ export function BrandTab({ settings }: { settings: Settings }) {
   const [logoTooBig, setLogoTooBig] = useState(false)
   const errs = {
     name: touched && !company.name.trim() ? t('validate.required') : null,
-    website: touched && company.website.trim() && urlProblem(company.website) ? t('validate.url') : null,
+    website: touched && company.website.trim() && urlProblem(withScheme(company.website)) ? t('validate.url') : null,
     email: touched && company.contact_email.trim() && emailProblem(company.contact_email) ? t('validate.email') : null,
     accent: hexProblem(accent) ? t('validate.hex') : null,
   }
@@ -96,7 +96,7 @@ export function BrandTab({ settings }: { settings: Settings }) {
       <Section title={t('settings.company')}>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField label={t('setup.companyName')} value={company.name} onChange={(e) => setCompany({ ...company, name: e.target.value })} error={errs.name} />
-          <TextField label={t('setup.website')} type="url" value={company.website} onChange={(e) => setCompany({ ...company, website: e.target.value })} error={errs.website} />
+          <TextField label={t('setup.website')} type="url" value={company.website} onChange={(e) => setCompany({ ...company, website: e.target.value })} onBlur={() => setCompany({ ...company, website: withScheme(company.website) })} error={errs.website} />
           <TextField label={t('setup.contactEmail')} hint={t('setup.contactEmailHint')} type="email" value={company.contact_email} onChange={(e) => setCompany({ ...company, contact_email: e.target.value })} error={errs.email} />
           <SelectField label={t('fields.country')} value={company.country} onChange={(e) => setCompany({ ...company, country: e.target.value })}>
             <option value="">—</option>
@@ -120,7 +120,7 @@ export function BrandTab({ settings }: { settings: Settings }) {
             setTouched(true)
             if (!company.name.trim() || errs.website || errs.email || errs.accent) return
             update.mutate({
-              company: { name: company.name.trim(), website: company.website.trim() || null, contact_email: company.contact_email.trim() || null, country: company.country || null },
+              company: { name: company.name.trim(), website: withScheme(company.website) || null, contact_email: company.contact_email.trim() || null, country: company.country || null },
               branding: {
                 display_name: displayName.trim() || company.name.trim(),
                 accent_color: accent,

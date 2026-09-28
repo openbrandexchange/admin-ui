@@ -24,6 +24,16 @@ export function urlProblem(url: string, { httpsOnly = false } = {}): MsgKey | nu
   }
 }
 
+/**
+ * A website typed without its scheme ("www.kestrel.example") gets https:// in front, the way a
+ * browser's address bar reads it. Anything that already has a scheme is left alone.
+ */
+export function withScheme(url: string): string {
+  const v = url.trim()
+  if (!v || /^[a-z][a-z0-9+.-]*:\/\//i.test(v)) return v
+  return 'https://' + v.replace(/^\/+/, '')
+}
+
 export function hexProblem(hex: string): MsgKey | null {
   return /^#[0-9a-fA-F]{6}$/.test(hex) ? null : 'validate.hex'
 }

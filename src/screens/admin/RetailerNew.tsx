@@ -3,9 +3,11 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import type { Retailer, RetailerInput } from '../../api/types'
 import { COUNTRIES } from '../../lib/countries'
+import { urlProblem, withScheme } from '../../lib/validate'
 import { countryName } from '../../lib/format'
 import { useRetailerMutations } from '../../queries/admin'
 import { Button, PageHeader, Saved, Section, SelectField, TextArea, TextField } from '../../ui/controls'
+import { ApiError } from '../../api/client'
 import { ErrorNote } from '../../ui/feedback'
 import { IconChevronLeft } from '../../ui/icons'
 
@@ -22,6 +24,8 @@ export function RetailerFields({ initial, submitLabel, pending, error, saved, on
   })
   const [touched, setTouched] = useState(false)
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value })
+  const server = error instanceof ApiError ? error.fieldErrors() : {}
+  const websiteErr = touched && f.website.trim() && urlProblem(withScheme(f.website)) ? t('validate.url') : server['/website']
   return (
     <form
       className="space-y-4"
@@ -29,14 +33,14 @@ export function RetailerFields({ initial, submitLabel, pending, error, saved, on
       onSubmit={(e) => {
         e.preventDefault()
         setTouched(true)
-        if (!f.name.trim()) return
-        onSubmit({ name: f.name.trim(), reference: f.reference.trim() || null, website: f.website.trim() || null, vat_number: f.vat.trim() || null, country: f.country || null, notes: f.notes.trim() || null })
+        if (!f.name.trim() || (f.website.trim() && urlProblem(withScheme(f.website)))) return
+        onSubmit({ name: f.name.trim(), reference: f.reference.trim() || null, website: withScheme(f.website) || null, vat_number: f.vat.trim() || null, country: f.country || null, notes: f.notes.trim() || null })
       }}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label={t('fields.shopName')} value={f.name} onChange={set('name')} error={touched && !f.name.trim() ? t('validate.required') : null} />
         <TextField label={t('fields.customerNumber')} hint={t('retailers.referenceHint')} value={f.reference} onChange={set('reference')} />
-        <TextField label={t('fields.website')} type="url" value={f.website} onChange={set('website')} placeholder="https://" />
+        <TextField label={t('fields.website')} type="url" value={f.website} onChange={set('website')} onBlur={() => setF({ ...f, website: withScheme(f.website) })} error={websiteErr} placeholder="https://" />
         <TextField label={t('fields.vatNumber')} value={f.vat} onChange={set('vat')} />
         <SelectField label={t('fields.country')} value={f.country} onChange={set('country')}>
           <option value="">—</option>

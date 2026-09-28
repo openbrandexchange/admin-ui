@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { protocolApi, req, ApiError } from '../../api/client'
 import { countryName } from '../../lib/format'
-import { emailProblem, urlProblem } from '../../lib/validate'
+import { emailProblem, urlProblem, withScheme } from '../../lib/validate'
 import { useBranding } from '../../queries/session'
 import { COUNTRIES } from '../../lib/countries'
 import { Button, Checkbox, Loading, SelectField, TextArea, TextField } from '../../ui/controls'
@@ -29,7 +29,7 @@ export function RequestAccessScreen() {
           body: {
             retailer: {
               name: f.name.trim(),
-              website: f.website.trim() || null,
+              website: withScheme(f.website) || null,
               country: f.country || null,
               vat_number: f.vat.trim() || null,
               reference: f.reference.trim() || null,
@@ -64,7 +64,7 @@ export function RequestAccessScreen() {
   const server = send.error instanceof ApiError ? send.error.fieldErrors() : {}
   const err = {
     name: touched && !f.name.trim() ? t('validate.required') : server['/retailer/name'],
-    website: touched && f.website.trim() && urlProblem(f.website) ? t('validate.url') : server['/retailer/website'],
+    website: touched && f.website.trim() && urlProblem(withScheme(f.website)) ? t('validate.url') : server['/retailer/website'],
     contact: touched && !f.contact.trim() ? t('validate.required') : server['/contact/name'],
     email: touched && emailProblem(f.email) ? t('validate.email') : server['/contact/email'],
     access: touched && !portal && !apiKey ? t('request.chooseOne') : null,
@@ -80,14 +80,14 @@ export function RequestAccessScreen() {
         onSubmit={(e) => {
           e.preventDefault()
           setTouched(true)
-          const ok = f.name.trim() && f.contact.trim() && !emailProblem(f.email) && !(f.website.trim() && urlProblem(f.website)) && (portal || apiKey)
+          const ok = f.name.trim() && f.contact.trim() && !emailProblem(f.email) && !(f.website.trim() && urlProblem(withScheme(f.website))) && (portal || apiKey)
           if (ok) send.mutate()
         }}
       >
         <fieldset className="space-y-4">
           <legend className="text-sm font-semibold text-stone-900">{t('request.shop')}</legend>
           <TextField label={t('fields.shopName')} value={f.name} onChange={set('name')} error={err.name} autoComplete="organization" />
-          <TextField label={t('fields.website')} type="url" placeholder="https://" value={f.website} onChange={set('website')} error={err.website} autoComplete="url" />
+          <TextField label={t('fields.website')} type="url" placeholder="https://" value={f.website} onChange={set('website')} onBlur={() => setF({ ...f, website: withScheme(f.website) })} error={err.website} autoComplete="url" />
           <SelectField label={t('fields.country')} value={f.country} onChange={set('country')}>
             <option value="">—</option>
             {COUNTRIES.map((c) => ({ c, n: countryName(c, i18n.language) }))
