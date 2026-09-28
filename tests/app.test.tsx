@@ -106,7 +106,11 @@ describe('first-run wizard', () => {
     expect(await screen.findByText(/this setup code is not correct/i)).toBeInTheDocument()
     await r.user.clear(screen.getByLabelText(/setup code/i))
     await r.user.type(screen.getByLabelText(/setup code/i), DEMO.setupCode)
-    for (let i = 0; i < 3; i++) await r.user.click(await screen.findByRole('button', { name: /next/i }))
+    await r.user.click(await screen.findByRole('button', { name: /next/i }))
+    // The refusal of the old code does not follow the user to the next step.
+    await screen.findByLabelText(/company name/i)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    for (let i = 0; i < 2; i++) await r.user.click(await screen.findByRole('button', { name: /next/i }))
     await r.user.click(await screen.findByRole('button', { name: /finish/i }))
     expect(await screen.findByRole('heading', { name: /hello iris/i })).toBeInTheDocument()
     expect(db().users[0]).toMatchObject({ email: 'iris@kestrel.example', role: 'admin' })
@@ -242,6 +246,30 @@ describe('brand admin', () => {
     const secret = (await screen.findByRole('textbox', { name: /client secret/i })) as HTMLInputElement
     const client = db().apiClients.find((c) => c.name === 'Nordlys Klær (requested)')!
     expect(secret.value).toBe(client.secret)
+  })
+
+  it('writes an invitation in the shop’s language, from its country', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    const shop = db().retailers.find((x) => x.name === 'Alpenhaus Mode')!
+    await r.router.navigate({ to: '/admin/retailers/$id', params: { id: shop.id } })
+    expect(await screen.findByLabelText(/language of the email/i)).toHaveValue('de')
+    await r.user.type(screen.getByLabelText(/email address/i), 'lena@alpenhaus.example')
+    await r.user.click(screen.getByRole('button', { name: /^invite$/i }))
+    await waitFor(() => expect(db().users.find((u) => u.email === 'lena@alpenhaus.example')).toMatchObject({ language: 'de', retailer_id: shop.id }))
+  })
+
+  it('says a scheduled import needs an https address, without codes or repeats', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/automation/sources/new' })
+    await r.user.type(await screen.findByLabelText(/^name$/i), 'Nightly PIM export')
+    await r.user.type(screen.getByLabelText(/web address of the csv or zip/i), 'http://exports.kestrel.example/products.csv')
+    await r.user.click(screen.getByRole('button', { name: /save scheduled import/i }))
+    expect(await screen.findByText(/starting with https:\/\//i)).toBeInTheDocument()
+    expect(screen.queryByText(/this address is not allowed/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('/config/url')).not.toBeInTheDocument()
+    expect(db().importSources).toHaveLength(0)
   })
 
   it('declines a request with a reason', async () => {

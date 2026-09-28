@@ -112,7 +112,11 @@ export function SetupScreen() {
             label={t('setup.code')}
             hint={t('setup.codeHint')}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => {
+              setCode(e.target.value)
+              // A new code clears the refusal of the old one, so it does not follow the user to the next steps.
+              if (submit.isError) submit.reset()
+            }}
             error={codeErr}
             autoComplete="one-time-code"
             autoFocus
@@ -123,7 +127,7 @@ export function SetupScreen() {
 
         {step === 1 && (
           <>
-            <TextField label={t('setup.companyName')} value={company.name} onChange={(e) => setCompany({ ...company, name: e.target.value })} error={nameErr} autoFocus autoComplete="organization" />
+            <TextField label={t('setup.companyName')} hint={t('setup.companyNameHint')} value={company.name} onChange={(e) => setCompany({ ...company, name: e.target.value })} error={nameErr} autoFocus autoComplete="organization" />
             <TextField label={t('setup.firstBrand')} hint={t('setup.firstBrandHint')} value={company.first_brand_name} onChange={(e) => setCompany({ ...company, first_brand_name: e.target.value })} placeholder={company.name} />
             <TextField label={t('setup.website')} type="url" value={company.website} onChange={(e) => setCompany({ ...company, website: e.target.value })} onBlur={() => setCompany({ ...company, website: withScheme(company.website) })} error={siteErr} placeholder="https://" />
             <TextField label={t('setup.contactEmail')} hint={t('setup.contactEmailHint')} type="email" value={company.contact_email} onChange={(e) => setCompany({ ...company, contact_email: e.target.value })} error={contactErr} />

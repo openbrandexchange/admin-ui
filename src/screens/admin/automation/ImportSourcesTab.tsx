@@ -89,7 +89,7 @@ export function TestResult({ result }: { result: { ok: boolean; message?: string
   return (
     <Notice tone={result.ok ? 'ok' : 'warn'}>
       <p className="font-medium">{result.ok ? t('sources.testOk', { count: result.files.length }) : t('sources.testFailed')}</p>
-      {result.message && <p className="text-xs">{result.message}</p>}
+      {!result.ok && result.message && <p className="text-xs">{result.message}</p>}
       {result.host_key_fingerprint && <p className="font-mono text-xs">{t('sources.hostKey', { fp: result.host_key_fingerprint })}</p>}
       {result.files.length > 0 && (
         <ul className="mt-1 max-h-40 overflow-y-auto font-mono text-xs">

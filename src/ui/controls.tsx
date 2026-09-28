@@ -118,7 +118,7 @@ export function Checkbox({ label, hint, className, ...input }: InputHTMLAttribut
   const id = useId()
   return (
     <div className={cx('flex items-start gap-3', className)}>
-      <input id={id} type="checkbox" className="mt-0.5 size-4.5 rounded border-stone-300 accent-accent" {...input} />
+      <input id={id} type="checkbox" className="mt-0.5 size-4.5 shrink-0 rounded border-stone-300 accent-accent" {...input} />
       <label htmlFor={id} className="text-sm leading-tight">
         <span className="font-medium text-stone-800">{label}</span>
         {hint && <span className="block text-xs text-stone-500 mt-0.5">{hint}</span>}

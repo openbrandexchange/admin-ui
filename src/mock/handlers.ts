@@ -770,6 +770,8 @@ export const handlers = [
       const b = await body<Partial<ImportSource> & { credentials?: Record<string, unknown> }>(request)
       const url = (b.config as { url?: string } | undefined)?.url
       if (url && /^https?:\/\/(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(url)) throw stop(422, 'unsafe_url', 'Private addresses are not allowed.', [{ pointer: '/config/url', obx_error: 'unsafe_url', detail: 'Private addresses are not allowed.' }])
+      // Like the nodes: plain http is refused unless a node runs in development mode.
+      if (url && /^http:\/\//i.test(url)) throw stop(422, 'unsafe_url', 'unsafe URL: scheme "http" is not allowed (use https)', [{ pointer: '/config/url', obx_error: 'unsafe_url', detail: 'unsafe URL: scheme "http" is not allowed (use https)' }])
       const s: ImportSource = {
         id: newId(d, 'src'),
         name: b.name ?? 'Import',

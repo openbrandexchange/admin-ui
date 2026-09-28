@@ -40,7 +40,6 @@ export function ErrorNote({ error, className, onRetry }: { error: unknown; class
         <ul className="mt-1 list-disc pl-5 text-xs">
           {fields.slice(0, 8).map((f, i) => (
             <li key={i}>
-              {f.pointer && <code className="mr-1">{f.pointer}</code>}
               {f.detail}
             </li>
           ))}

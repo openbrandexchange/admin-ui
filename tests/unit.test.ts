@@ -5,6 +5,7 @@ import { csvDelimiter, pickLanguage } from '../src/i18n/languages'
 import { formatMaterials, parseMaterials, unbalancedParts } from '../src/lib/materials'
 import { gtinValid, splitCodes, passwordProblem, slugify, urlProblem, withScheme } from '../src/lib/validate'
 import { accentVars, contrast, parseHex } from '../src/lib/accent'
+import { countryLanguage } from '../src/lib/countries'
 import { fit, planRenditions } from '../src/lib/renditions'
 import { automationSnippets } from '../src/lib/snippets'
 import { filenameFromDisposition } from '../src/lib/download'
@@ -78,6 +79,15 @@ describe('codes and validation', () => {
     expect(safeRedirect('/admin/catalog')).toBe('/admin/catalog')
     expect(safeRedirect('//evil.example')).toBeUndefined()
     expect(safeRedirect('https://evil.example')).toBeUndefined()
+  })
+})
+
+describe('language of a shop', () => {
+  it('comes from its country, else the fallback', () => {
+    expect(countryLanguage('AT', 'en')).toBe('de')
+    expect(countryLanguage('be', 'en')).toBe('nl')
+    expect(countryLanguage('JP', 'fr')).toBe('fr')
+    expect(countryLanguage(null, 'nl')).toBe('nl')
   })
 })
 

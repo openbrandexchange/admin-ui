@@ -3,7 +3,9 @@ import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import type { InviteResult, Retailer } from '../../api/types'
+import { countryLanguage } from '../../lib/countries'
 import { formatDate, formatRelative } from '../../lib/format'
+import { LANGUAGES, isLang } from '../../i18n/languages'
 import { emailProblem } from '../../lib/validate'
 import { apiClientsQuery, brandsQuery, retailerQuery, statEventsQuery, useApiClientMutations, useRetailerMutations, useUserMutations, usersQuery } from '../../queries/admin'
 import { Badge, Button, Checkbox, CopyButton, Loading, PageHeader, Saved, Section, SelectField, TextField } from '../../ui/controls'
@@ -119,6 +121,8 @@ function Accounts({ retailer: r }: { retailer: Retailer }) {
   const [touched, setTouched] = useState(false)
   const [lastInvite, setLastInvite] = useState<InviteResult | null>(null)
   const lang = i18n.language
+  // The invitation is written in the shop's language: from its country, else the admin's own.
+  const [inviteLang, setInviteLang] = useState<string>(() => countryLanguage(r.country, isLang(lang) ? lang : 'en'))
   return (
     <Section title={t('users.retailerAccounts')} description={t('users.retailerAccountsHint')}>
       {lastInvite && <InviteLink result={lastInvite} />}
@@ -165,7 +169,7 @@ function Accounts({ retailer: r }: { retailer: Retailer }) {
           setTouched(true)
           if (emailProblem(email)) return
           m.invite.mutate(
-            { email: email.trim(), name: name.trim() || undefined, role: 'retailer', retailer_id: r.id },
+            { email: email.trim(), name: name.trim() || undefined, role: 'retailer', retailer_id: r.id, language: inviteLang },
             {
               onSuccess: (res) => {
                 setLastInvite(res)
@@ -179,6 +183,13 @@ function Accounts({ retailer: r }: { retailer: Retailer }) {
       >
         <TextField className="min-w-52 flex-1" label={t('fields.email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={touched && emailProblem(email) ? t('validate.email') : null} />
         <TextField className="min-w-40 flex-1" label={t('fields.nameOptional')} value={name} onChange={(e) => setName(e.target.value)} />
+        <SelectField className="min-w-36" label={t('users.inviteLanguage')} value={inviteLang} onChange={(e) => setInviteLang(e.target.value)}>
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.name}
+            </option>
+          ))}
+        </SelectField>
         <Button type="submit" loading={m.invite.isPending}>
           <IconPlus size={16} />
           {t('users.invite')}

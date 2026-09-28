@@ -62,7 +62,8 @@ function SourceForm({ source }: { source?: ImportSource }) {
   const save = source ? m.update : m.create
   const server = save.error instanceof ApiError ? save.error.fieldErrors() : {}
   const unsafe = save.error instanceof ApiError && save.error.code === 'unsafe_url'
-  const urlErr = touched && kind === 'https_url' && urlProblem(url) ? t('validate.url') : unsafe ? t('errors.unsafe_url') : server['/config/url']
+  // A refused http:// address gets the https rule, not "private network": that is the actual reason.
+  const urlErr = touched && kind === 'https_url' && urlProblem(url) ? t('validate.url') : unsafe ? t(/^http:/i.test(url.trim()) ? 'validate.url' : 'errors.unsafe_url') : server['/config/url']
 
   function build(): ImportSourceInput | null {
     if (!name.trim()) return null
@@ -204,7 +205,7 @@ function SourceForm({ source }: { source?: ImportSource }) {
           </div>
         </Section>
 
-        <ErrorNote error={save.error} />
+        {!(unsafe && kind === 'https_url') && <ErrorNote error={save.error} />}
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" variant="primary" loading={save.isPending}>
             {source ? t('common.save') : t('sources.create')}

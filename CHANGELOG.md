@@ -10,6 +10,7 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 
 - The setup wizard takes over a setup code from the address fragment (`/setup#code=…`), so a node's installer can open the wizard with the code filled in. The fragment never reaches the server.
 - Settings → About this installation shows the cron address (and when it was last called) on nodes that report `settings.node.cron`.
+- Inviting someone at a shop asks for the language of the e-mail, preset from the shop's country (a shop in Austria gets German).
 
 ### Changed
 
@@ -17,6 +18,7 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 - Download texts no longer promise an e-mail (a portal without e-mail sends none); they point to Downloads.
 - The invitation says the brand gave the shop access and invited you; several languages read "on behalf of the shop" before.
 - The setup code hint no longer says the code is only in the log.
+- The setup wizard says the company name is what retailers see at the top of every page, and that the first brand is just the first one in the catalog (it said retailers would see the brand).
 
 ### Fixed
 
@@ -24,6 +26,11 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 - Website fields (setup wizard, brand settings, add retailer, access request) accept an address without `https://` and complete it when you leave the field. The add-retailer form checks the address inline instead of showing the node's raw message.
 - An import with warnings only no longer says that rows with a problem were skipped.
 - Approving an access request that asked for an API key offers "Show the key": a retailer who asked on the web page has no software that collects the key, so nobody could reach it before.
+- After a wrong setup code, the refusal no longer shows up again on the next step once the right code is entered.
+- A scheduled import with an `http://` address says it must start with `https://` instead of "points to a private network", and no longer shows the node's English detail with a `/config/url` code under it.
+- A successful connection test shows its translated result once, not followed by the node's English sentence.
+- Error boxes no longer show technical field codes such as `/config/url`.
+- Checkboxes keep their size next to a long label.
 
 ## [0.1.1] - 2026-09-28
 
