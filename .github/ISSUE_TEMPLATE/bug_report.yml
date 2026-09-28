@@ -1,0 +1,42 @@
+name: Something does not work
+description: A screen, text or download in the portal or the brand admin behaves wrongly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Security problems do not belong here: e-mail security@openbrandexchange.com (see SECURITY.md).
+        Please leave out real customer data, passwords and API keys; screenshots with fictional data help most.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Ideally in the mock mode (`npm run mock`), so anyone can follow them.
+      placeholder: |
+        1. Log in as buyer@shop.example
+        2. …
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Where
+      options: [Retailer portal, Brand admin, Public pages (login, setup, invitation, request access), Not sure]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: admin-ui version or commit, and which portal edition
+      placeholder: 0.1.1 on Portal for Google Cloud & Docker
+  - type: input
+    id: browser
+    attributes:
+      label: Browser, device and UI language
+      placeholder: Safari 18 on iPhone, Dutch

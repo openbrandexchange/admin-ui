@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem
+    url: mailto:security@openbrandexchange.com
+    about: Privately, never in a public issue. See SECURITY.md.
+  - name: A change to the protocol or the API
+    url: https://github.com/openbrandexchange/spec/issues
+    about: The UI follows the specification; API changes start there.
+  - name: General questions
+    url: mailto:hello@openbrandexchange.com
+    about: Anything else about Open Brand Exchange.

@@ -1,0 +1,44 @@
+# Builds the release assets when a version tag (v1.2.3) is pushed. Nothing runs until a
+# maintainer pushes a tag; the GitHub release is created as a draft to review first.
+name: Release
+on:
+  push:
+    tags: ['v*.*.*']
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Checks
+        run: npm run check
+      - name: The tagged dist/ is the build of the tagged commit
+        run: git diff --exit-code -- dist
+      - name: Pack archives, SBOM and checksums
+        run: scripts/package-release.sh "${GITHUB_REF_NAME}"
+      - name: Build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: release/obx-admin-ui-*
+      - name: Draft GitHub release with the changelog section
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '$0 ~ "^## \\[" v "\\]" {on=1; next} on && /^## \[/ {exit} on' CHANGELOG.md > release/notes.md
+          test -s release/notes.md || { echo "::error::CHANGELOG.md has no section for $version"; exit 1; }
+          prerelease=""; case "$version" in 0.*|*-*) prerelease="--prerelease";; esac
+          gh release create "$GITHUB_REF_NAME" --draft $prerelease --title "admin-ui $version" --notes-file release/notes.md \
+            release/obx-admin-ui-* release/SHA256SUMS

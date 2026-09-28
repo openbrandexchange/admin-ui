@@ -1,0 +1,21 @@
+name: Idea or improvement
+description: Something brands or retailers need that the UI does not do yet.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Who needs this, and what are they trying to do?
+      description: Describe the situation and the problem, before a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+  - type: checkboxes
+    id: api
+    attributes:
+      label: API
+      options:
+        - label: This needs a change to the API (then it starts in the spec repository)

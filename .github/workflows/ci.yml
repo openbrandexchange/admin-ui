@@ -1,0 +1,119 @@
+# Every push and pull request: the same checks a maintainer runs locally with
+# `npm run check && npm run e2e`, plus licences, audit and the spec cross-checks.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Unit, component and language tests (all 25 locales complete)
+        run: npm test
+      - run: npm run build
+      - name: Bundle size budget
+        run: npm run size
+      - name: dist/ on main is the build of this commit (nodes vendor it)
+        if: matrix.node == 22
+        run: |
+          if ! git diff --quiet -- dist || [ -n "$(git ls-files --others --exclude-standard dist)" ]; then
+            git status --short dist
+            echo "::error::dist/ is out of date. Run 'npm run build' and commit dist/."
+            exit 1
+          fi
+
+  supply-chain:
+    name: Licences and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Licences of all dependencies
+        run: npm run licenses
+      - name: Known vulnerabilities in what ships
+        run: npm run audit:prod
+
+  e2e:
+    name: Playwright (end to end + accessibility)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+
+  spec:
+    name: In step with the spec
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The spec repository is private for now: the job needs a read-only token in the
+    # OBX_READ_TOKEN secret (fine-grained PAT, Contents: read on openbrandexchange/spec).
+    # Without it the job only warns, so forks and a fresh setup stay green.
+    env:
+      HAS_TOKEN: ${{ secrets.OBX_READ_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: env.HAS_TOKEN != 'true'
+        run: echo "::warning::OBX_READ_TOKEN is not set; skipping the API-type and glossary check against openbrandexchange/spec."
+      - uses: actions/checkout@v4
+        if: env.HAS_TOKEN == 'true'
+        with:
+          repository: openbrandexchange/spec
+          path: spec
+          token: ${{ secrets.OBX_READ_TOKEN }}
+      - uses: actions/setup-node@v4
+        if: env.HAS_TOKEN == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.HAS_TOKEN == 'true'
+        run: npm ci
+      - name: Generated API types match the spec's OpenAPI files
+        if: env.HAS_TOKEN == 'true'
+        run: |
+          npm run gen:api -- spec
+          git diff --exit-code -- src/api || { echo "::error::src/api is out of date: run 'npm run gen:api -- ../spec' and commit."; exit 1; }
+      - name: Glossary matches spec/docs/glossary.md
+        if: env.HAS_TOKEN == 'true'
+        working-directory: spec
+        run: |
+          npm ci
+          node tools/glossary.mjs --compare ../src/i18n/glossary.json
