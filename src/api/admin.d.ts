@@ -1388,6 +1388,21 @@ export interface components {
                 max_upload_bytes?: number;
                 /** @description Short hosting-specific instructions for pointing a custom domain at this node (Markdown). */
                 custom_domain_help?: string;
+                /**
+                 * @description Only on nodes that need an outside scheduler (ordinary web hosting): what to call
+                 *     every few minutes for background work. Absent when the node schedules itself.
+                 */
+                cron?: {
+                    /**
+                     * Format: uri
+                     * @description Secret address; calling it runs due background work. Shown to admins only.
+                     */
+                    url: string;
+                    /** @description The same as a command line, when the host allows it. */
+                    command?: string | null;
+                    /** Format: date-time */
+                    last_run_at?: string | null;
+                };
             };
         };
         AdminProductSummary: {

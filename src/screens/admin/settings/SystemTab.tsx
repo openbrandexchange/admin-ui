@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { Settings } from '../../../api/types'
-import { formatBytes } from '../../../lib/format'
+import { formatBytes, formatRelative } from '../../../lib/format'
 import { Badge, CopyButton, Section } from '../../../ui/controls'
 
 /** Read-only facts about this installation, and how to point your own domain at it. */
@@ -15,6 +15,19 @@ export function SystemTab({ settings }: { settings: Settings }) {
     [t('settings.imageVersions'), n.renditions_server_generated ? t('settings.imageVersionsServer') : t('settings.imageVersionsBrowser')],
     [t('settings.maxUpload'), formatBytes(n.max_upload_bytes, i18n.language) || '—'],
   ]
+  // Nodes on ordinary web hosting need a cron job; show its address again after installation.
+  if (n.cron?.url) {
+    rows.push([
+      t('settings.cron'),
+      <div className="space-y-1">
+        <span className="flex items-center gap-2 font-mono text-xs break-all">
+          {n.cron.url} <CopyButton value={n.cron.url} />
+        </span>
+        <p className="text-xs text-stone-500">{t('settings.cronHint')}</p>
+        <p className="text-xs text-stone-500">{n.cron.last_run_at ? t('settings.cronLastRun', { when: formatRelative(n.cron.last_run_at, i18n.language) }) : t('settings.cronNever')}</p>
+      </div>,
+    ])
+  }
   return (
     <>
       <Section title={t('settings.system')} description={t('settings.systemHint')}>
