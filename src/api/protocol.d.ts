@@ -15,7 +15,7 @@ export interface paths {
         };
         /**
          * Discovery document
-         * @description Public. MUST be served with `Access-Control-Allow-Origin: *` and SHOULD be cacheable for 5 minutes.
+         * @description Public. MUST be served with `Access-Control-Allow-Origin: *` and SHOULD be cacheable for 5 minutes. It is the only endpoint with CORS headers; all others send none (security.md section 4).
          */
         get: operations["getDiscovery"];
         put?: never;
@@ -521,7 +521,7 @@ export interface components {
         DiscoveryDocument: {
             /** @description Protocol major.minor implemented, e.g. '0.1'. */
             obx_version: string;
-            /** @description Exact spec version, e.g. '0.1.0-draft'. */
+            /** @description Exact spec version, e.g. '0.1.0'. */
             spec_version: string;
             /** @description Implementation name/version, e.g. obx-node-go 0.1.0. */
             node: {
@@ -589,7 +589,7 @@ export interface components {
         Problem: {
             /**
              * Format: uri
-             * @description URI identifying the problem type: https://openbrandexchange.com/errors/<obx_error>.
+             * @description URI identifying the problem type: `https://openbrandexchange.com/errors/<obx_error>`.
              */
             type: string;
             title: string;
@@ -1170,7 +1170,7 @@ export interface components {
             asset_id: components["schemas"]["Id"];
             rendition: components["schemas"]["RenditionName"];
             part: number;
-            /** @description Path inside the zip part: <style_number>/<rendition>/<filename>. */
+            /** @description Path inside the zip part: `<style_number>/<rendition>/<filename>`. */
             path: string;
             bytes: number;
             sha256: components["schemas"]["Sha256"];
@@ -1855,7 +1855,7 @@ export interface operations {
                     ETag: components["headers"]["ETag"];
                     "OBX-Content-SHA256": components["headers"]["OBX-Content-SHA256"];
                     "Accept-Ranges"?: "bytes";
-                    /** @description inline; filename="<filename>" (renditions get _web/_square/_thumb before a .jpg extension). */
+                    /** @description `inline; filename="<filename>"` (renditions get `_web`/`_square`/`_thumb` before a `.jpg` extension). */
                     "Content-Disposition"?: string;
                     /** @description private, max-age<=3600 */
                     "Cache-Control"?: string;

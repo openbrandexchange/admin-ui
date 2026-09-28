@@ -1019,7 +1019,7 @@ export interface paths {
         };
         /**
          * Product detail (protocol ProductDetail shape)
-         * @description Rendition URLs are signed and usable directly in <img>. `original` only when the viewer may download originals.
+         * @description Rendition URLs are signed and usable directly in an `<img>` element. `original` only when the viewer may download originals.
          */
         get: operations["getPortalProduct"];
         put?: never;
@@ -1283,7 +1283,7 @@ export interface components {
             logo_url?: string | null;
             accent_color?: string | null;
             welcome_text?: components["schemas"]["LocalizedText"] | null;
-            /** @description The brand's own word for its portal, per language (e.g. {"nl":"Merkbeeldbank"}). The UI shows "<name> · <word>"; without a text for the reader's language it uses the brand's en text, then its first text, then the glossary word for that language. */
+            /** @description The brand's own word for its portal, per language (e.g. {"nl":"Merkbeeldbank"}). The UI shows `<name> · <word>`; without a text for the reader's language it uses the brand's en text, then its first text, then the glossary word for that language. */
             portal_name?: components["schemas"]["LocalizedText"] | null;
             languages: components["schemas"]["LanguageTag"][];
             default_language: components["schemas"]["LanguageTag"];
@@ -1356,7 +1356,7 @@ export interface components {
                 readonly logo_url?: string | null;
                 accent_color?: string | null;
                 welcome_text?: components["schemas"]["LocalizedText"] | null;
-                /** @description Overrides the local portal word ("Beeldbank", "Händlerportal" ...) per language; null uses the glossary word. See PublicBranding.portal_name. */
+                /** @description Overrides the local portal word ("Beeldbank", "Händlerportal" ...) per language; null uses the glossary word. See PublicBranding.portal_name. The settings update is a JSON merge patch (RFC 7396): `{"branding":{"portal_name":{"de":null}}}` removes the German text only, `{"branding":{"portal_name":null}}` removes the whole override. A client that edits the texts as a whole sends `null` for every language it removed. */
                 portal_name?: components["schemas"]["LocalizedText"] | null;
             };
             portal?: {
@@ -1505,7 +1505,7 @@ export interface components {
             user: components["schemas"]["User"];
             /**
              * Format: uri
-             * @description <public_url>/invite/<token>; one-time.
+             * @description `<public_url>/invite/<token>`; one-time.
              */
             invite_url: string;
             /** Format: date-time */
@@ -1529,7 +1529,7 @@ export interface components {
         ApiClientInput: {
             retailer_id: string;
             name: string;
-            /** @description Default catalog:read media:read (+ media:original when allowed). */
+            /** @description Omitted: `catalog:read` and `media:read`, plus `media:original` when the retailer may download originals. `usage:write` only when requested explicitly. Scopes are limited to what the retailer's grant allows. */
             scopes?: components["schemas"]["Scope"][];
         };
         ApiClientWithSecret: {
@@ -1778,7 +1778,7 @@ export interface components {
         Problem: {
             /**
              * Format: uri
-             * @description URI identifying the problem type: https://openbrandexchange.com/errors/<obx_error>.
+             * @description URI identifying the problem type: `https://openbrandexchange.com/errors/<obx_error>`.
              */
             type: string;
             title: string;
@@ -2028,7 +2028,7 @@ export interface components {
         };
         /**
          * VariantInput
-         * @description Ingest write model for a variant. Key: external_id (path); default convention = the GTIN, else <style>-<color>-<size>.
+         * @description Ingest write model for a variant. Key: external_id (path); default convention = the GTIN, else `<style>-<color>-<size>`.
          */
         VariantInput: {
             product_external_id: components["schemas"]["ExternalId"];
@@ -2053,7 +2053,7 @@ export interface components {
         View: "front" | "back" | "side" | "left" | "right" | "top" | "bottom" | "tilted_left" | "tilted_right" | "inside" | "detail" | "other";
         /**
          * AssetInput
-         * @description Ingest write model for an asset. Key: external_id (path); filename-pattern convention = <style>_<color>_<position>.
+         * @description Ingest write model for an asset. Key: external_id (path); filename-pattern convention = `<style>_<color>_<position>`.
          */
         AssetInput: {
             product_external_id: components["schemas"]["ExternalId"];
@@ -2064,7 +2064,7 @@ export interface components {
             role: components["schemas"]["Role"];
             view?: components["schemas"]["View"] | null;
             position: number;
-            /** @description Download filename; default <external_id>.<ext>. */
+            /** @description Download filename; default `<external_id>.<ext>`. */
             filename?: string | null;
             alt_text?: components["schemas"]["LocalizedText"] | null;
             /** @description Partial Rights; omitted fields take the node's default rights (Settings). null = all defaults. */
@@ -5076,7 +5076,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Zip; entries named <filename> (variant suffix _web/_square before .jpg). */
+            /** @description Zip; entries named `<filename>` (variant suffix `_web`/`_square` before `.jpg`). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5323,6 +5323,7 @@ export interface operations {
             content: {
                 "application/json": {
                     name: string;
+                    /** @description Omitted = the same defaults as ApiClientInput.scopes. */
                     scopes?: components["schemas"]["Scope"][];
                 };
             };
