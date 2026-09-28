@@ -18,6 +18,13 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 - The invitation says the brand gave the shop access and invited you; several languages read "on behalf of the shop" before.
 - The setup code hint no longer says the code is only in the log.
 
+### Fixed
+
+- The file version picked in the "prepare a zip" dialog is the one the zip is made in. Each part of the page kept its own copy of the remembered choice, so a retailer who picked Web got originals.
+- Website fields (setup wizard, brand settings, add retailer, access request) accept an address without `https://` and complete it when you leave the field. The add-retailer form checks the address inline instead of showing the node's raw message.
+- An import with warnings only no longer says that rows with a problem were skipped.
+- Approving an access request that asked for an API key offers "Show the key": a retailer who asked on the web page has no software that collects the key, so nobody could reach it before.
+
 ## [0.1.1] - 2026-09-28
 
 ### Fixed
