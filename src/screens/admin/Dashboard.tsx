@@ -45,6 +45,11 @@ export function DashboardScreen() {
       label: t('dashboard.step.automate'),
       to: '/admin/automation',
     },
+    // Without e-mail, retailers get no invitations, access decisions or password links: a
+    // forgotten password cannot be reset. Only nodes that report it explicitly show the step.
+    ...(settings.data?.node?.email_configured === false
+      ? [{ done: false, label: t('dashboard.step.email'), to: '/admin/settings', search: { tab: 'system' } as const }]
+      : []),
   ]
   const lastRun = runs.data?.pages[0]?.items[0]
   const counts = [total, visible, hidden, pendingFiles]
@@ -62,7 +67,7 @@ export function DashboardScreen() {
           <ol className="grid gap-2 sm:grid-cols-2">
             {steps.map((s, i) => (
               <li key={s.to}>
-                <Link to={s.to} className={cx('flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm', s.done ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-stone-200 hover:bg-stone-50')}>
+                <Link to={s.to} search={'search' in s ? s.search : undefined} className={cx('flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm', s.done ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-stone-200 hover:bg-stone-50')}>
                   <span className={cx('grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold', s.done ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-700')}>
                     {s.done ? <IconCheck size={14} /> : i + 1}
                   </span>

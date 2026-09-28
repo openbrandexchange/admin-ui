@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { db, DEMO } from '../src/mock/db'
+import { db, DEMO, save } from '../src/mock/db'
 import { server } from './setup'
 import { renderApp } from './render'
 
@@ -23,6 +23,26 @@ function failTimes(path: string, times: number) {
   let left = times
   server.use(http.get(path, () => (left-- > 0 ? unavailable() : undefined)))
 }
+
+describe('the get-started list', () => {
+  it('asks the brand to set up e-mail while the node has none, and links to where it shows', async () => {
+    const d = db()
+    Object.assign(d.settings.node ?? {}, { email_configured: false })
+    save()
+    await loginAs('admin')
+    const step = await screen.findByRole('link', { name: /set up email for invitations and password links/i })
+    expect(step.getAttribute('href')).toBe('/admin/settings?tab=system')
+  })
+
+  it('leaves the e-mail step out once e-mail is set up', async () => {
+    const d = db()
+    Object.assign(d.settings.node ?? {}, { email_configured: true })
+    save()
+    await loginAs('admin')
+    await screen.findByRole('link', { name: /add your articles and images/i })
+    expect(screen.queryByRole('link', { name: /set up email/i })).toBeNull()
+  })
+})
 
 describe('failed loads offer a retry', () => {
   it('shows the dashboard numbers as unavailable and loads them again on "Try again"', async () => {
