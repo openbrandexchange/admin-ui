@@ -910,8 +910,8 @@ export const handlers = [
         d.users.push(u)
         inv = invite(d, u)
       }
-      if (b.create_api_client ?? a.access.includes('api')) newApiClient(d, r.id, `${a.retailer.name} (requested)`)
-      return HttpResponse.json({ access_request: a, retailer: retailerView(d, r), ...(inv && { invite: inv }) })
+      const key = b.create_api_client ?? a.access.includes('api') ? newApiClient(d, r.id, `${a.retailer.name} (requested)`) : undefined
+      return HttpResponse.json({ access_request: a, retailer: retailerView(d, r), ...(inv && { invite: inv }), ...(key && { api_client: key.client }) })
     }),
   ),
   http.post(

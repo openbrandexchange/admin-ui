@@ -230,6 +230,20 @@ describe('brand admin', () => {
     expect(db().retailers.some((x) => x.name === 'Nordlys Klær')).toBe(true)
   })
 
+  it('shows the requested API key once when the retailer asked on the web page', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/requests' })
+    await r.user.click(await screen.findByRole('button', { name: /^approve$/i }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('checkbox', { name: /create an api key/i })).toBeChecked()
+    await r.user.click(within(dialog).getByRole('button', { name: /^approve$/i }))
+    await r.user.click(await screen.findByRole('button', { name: /show the key/i }))
+    const secret = (await screen.findByRole('textbox', { name: /client secret/i })) as HTMLInputElement
+    const client = db().apiClients.find((c) => c.name === 'Nordlys Klær (requested)')!
+    expect(secret.value).toBe(client.secret)
+  })
+
   it('declines a request with a reason', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })

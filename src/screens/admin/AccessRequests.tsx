@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Link, useSearch } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import type { AdminAccessRequest, InviteResult } from '../../api/types'
+import type { AdminAccessRequest, ApiClientWithSecret, InviteResult } from '../../api/types'
 import { countryName, formatDate, formatRelative } from '../../lib/format'
-import { accessRequestsQuery, brandsQuery, retailersQuery, useAccessRequestMutations } from '../../queries/admin'
+import { accessRequestsQuery, brandsQuery, retailersQuery, useAccessRequestMutations, useApiClientMutations } from '../../queries/admin'
 import { Badge, Button, Checkbox, Loading, PageHeader, SelectField, TextArea, cx } from '../../ui/controls'
 import { Dialog, EmptyState, ErrorNote, LoadMore, Notice, tabListKeys } from '../../ui/feedback'
 import { InviteLink } from './RetailerDetail'
+import { ApiKeyCreated } from '../shared/ApiKeys'
 
 type Status = 'pending' | 'approved' | 'rejected'
 
-function ApproveDialog({ req, onClose, onDone }: { req: AdminAccessRequest; onClose: () => void; onDone: (r: { invite?: InviteResult; retailerId: string }) => void }) {
+function ApproveDialog({ req, onClose, onDone }: { req: AdminAccessRequest; onClose: () => void; onDone: (r: { invite?: InviteResult; retailerId: string; apiClientId?: string }) => void }) {
   const { t } = useTranslation()
   const brands = useQuery(brandsQuery)
   const retailers = useInfiniteQuery(retailersQuery({ q: req.retailer.name.slice(0, 40) }))
@@ -39,7 +40,7 @@ function ApproveDialog({ req, onClose, onDone }: { req: AdminAccessRequest; onCl
               // card from the waiting list, and per-call callbacks never fire once it has unmounted.
               void m.approve
                 .mutateAsync({ id: req.id, body: { ...(link && { retailer_id: link }), brand_ids: chosen.length ? chosen : null, invite_portal_user: invite, create_api_client: apiKey } })
-                .then((res) => onDone({ invite: res.invite, retailerId: res.retailer.id }), () => {})
+                .then((res) => onDone({ invite: res.invite, retailerId: res.retailer.id, apiClientId: res.api_client?.id }), () => {})
             }
           >
             {t('requests.approve')}
@@ -98,7 +99,29 @@ function RejectDialog({ req, onClose }: { req: AdminAccessRequest; onClose: () =
   )
 }
 
-type Approval = { name: string; invite?: InviteResult; retailerId: string }
+type Approval = { name: string; invite?: InviteResult; retailerId: string; apiClientId?: string }
+
+/**
+ * Software that asked for access collects its key itself; a retailer who asked on the web page has
+ * no software polling for it. Showing the key renews its secret once, so the admin can pass it on.
+ */
+function RequestedKey({ clientId }: { clientId: string }) {
+  const { t } = useTranslation()
+  const m = useApiClientMutations()
+  const [shown, setShown] = useState<ApiClientWithSecret | null>(null)
+  const [done, setDone] = useState(false)
+  if (done) return null
+  if (shown) return <ApiKeyCreated created={shown} onDone={() => setDone(true)} />
+  return (
+    <div className="card space-y-2 p-4 text-sm">
+      <p>{t('requests.keyCreated')}</p>
+      <Button size="sm" loading={m.rotate.isPending} onClick={() => void m.rotate.mutateAsync(clientId).then(setShown, () => {})}>
+        {t('requests.showKey')}
+      </Button>
+      <ErrorNote error={m.rotate.error} />
+    </div>
+  )
+}
 
 function RequestCard({ req, onApproved }: { req: AdminAccessRequest; onApproved: (a: Approval) => void }) {
   const { t, i18n } = useTranslation()
@@ -196,6 +219,7 @@ export function AccessRequestsScreen() {
             </Link>
           </Notice>
           {approved.invite && <InviteLink result={approved.invite} />}
+          {approved.apiClientId && <RequestedKey clientId={approved.apiClientId} />}
         </div>
       )}
       <div role="tablist" aria-label={t('admin.nav.requests')} className="flex gap-1 border-b border-stone-200">
