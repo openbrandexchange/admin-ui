@@ -32,6 +32,7 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 - The setup wizard takes over a setup code from the address fragment (`/setup#code=…`), so a node's installer can open the wizard with the code filled in. The fragment never reaches the server.
 - Settings → About this installation shows the cron address (and when it was last called) on nodes that report `settings.node.cron`.
 - Inviting someone at a shop asks for the language of the e-mail, preset from the shop's country (a shop in Austria gets German).
+- The scheduled-import form offers only the kinds of source the node reports in `settings.node.source_kinds` (the Portal for Cloudflare cannot open SFTP); all three when the node does not say.
 - The admin's "Get started" list asks to set up e-mail while the node reports that it has none, and links to Settings → System: without e-mail, retailers get no invitations, access decisions or password links.
 - Every screen that loads data shows a "Try again" button when loading fails (not for errors that would fail again, such as "not found"). The dashboard shows "—" for numbers it could not load instead of "…" forever.
 - The catalog says when the selection is full instead of ignoring the tick; failed selection changes show an inline error.

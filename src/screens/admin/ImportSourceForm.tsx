@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../api/client'
 import type { ImportSource, ImportSourceInput } from '../../api/types'
 import { urlProblem } from '../../lib/validate'
-import { importSourcesQuery, useImportSourceMutations } from '../../queries/admin'
+import { importSourcesQuery, settingsQuery, useImportSourceMutations } from '../../queries/admin'
 import { Button, Checkbox, Loading, PageHeader, Section, Segmented, SelectField, TextArea, TextField } from '../../ui/controls'
 import { ErrorNote, Notice } from '../../ui/feedback'
 import { IconChevronLeft } from '../../ui/icons'
@@ -34,6 +34,10 @@ function SourceForm({ source }: { source?: ImportSource }) {
   const m = useImportSourceMutations()
   const cfg = (source?.config ?? {}) as Record<string, unknown>
   const set = source?.credentials_set ?? {}
+  // Only the kinds this node can run (a node on Cloudflare Workers cannot open SFTP); all three
+  // when the node does not say.
+  const settings = useQuery(settingsQuery)
+  const kinds = (['https_url', 'sftp', 's3'] as const).filter((k) => settings.data?.node?.source_kinds?.includes(k) ?? true)
   const [name, setName] = useState(source?.name ?? '')
   const [kind, setKind] = useState<Kind>(source?.kind ?? 'https_url')
   const [freq, setFreq] = useState<Freq>(source?.schedule.frequency ?? 'daily')
@@ -137,7 +141,7 @@ function SourceForm({ source }: { source?: ImportSource }) {
               label={t('sources.kindLabel')}
               value={kind}
               onChange={setKind}
-              options={(['https_url', 'sftp', 's3'] as const).map((k) => ({ value: k, label: t(`sources.kind.${k}`) }))}
+              options={kinds.map((k) => ({ value: k, label: t(`sources.kind.${k}`) }))}
             />
           )}
           {kind === 'https_url' && (

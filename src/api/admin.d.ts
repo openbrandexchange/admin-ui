@@ -1386,6 +1386,11 @@ export interface components {
                 email_configured?: boolean;
                 renditions_server_generated?: boolean;
                 max_upload_bytes?: number;
+                /**
+                 * @description The kinds of scheduled import this node can run. Absent means all of them; the admin
+                 *     UI offers only these (for example, a node on Cloudflare Workers cannot open SFTP).
+                 */
+                source_kinds?: ("https_url" | "sftp" | "s3")[];
                 /** @description Short hosting-specific instructions for pointing a custom domain at this node (Markdown). */
                 custom_domain_help?: string;
                 /**

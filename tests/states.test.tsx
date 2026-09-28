@@ -44,6 +44,27 @@ describe('the get-started list', () => {
   })
 })
 
+describe('scheduled imports', () => {
+  it('offers only the source kinds the node can run', async () => {
+    const d = db()
+    Object.assign(d.settings.node ?? {}, { source_kinds: ['https_url', 's3'] })
+    save()
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/automation/sources/new' })
+    const kinds = await screen.findByRole('radiogroup', { name: /where is the export/i })
+    expect(within(kinds).getAllByRole('radio').map((b) => b.textContent)).toEqual(['Web address', 'Storage bucket (S3, R2, MinIO)'])
+  })
+
+  it('offers all three kinds when the node does not say', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/automation/sources/new' })
+    const kinds = await screen.findByRole('radiogroup', { name: /where is the export/i })
+    expect(within(kinds).getAllByRole('radio')).toHaveLength(3)
+  })
+})
+
 describe('failed loads offer a retry', () => {
   it('shows the dashboard numbers as unavailable and loads them again on "Try again"', async () => {
     failTimes('*/admin/api/catalog/products', 99)
