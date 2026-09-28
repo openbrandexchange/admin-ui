@@ -10,16 +10,22 @@ import { ErrorNote, Notice } from '../../ui/feedback'
 import { NewPasswordFields } from './Password'
 import { PublicCard } from './PublicCard'
 
+/** Tokens accepted in this tab. Checked during render, so no render after acceptance refetches one. */
+const spentTokens = new Set<string>()
+
 /** /invite/{token}: the link from the invitation e-mail. Choose a password and you're in. */
 export function InviteScreen() {
   const { t, i18n } = useTranslation()
   const { token } = useParams({ from: '/public/invite/$token' })
   const navigate = useNavigate()
   const setSession = useSessionSetter()
+  // Once accepted, the token is spent: never re-read it (the new session clears the cache, which would refetch).
+  const [accepted, setAccepted] = useState(false)
   const invite = useQuery({
     queryKey: ['invite', token],
     queryFn: () => req(() => api.GET('/admin/api/invites/{token}', { params: { path: { token } } })),
     retry: false,
+    enabled: !accepted && !spentTokens.has(token),
   })
   const [name, setName] = useState<string | null>(null)
   const [password, setPassword] = useState('')
@@ -34,6 +40,8 @@ export function InviteScreen() {
         }),
       ),
     onSuccess: (s) => {
+      spentTokens.add(token)
+      setAccepted(true)
       setSession(s)
       void navigate({ to: s.user?.role === 'admin' ? '/admin' : '/' })
     },
