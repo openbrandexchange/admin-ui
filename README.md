@@ -12,7 +12,11 @@ Stack: React 19, TypeScript, Vite, TanStack Query (all server state: caching, op
 
 ## Try it in 60 seconds
 
+Needs Node.js 20.19 or newer.
+
 ```sh
+git clone https://github.com/openbrandexchange/admin-ui.git
+cd admin-ui
 npm install
 npm run mock
 ```
@@ -37,29 +41,56 @@ The UI ships all 24 official EU languages plus Norwegian Bokmål: bg cs da de el
 
 ## For node implementers
 
-`npm run build` produces `dist/`, which you serve as static files. `dist/` is committed on `main` and tagged per release, so you can vendor it without Node.js.
+`npm run build` produces `dist/`, which you serve as static files. `dist/` is committed on `main` and on every release tag (CI checks it is the build of that commit), so you can vendor it without Node.js. Each GitHub release also has a tarball and zip of it, an SBOM and checksums.
 
-1. **Routes.** Serve `dist/` at the portal root. Every path that is not a file and not an API path must return `dist/index.html` (SPA fallback), including `/admin/...`. Your API lives at `/admin/api/...` (Node Admin API) and `/obx/...` / `/.well-known/...` (protocol) on the same origin.
-2. **Sub-path.** All asset paths are relative. `index.html` contains `<base href="/">`; if you mount the UI under a sub-path, rewrite that one tag (for example `<base href="/brand/">`). The UI resolves every API call and route against it.
-3. **Session and CSRF.** The UI uses the cookie session and sends `X-CSRF-Token` (from `GET /admin/api/session`) on every unsafe request. `PATCH` bodies are sent as `application/merge-patch+json`.
-4. **E-mails.** `dist/locales/<lang>.json` holds every UI string, including the `email.*` strings for invitations, access requests, approvals, rejections, finished zips and password resets. Pick the recipient's language, fall back to `en`, and interpolate `{{name}}`-style placeholders. `dist/locales/index.json` lists the languages.
-5. **Images without an image library.** If your node reports `renditions_server_generated: false`, the brand admin creates the web and square versions in the browser and uploads them alongside the original.
-6. **Branding.** Logo, accent colour, welcome text and display name come from the public branding endpoint. The portal is called "<brand> · <portal word>"; an optional `portal_name` (localized text) in branding overrides the word (see `NOTES.md`).
+The full guide is [docs/node-integration.md](docs/node-integration.md): routes and SPA fallback, sub-paths, the Content-Security-Policy and other headers the UI works under, caching, what the UI expects from your API (CSRF, merge patches, errors), e-mail strings, upgrading and browser support. In short:
+
+1. **Routes.** Serve `dist/` at the portal root; every `GET` for HTML that is not a file or an API path returns `dist/index.html`, including `/admin/...`. The API lives at `/admin/api/...` (Node Admin API) and `/obx/...`, `/.well-known/...` (protocol) on the same origin.
+2. **Sub-path.** Rewrite `<base href="/">` in `index.html`, nothing else.
+3. **Headers.** `default-src 'self'` with `img-src 'self' data: blob: https:` is all the UI needs: no inline scripts or styles, no third-party requests. Every end-to-end test runs under that policy.
+4. **Session and CSRF.** Cookie session; `X-CSRF-Token` (from `GET /admin/api/session`) on every unsafe request. `PATCH` bodies are JSON merge patches (`application/merge-patch+json`) in which `null` removes a member.
+5. **E-mails.** `dist/locales/<lang>.json` holds every string, including the `email.*` groups; `dist/locales/index.json` lists the languages.
+6. **Images without an image library.** With `renditions_server_generated: false` the brand's browser makes the web and square versions.
+7. **Branding.** Logo, accent colour, welcome text and name from the public branding endpoint; the portal is called "<brand> · <portal word>", and `branding.portal_name` overrides the word per language.
 
 ## Development
 
 ```sh
 npm run dev                                   # against a real node: OBX_NODE_URL=http://localhost:8080 npm run dev
 npm run mock                                  # against the in-browser mock node
-npm test                                      # unit, component (React Testing Library) and locale tests
-npm run e2e                                   # Playwright smoke tests on the mock build (desktop + phone)
-npm run check                                 # typecheck + tests + production build
+npm test                                      # unit, component (React Testing Library) and language tests
+npm run e2e                                   # Playwright on the mock build: both roles' flows, axe, keyboard, desktop + phone
+npm run check                                 # lint + typecheck + tests + production build + bundle budget
+npm run licenses                              # licences of all dependencies
 npm run gen:api -- ../spec                    # regenerate src/api/*.d.ts from the OpenAPI files
 npm run sync-fixtures -- ../spec              # refresh the mock data from the spec fixtures
 ```
 
-Code layout: `src/api` (typed client), `src/queries` (TanStack Query hooks, one file per area), `src/router.tsx` (routes and guards), `src/screens/{public,portal,admin}`, `src/ui` (small in-house controls), `src/i18n` and `src/locales`, `src/mock` (MSW handlers and in-memory node).
+Code layout: `src/api` (typed client), `src/queries` (TanStack Query hooks, one file per area), `src/router.tsx` (routes and guards), `src/screens/{public,portal,admin}`, `src/ui` (small in-house controls), `src/i18n` and `src/locales`, `src/mock` (MSW handlers and in-memory node), `tests/` (Vitest), `e2e/` (Playwright).
+
+### Quality gates
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push and pull request, and every step also runs locally:
+
+- ESLint (TypeScript, React hooks, jsx-a11y) and `tsc`, on Node 20, 22 and 24;
+- unit and component tests, including a completeness check of all 25 languages (keys, plural forms, placeholders, glossary words);
+- the production build, a gzip bundle budget (`scripts/check-bundle.mjs`) and a check that the committed `dist/` is that build;
+- Playwright end-to-end tests of the main flows of both roles, axe-core (WCAG 2.1 AA) on every screen and open dialog, keyboard paths, all under a strict Content-Security-Policy;
+- licence check of all dependencies and `npm audit` of what ships;
+- when the `OBX_READ_TOKEN` secret is set (needed while the spec repository is private): the generated API types and the glossary checked against the spec.
+
+Dependabot proposes dependency updates weekly.
+
+### Releases
+
+Versions follow [semantic versioning](https://semver.org/); see [CHANGELOG.md](CHANGELOG.md). To release: set the version in `package.json`, add its section to the changelog, run `npm run build`, commit `dist/`, then tag `vX.Y.Z` on that commit and push the tag. [`.github/workflows/release.yml`](.github/workflows/release.yml) then builds the archives, the SBOM and checksums with build provenance, and opens a draft GitHub release to review. `scripts/package-release.sh` makes the same files locally in `release/`.
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) (commits are signed off under the DCO) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Report vulnerabilities privately to security@openbrandexchange.com ([SECURITY.md](SECURITY.md)). Questions: hello@openbrandexchange.com.
 
 ## License
 
-Apache License 2.0, see [LICENSE](LICENSE). The page footer carries a small "Works with Open Brand Exchange" badge.
+Apache License 2.0, see [LICENSE](LICENSE) and [NOTICE](NOTICE). The page footer carries a small "Works with Open Brand Exchange" badge.
+
+An initiative of Richard Lindhout · Open Brand Exchange Foundation (in formation).
