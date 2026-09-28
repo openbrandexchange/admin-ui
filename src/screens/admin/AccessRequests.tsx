@@ -35,10 +35,11 @@ function ApproveDialog({ req, onClose, onDone }: { req: AdminAccessRequest; onCl
             variant="primary"
             loading={m.approve.isPending}
             onClick={() =>
-              m.approve.mutate(
-                { id: req.id, body: { ...(link && { retailer_id: link }), brand_ids: chosen.length ? chosen : null, invite_portal_user: invite, create_api_client: apiKey } },
-                { onSuccess: (res) => onDone({ invite: res.invite, retailerId: res.retailer.id }) },
-              )
+              // mutateAsync, not mutate(…, { onSuccess }): the refetch after approval removes this
+              // card from the waiting list, and per-call callbacks never fire once it has unmounted.
+              void m.approve
+                .mutateAsync({ id: req.id, body: { ...(link && { retailer_id: link }), brand_ids: chosen.length ? chosen : null, invite_portal_user: invite, create_api_client: apiKey } })
+                .then((res) => onDone({ invite: res.invite, retailerId: res.retailer.id }), () => {})
             }
           >
             {t('requests.approve')}
