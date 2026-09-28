@@ -5,7 +5,10 @@ import { db, DEMO, resetDb } from '../src/mock/db'
 import { server } from './setup'
 import { renderApp } from './render'
 
-async function loginAs(who: 'admin' | 'retailer', path = '/login') {
+// The demo accounts are set to Dutch; these tests read English, so they start from a device
+// where the visitor already picked English (an explicit choice wins over the account language).
+async function loginAs(who: 'admin' | 'retailer', path = '/login', { deviceChoice = 'en' as string | null } = {}) {
+  if (deviceChoice) localStorage.setItem('obx.lang', deviceChoice)
   const r = await renderApp(path)
   await r.user.type(await screen.findByLabelText(/email address/i), DEMO[who].email)
   await r.user.type(screen.getByLabelText(/^password$/i), DEMO[who].password)
@@ -47,6 +50,33 @@ describe('sign-in', () => {
     // A mutation after rotation still succeeds: the client re-reads the session and retries.
     const r = await import('../src/api/client')
     await expect(r.req(() => r.api.PATCH('/admin/api/me', { body: { name: 'Iris' } }))).resolves.toMatchObject({ authenticated: true })
+  })
+})
+
+describe('languages', () => {
+  it('follows the account language after login when this device has no choice yet', async () => {
+    await loginAs('admin', '/login', { deviceChoice: null })
+    expect(await screen.findByRole('heading', { name: /hallo iris/i })).toBeInTheDocument()
+    expect(document.documentElement.lang).toBe('nl')
+  })
+
+  it('switches the login page to Greek and remembers the choice', async () => {
+    const r = await renderApp('/login')
+    await r.user.selectOptions(await screen.findByTestId('language-switcher'), 'el')
+    expect(await screen.findByRole('button', { name: 'Σύνδεση' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Διεύθυνση email')).toBeInTheDocument()
+    expect(localStorage.getItem('obx.lang')).toBe('el')
+    expect(document.documentElement.lang).toBe('el')
+  })
+
+  it('keeps an explicit device choice over the account language', async () => {
+    localStorage.setItem('obx.lang', 'bg')
+    const r = await renderApp('/login', 'bg')
+    await r.user.type(await screen.findByLabelText('Имейл адрес'), DEMO.retailer.email)
+    await r.user.type(screen.getByLabelText('Парола'), DEMO.retailer.password)
+    await r.user.click(screen.getByRole('button', { name: 'Вход' }))
+    expect(await screen.findByRole('list', { name: 'Артикули' })).toBeInTheDocument()
+    expect(document.documentElement.lang).toBe('bg')
   })
 })
 
