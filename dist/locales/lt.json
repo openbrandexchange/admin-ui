@@ -24,8 +24,10 @@
     "loadMore": "Rodyti daugiau",
     "logout": "Atsijungti",
     "menu": "Meniu",
+    "skipToContent": "Pereiti prie turinio",
     "language": "Kalba",
     "viewAll": "Rodyti viską",
+    "retry": "Bandyti dar kartą",
     "secret": "Slaptas raktas",
     "shownOnce": "Nukopijuokite jį dabar ir laikykite saugioje vietoje. Saugumo sumetimais jis rodomas tik dabar.",
     "worksWith": "Veikia su Open Brand Exchange"
@@ -148,7 +150,7 @@
   },
   "invite": {
     "title": "Sveiki atvykę",
-    "introRetailer": "Jūs pakviesti peržiūrėti produktų nuotraukas ir prekių duomenis įmonei {{retailer}}. Pradėkite nustatydami slaptažodį.",
+    "introRetailer": "Prekės ženklas {{brand}} kviečia jus įmonės {{retailer}} vardu peržiūrėti savo produktų nuotraukas ir prekių duomenis. Pradėkite nustatydami slaptažodį.",
     "introAdmin": "Jūs pakviesti tvarkyti šį portalą. Pradėkite nustatydami slaptažodį.",
     "submit": "Sukurti mano paskyrą",
     "invalidTitle": "Šis kvietimas nebeveikia",
@@ -935,6 +937,7 @@
       "selectedAll_many": "Pasirinkime yra {{count}} prekės.",
       "selectedAll_other": "Pasirinkime yra {{count}} prekių.",
       "selectionCap": "Pasirinkime gali būti ne daugiau kaip {{max}} prekių; pridėtos pirmosios {{max}}.",
+      "selectionFull": "Jūsų pasirinkimas pilnas: jame gali būti ne daugiau kaip {{max}} prekių. Pirmiausia pašalinkite kelias.",
       "downloadAll": "Atsisiųsti viską",
       "downloadAllTitle_one": "Atsisiųsti {{count}} prekę",
       "downloadAllTitle_few": "Atsisiųsti visas {{count}} prekes",

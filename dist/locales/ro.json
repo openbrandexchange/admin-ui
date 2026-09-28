@@ -24,8 +24,10 @@
     "loadMore": "Afișează mai multe",
     "logout": "Deconectare",
     "menu": "Meniu",
+    "skipToContent": "Salt la conținut",
     "language": "Limbă",
     "viewAll": "Vezi tot",
+    "retry": "Încearcă din nou",
     "secret": "Cheie secretă",
     "shownOnce": "Copiați-o acum și păstrați-o într-un loc sigur. Din motive de securitate, este afișată doar acum.",
     "worksWith": "Funcționează cu Open Brand Exchange"
@@ -148,7 +150,7 @@
   },
   "invite": {
     "title": "Bun venit",
-    "introRetailer": "Ați fost invitat să vizualizați fotografii de produs și date despre articole pentru {{retailer}}. Începeți prin a seta o parolă.",
+    "introRetailer": "Marca {{brand}} vă invită, în numele firmei {{retailer}}, să vizualizați fotografiile de produs și datele despre articole ale sale. Începeți prin a seta o parolă.",
     "introAdmin": "Ați fost invitat să administrați acest portal. Începeți prin a seta o parolă.",
     "submit": "Creează contul meu",
     "invalidTitle": "Această invitație nu mai funcționează",
@@ -919,6 +921,7 @@
       "selectedAll_few": "{{count}} articole sunt în selecție.",
       "selectedAll_other": "{{count}} de articole sunt în selecție.",
       "selectionCap": "O selecție poate conține cel mult {{max}} de articole; au fost adăugate primele {{max}}.",
+      "selectionFull": "Selecția dvs. este plină: poate conține cel mult {{max}} de articole. Eliminați mai întâi câteva.",
       "downloadAll": "Descarcă tot",
       "downloadAllTitle_one": "Descarcă {{count}} articol",
       "downloadAllTitle_few": "Descarcă toate cele {{count}} articole",

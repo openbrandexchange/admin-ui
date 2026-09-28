@@ -24,8 +24,10 @@
     "loadMore": "Zobraziť viac",
     "logout": "Odhlásiť sa",
     "menu": "Ponuka",
+    "skipToContent": "Prejsť na obsah",
     "language": "Jazyk",
     "viewAll": "Zobraziť všetko",
+    "retry": "Skúsiť znova",
     "secret": "Tajný kľúč",
     "shownOnce": "Skopírujte si ho hneď a uložte na bezpečné miesto. Z bezpečnostných dôvodov sa zobrazí len teraz.",
     "worksWith": "Funguje s Open Brand Exchange"
@@ -148,7 +150,7 @@
   },
   "invite": {
     "title": "Vitajte",
-    "introRetailer": "Boli ste pozvaní prezerať produktové fotografie a údaje o tovare pre firmu {{retailer}}. Začnite nastavením hesla.",
+    "introRetailer": "Značka {{brand}} vás pozýva za firmu {{retailer}} prezerať svoje produktové fotografie a údaje o tovare. Začnite nastavením hesla.",
     "introAdmin": "Boli ste pozvaní spravovať tento portál. Začnite nastavením hesla.",
     "submit": "Vytvoriť môj účet",
     "invalidTitle": "Táto pozvánka už nefunguje",
@@ -935,6 +937,7 @@
       "selectedAll_many": "Vo výbere je {{count}} tovaru.",
       "selectedAll_other": "Vo výbere je {{count}} tovarov.",
       "selectionCap": "Výber môže obsahovať najviac {{max}} tovarov; pridaných bolo prvých {{max}}.",
+      "selectionFull": "Váš výber je plný: môže obsahovať najviac {{max}} tovarov. Najprv niektoré odstráňte.",
       "downloadAll": "Stiahnuť všetko",
       "downloadAllTitle_one": "Stiahnuť {{count}} tovar",
       "downloadAllTitle_few": "Stiahnuť všetky {{count}} tovary",

@@ -24,8 +24,10 @@
     "loadMore": "Näita rohkem",
     "logout": "Logi välja",
     "menu": "Menüü",
+    "skipToContent": "Liigu sisu juurde",
     "language": "Keel",
     "viewAll": "Vaata kõiki",
+    "retry": "Proovi uuesti",
     "secret": "Saladus",
     "shownOnce": "Kopeerige see kohe ja hoidke turvalises kohas. Turvalisuse huvides näidatakse seda ainult ühe korra.",
     "worksWith": "Töötab koos Open Brand Exchange'iga"
@@ -148,7 +150,7 @@
   },
   "invite": {
     "title": "Tere tulemast",
-    "introRetailer": "Teid on kutsutud vaatama ettevõtte {{retailer}} tootepilte ja tooteandmeid. Alustamiseks valige parool.",
+    "introRetailer": "Kaubamärk {{brand}} kutsub teid ettevõtte {{retailer}} nimel vaatama oma tootepilte ja tooteandmeid. Alustamiseks valige parool.",
     "introAdmin": "Teid on kutsutud seda portaali haldama. Alustamiseks valige parool.",
     "submit": "Loo minu konto",
     "invalidTitle": "See kutse ei kehti enam",
@@ -903,6 +905,7 @@
       "selectedAll_one": "{{count}} toode on teie valikus.",
       "selectedAll_other": "{{count}} toodet on teie valikus.",
       "selectionCap": "Valikusse mahub kuni {{max}} toodet; lisati esimesed {{max}}.",
+      "selectionFull": "Teie valik on täis: sinna mahub kuni {{max}} toodet. Eemaldage esmalt mõned.",
       "downloadAll": "Laadi kõik alla",
       "downloadAllTitle_one": "Laadi alla {{count}} toode",
       "downloadAllTitle_other": "Laadi alla kõik {{count}} toodet",

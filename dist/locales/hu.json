@@ -24,8 +24,10 @@
     "loadMore": "Továbbiak",
     "logout": "Kijelentkezés",
     "menu": "Menü",
+    "skipToContent": "Ugrás a tartalomhoz",
     "language": "Nyelv",
     "viewAll": "Összes megtekintése",
+    "retry": "Próbálja újra",
     "secret": "Titkos kulcs",
     "shownOnce": "Másolja ki most, és tárolja biztonságos helyen. Biztonsági okokból csak most jelenik meg.",
     "worksWith": "Működik az Open Brand Exchange-dzsel"
@@ -148,7 +150,7 @@
   },
   "invite": {
     "title": "Üdvözöljük",
-    "introRetailer": "Meghívást kapott, hogy megtekintse a termékfotókat és termékadatokat a(z) {{retailer}} számára. Először állítson be egy jelszót.",
+    "introRetailer": "A(z) {{brand}} márka meghívta Önt a(z) {{retailer}} nevében, hogy megtekintse termékfotóit és termékadatait. Először állítson be egy jelszót.",
     "introAdmin": "Meghívást kapott a portál kezelésére. Először állítson be egy jelszót.",
     "submit": "Fiók létrehozása",
     "invalidTitle": "Ez a meghívó már nem működik",
@@ -903,6 +905,7 @@
       "selectedAll_one": "{{count}} termék van a válogatásban.",
       "selectedAll_other": "{{count}} termék van a válogatásban.",
       "selectionCap": "Egy válogatás legfeljebb {{max}} terméket tartalmazhat; az első {{max}} lett hozzáadva.",
+      "selectionFull": "A válogatása megtelt: legfeljebb {{max}} terméket tartalmazhat. Előbb távolítson el néhányat.",
       "downloadAll": "Összes letöltése",
       "downloadAllTitle_one": "{{count}} termék letöltése",
       "downloadAllTitle_other": "Mind a(z) {{count}} termék letöltése",
