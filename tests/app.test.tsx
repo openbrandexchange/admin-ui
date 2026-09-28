@@ -266,6 +266,28 @@ describe('brand admin', () => {
     await waitFor(() => expect(db().products.find((p) => p.external_id === 'KO-1001')!.status).toBe('unpublished'))
   })
 
+  it('adds a retailer whose website was typed without https://', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/retailers/new' })
+    await r.user.type(await screen.findByLabelText(/shop or company name/i), 'Modehaus Berg')
+    await r.user.type(screen.getByLabelText(/^website$/i), 'www.modehaus-berg.example')
+    await r.user.click(screen.getByRole('button', { name: /add retailer/i }))
+    await waitFor(() => expect(db().retailers.find((x) => x.name === 'Modehaus Berg')?.website).toBe('https://www.modehaus-berg.example'))
+  })
+
+  it('does not call warnings skipped rows', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/imports' })
+    const csv = 'style_number,name:en,gtin,color_code,size,colour_family\nKO-9001,Rain Jacket,2000100909010,NVY,M,blue\n'
+    await r.user.upload(await screen.findByTestId('import-file-input'), new File([csv], 'products.csv', { type: 'text/csv' }))
+    await r.user.click(await screen.findByRole('button', { name: /start import/i }))
+    expect(await screen.findByText(/problems and warnings/i, {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(screen.getByText(/unknown column/i)).toBeInTheDocument()
+    expect(screen.queryByText(/rows with a problem were skipped/i)).toBeNull()
+  })
+
   it('imports a CSV and shows row problems inline', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })

@@ -100,7 +100,7 @@ export function ImportRunScreen() {
       </div>
 
       {(c.errors > 0 || c.warnings > 0) && (
-        <Section title={t('imports.problems')} description={t('imports.problemsHint')}>
+        <Section title={t('imports.problems')} description={c.errors > 0 ? t('imports.problemsHint') : undefined}>
           <div role="region" tabIndex={0} aria-label={t('imports.problems')} className="overflow-x-auto rounded-lg border border-stone-200">
             <table className="w-full text-left">
               <thead className="bg-stone-50 text-xs text-stone-500">
