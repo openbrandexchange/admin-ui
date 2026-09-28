@@ -28,7 +28,7 @@ export function DownloadsScreen() {
       {jobs.isPending ? (
         <Loading />
       ) : jobs.isError ? (
-        <ErrorNote error={jobs.error} />
+        <ErrorNote error={jobs.error} onRetry={() => void jobs.refetch()} />
       ) : jobs.data.items.length === 0 ? (
         <EmptyState title={t('portal.jobs.emptyTitle')}>{t('portal.jobs.empty')}</EmptyState>
       ) : (

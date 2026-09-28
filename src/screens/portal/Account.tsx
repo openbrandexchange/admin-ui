@@ -27,7 +27,7 @@ function PortalApiKeys() {
   const m = usePortalApiClientMutations()
   return (
     <Section title={t('glossary.apiKey')} description={t('account.apiKeysHint')}>
-      {clients.isPending ? <Loading /> : clients.isError ? <ErrorNote error={clients.error} /> : <ApiKeyList clients={clients.data.items} create={m.create} rotate={m.rotate} revoke={m.revoke} />}
+      {clients.isPending ? <Loading /> : clients.isError ? <ErrorNote error={clients.error} onRetry={() => void clients.refetch()} /> : <ApiKeyList clients={clients.data.items} create={m.create} rotate={m.rotate} revoke={m.revoke} />}
     </Section>
   )
 }

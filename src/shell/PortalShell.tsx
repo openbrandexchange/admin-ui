@@ -26,7 +26,7 @@ export function PortalShell() {
   useApplyBranding(branding?.accent_color, title.full)
 
   if (viewer.isPending) return <Loading />
-  if (viewer.isError) return <div className="p-6"><ErrorNote error={viewer.error} /></div>
+  if (viewer.isError) return <div className="p-6"><ErrorNote error={viewer.error} onRetry={() => void viewer.refetch()} /></div>
 
   const count = selection.data?.product_ids.length ?? viewer.data.selection_count ?? 0
   const links = [

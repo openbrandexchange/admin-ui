@@ -48,7 +48,7 @@ export function ImportRunScreen() {
     return (
       <div className="space-y-4">
         {back}
-        <ErrorNote error={run.error} />
+        <ErrorNote error={run.error} onRetry={() => void run.refetch()} />
       </div>
     )
   const r = run.data

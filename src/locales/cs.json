@@ -26,6 +26,7 @@
     "menu": "Nabídka",
     "language": "Jazyk",
     "viewAll": "Zobrazit vše",
+    "retry": "Zkusit znovu",
     "secret": "Tajný klíč",
     "shownOnce": "Zkopírujte si ho hned a uložte na bezpečné místo. Z bezpečnostních důvodů se zobrazí jen tentokrát.",
     "worksWith": "Funguje s Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Vítejte",
-    "introRetailer": "Byli jste pozváni k prohlížení produktových fotografií a údajů o artiklech pro firmu {{retailer}}. Začněte nastavením hesla.",
+    "introRetailer": "Značka {{brand}} vás zve za firmu {{retailer}} k prohlížení svých produktových fotografií a údajů o artiklech. Začněte nastavením hesla.",
     "introAdmin": "Byli jste pozváni ke správě tohoto portálu. Začněte nastavením hesla.",
     "submit": "Vytvořit můj účet",
     "invalidTitle": "Tato pozvánka už nefunguje",
@@ -935,6 +936,7 @@
       "selectedAll_many": "Ve výběru je {{count}} artiklu.",
       "selectedAll_other": "Ve výběru je {{count}} artiklů.",
       "selectionCap": "Výběr může obsahovat nejvýše {{max}} artiklů; přidáno bylo prvních {{max}}.",
+      "selectionFull": "Váš výběr je plný: může obsahovat nejvýše {{max}} artiklů. Nejprve některé odeberte.",
       "downloadAll": "Stáhnout vše",
       "downloadAllTitle_one": "Stáhnout {{count}} artikl",
       "downloadAllTitle_few": "Stáhnout všechny {{count}} artikly",

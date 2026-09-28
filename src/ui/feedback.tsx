@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ApiError } from '../api/client'
@@ -19,13 +19,23 @@ export function errorMessage(t: TFunction, e: unknown): string {
   return t('errors.generic')
 }
 
-export function ErrorNote({ error, className }: { error: unknown; className?: string }) {
+/** Inline error (never a success toast). `onRetry` adds a "Try again" button, for failed loads. */
+export function ErrorNote({ error, className, onRetry }: { error: unknown; className?: string; onRetry?: () => void }) {
   const { t } = useTranslation()
   if (!error) return null
   const fields = error instanceof ApiError ? error.problem?.errors ?? [] : []
+  // A refused request (404, 403 …) fails the same way again; only offer a retry when it can help.
+  const retryable = !(error instanceof ApiError) || error.status >= 500 || error.status === 408 || error.status === 429 || error.status === 0
   return (
     <div role="alert" className={cx('rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800', className)}>
-      <p>{errorMessage(t, error)}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p>{errorMessage(t, error)}</p>
+        {onRetry && retryable && (
+          <Button size="sm" onClick={onRetry}>
+            {t('common.retry')}
+          </Button>
+        )}
+      </div>
       {fields.length > 0 && (
         <ul className="mt-1 list-disc pl-5 text-xs">
           {fields.slice(0, 8).map((f, i) => (
@@ -48,6 +58,7 @@ export function Notice({ tone = 'info', children }: { tone?: 'info' | 'warn' | '
 /** Modal dialog on the native <dialog> element (focus trap, Esc, inert background for free). */
 export function Dialog({ open, onClose, title, children, footer, wide }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; wide?: boolean }) {
   const ref = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
   const { t } = useTranslation()
   useEffect(() => {
     const d = ref.current
@@ -65,11 +76,11 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
         e.preventDefault()
         onClose()
       }}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
       className={cx('m-auto w-[calc(100%-2rem)] rounded-2xl bg-white p-0 shadow-xl backdrop:bg-stone-900/40', wide ? 'max-w-3xl' : 'max-w-lg')}
     >
       <div className="flex items-start justify-between gap-4 border-b border-stone-100 px-5 py-4">
-        <h2 id="dialog-title" className="text-lg font-semibold">
+        <h2 id={titleId} className="text-lg font-semibold">
           {title}
         </h2>
         <button type="button" onClick={onClose} className="rounded-md p-1 text-stone-500 hover:bg-stone-100" aria-label={t('common.close')}>
@@ -169,4 +180,18 @@ export function LoadMore({ hasNext, fetching, onMore }: { hasNext: boolean; fetc
       </Button>
     </div>
   )
+}
+
+/**
+ * Arrow-key movement between the tabs of a role="tablist" (WAI-ARIA tabs pattern). Every tab
+ * stays reachable with Tab too; this only adds the arrow keys, Home and End.
+ */
+export function tabListKeys(e: KeyboardEvent<HTMLElement>) {
+  const tabs = [...e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')]
+  const i = tabs.indexOf(document.activeElement as HTMLElement)
+  if (i < 0) return
+  const next = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: tabs.length - 1 }[e.key]
+  if (next === undefined) return
+  e.preventDefault()
+  tabs[(next + tabs.length) % tabs.length].focus()
 }

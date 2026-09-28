@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { automationSnippets, type Snippet } from '../../../lib/snippets'
 import { CopyButton, cx } from '../../../ui/controls'
-import { Notice } from '../../../ui/feedback'
+import { Notice, tabListKeys } from '../../../ui/feedback'
 
 /** Copy-paste recipes, filled in with this portal's address (and a fresh token when there is one). */
 export function RecipesTab({ nodeUrl, token }: { nodeUrl: string; token?: string }) {
@@ -25,9 +25,9 @@ export function RecipesTab({ nodeUrl, token }: { nodeUrl: string; token?: string
         </Notice>
       )}
       <div className="grid gap-4 md:grid-cols-[14rem_1fr]">
-        <ul role="tablist" aria-label={t('recipes.title')} className="space-y-1">
+        <ul role="tablist" aria-label={t('recipes.title')} aria-orientation="vertical" onKeyDown={tabListKeys} className="space-y-1">
           {snippets.map((s) => (
-            <li key={s.id}>
+            <li key={s.id} role="presentation">
               <button
                 type="button"
                 role="tab"

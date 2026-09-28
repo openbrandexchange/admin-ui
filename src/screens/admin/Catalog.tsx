@@ -114,7 +114,7 @@ export function AdminCatalogScreen() {
       {products.isPending ? (
         <Loading />
       ) : products.isError ? (
-        <ErrorNote error={products.error} />
+        <ErrorNote error={products.error} onRetry={() => void products.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState
           title={filtered ? t('portal.catalog.emptyTitle') : t('catalog.emptyTitle')}

@@ -52,7 +52,7 @@ export function IngestTokensTab({ nodeUrl, onCreated, onShowRecipes }: { nodeUrl
       {tokens.isPending ? (
         <Loading />
       ) : tokens.isError ? (
-        <ErrorNote error={tokens.error} />
+        <ErrorNote error={tokens.error} onRetry={() => void tokens.refetch()} />
       ) : tokens.data.items.length === 0 ? (
         <EmptyState title={t('tokens.emptyTitle')}>{t('tokens.empty')}</EmptyState>
       ) : (

@@ -26,6 +26,7 @@
     "menu": "Meny",
     "language": "Språk",
     "viewAll": "Visa alla",
+    "retry": "Försök igen",
     "secret": "Hemlighet",
     "shownOnce": "Kopiera den nu och spara den på ett säkert ställe. Av säkerhetsskäl visas den bara den här gången.",
     "worksWith": "Fungerar med Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Välkommen",
-    "introRetailer": "Du har bjudits in att se produktbilder och artikeldata för {{retailer}}. Välj ett lösenord för att komma igång.",
+    "introRetailer": "{{brand}} har bjudit in dig för {{retailer}} att se sina produktbilder och sin artikeldata. Välj ett lösenord för att komma igång.",
     "introAdmin": "Du har bjudits in att administrera den här portalen. Välj ett lösenord för att komma igång.",
     "submit": "Skapa mitt konto",
     "invalidTitle": "Inbjudan fungerar inte längre",
@@ -903,6 +904,7 @@
       "selectedAll_one": "{{count}} artikel finns i ditt urval.",
       "selectedAll_other": "{{count}} artiklar finns i ditt urval.",
       "selectionCap": "Ett urval rymmer högst {{max}} artiklar; de första {{max}} har lagts till.",
+      "selectionFull": "Ditt urval är fullt: det rymmer högst {{max}} artiklar. Ta bort några först.",
       "downloadAll": "Ladda ner alla",
       "downloadAllTitle_one": "Ladda ner {{count}} artikel",
       "downloadAllTitle_other": "Ladda ner alla {{count}} artiklar",

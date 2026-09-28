@@ -26,6 +26,7 @@
     "menu": "Menu",
     "language": "Lingua",
     "viewAll": "Vedi tutto",
+    "retry": "Riprova",
     "secret": "Segreto",
     "shownOnce": "Copialo ora e conservalo in un posto sicuro. Per la tua sicurezza viene mostrato solo questa volta.",
     "worksWith": "Funziona con Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Benvenuto",
-    "introRetailer": "Sei stato invitato a vedere le immagini di prodotto e i dati articolo per {{retailer}}. Scegli una password per iniziare.",
+    "introRetailer": "{{brand}} ti ha invitato, per {{retailer}}, a vedere le sue immagini di prodotto e i dati articolo. Scegli una password per iniziare.",
     "introAdmin": "Sei stato invitato a gestire quest'area. Scegli una password per iniziare.",
     "submit": "Crea il mio account",
     "invalidTitle": "Questo invito non funziona più",
@@ -919,6 +920,7 @@
       "selectedAll_many": "{{count}} articoli sono nella tua selezione.",
       "selectedAll_other": "{{count}} articoli sono nella tua selezione.",
       "selectionCap": "Una selezione contiene al massimo {{max}} articoli; sono stati aggiunti i primi {{max}}.",
+      "selectionFull": "La tua selezione è piena: contiene al massimo {{max}} articoli. Rimuovine prima qualcuno.",
       "downloadAll": "Scarica tutto",
       "downloadAllTitle_one": "Scarica {{count}} articolo",
       "downloadAllTitle_many": "Scarica tutti i {{count}} articoli",

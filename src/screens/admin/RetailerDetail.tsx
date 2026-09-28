@@ -29,7 +29,7 @@ export function RetailerDetailScreen() {
     return (
       <div className="space-y-4">
         {back}
-        <ErrorNote error={retailer.error} />
+        <ErrorNote error={retailer.error} onRetry={() => void retailer.refetch()} />
       </div>
     )
   const r = retailer.data
@@ -124,7 +124,7 @@ function Accounts({ retailer: r }: { retailer: Retailer }) {
       {users.isPending ? (
         <Loading />
       ) : users.isError ? (
-        <ErrorNote error={users.error} />
+        <ErrorNote error={users.error} onRetry={() => void users.refetch()} />
       ) : users.data.items.length === 0 ? (
         <p className="text-sm text-stone-500">{t('users.none')}</p>
       ) : (
@@ -197,7 +197,7 @@ function Keys({ retailer: r }: { retailer: Retailer }) {
   const create = useMutation({ mutationFn: (name: string) => m.create.mutateAsync({ retailer_id: r.id, name }) })
   return (
     <Section title={t('glossary.apiKey')} description={t('retailers.keysHint')}>
-      {clients.isPending ? <Loading /> : clients.isError ? <ErrorNote error={clients.error} /> : <ApiKeyList clients={clients.data.items} create={create} rotate={m.rotate} revoke={m.revoke} />}
+      {clients.isPending ? <Loading /> : clients.isError ? <ErrorNote error={clients.error} onRetry={() => void clients.refetch()} /> : <ApiKeyList clients={clients.data.items} create={create} rotate={m.rotate} revoke={m.revoke} />}
     </Section>
   )
 }

@@ -26,6 +26,7 @@
     "menu": "Izbornik",
     "language": "Jezik",
     "viewAll": "Prikaži sve",
+    "retry": "Pokušaj ponovno",
     "secret": "Tajni ključ",
     "shownOnce": "Odmah ga kopirajte i spremite na sigurno mjesto. Iz sigurnosnih razloga prikazuje se samo sada.",
     "worksWith": "Radi s Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Dobro došli",
-    "introRetailer": "Pozvani ste da pregledavate fotografije proizvoda i podatke o artiklima za {{retailer}}. Za početak postavite lozinku.",
+    "introRetailer": "Marka {{brand}} poziva vas u ime tvrtke {{retailer}} da pregledavate njezine fotografije proizvoda i podatke o artiklima. Za početak postavite lozinku.",
     "introAdmin": "Pozvani ste da upravljate ovim portalom. Za početak postavite lozinku.",
     "submit": "Izradi moj račun",
     "invalidTitle": "Ova pozivnica više ne radi",
@@ -919,6 +920,7 @@
       "selectedAll_few": "U odabiru su {{count}} artikla.",
       "selectedAll_other": "U odabiru je {{count}} artikala.",
       "selectionCap": "Odabir može sadržavati najviše {{max}} artikala; dodano je prvih {{max}}.",
+      "selectionFull": "Vaš je odabir pun: može sadržavati najviše {{max}} artikala. Najprije uklonite neke.",
       "downloadAll": "Preuzmi sve",
       "downloadAllTitle_one": "Preuzmi {{count}} artikl",
       "downloadAllTitle_few": "Preuzmi sva {{count}} artikla",

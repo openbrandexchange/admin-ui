@@ -96,6 +96,7 @@ export function EanListScreen() {
               </Button>
             </div>
           )}
+          <ErrorNote error={setSelection.error} />
           {added !== null && (
             <Notice tone="ok">
               {t('portal.ean.added', { count: added })}{' '}

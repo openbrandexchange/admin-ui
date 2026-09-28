@@ -5,16 +5,16 @@ import { formatNumber, formatRelative } from '../../lib/format'
 import { accessRequestsQuery, importRunsQuery, ingestTokensQuery, importSourcesQuery, productCountQuery, retailersQuery, settingsQuery, statEventsQuery, statsQuery } from '../../queries/admin'
 import { useSession } from '../../queries/session'
 import { Loading, Section, cx } from '../../ui/controls'
-import { EmptyState } from '../../ui/feedback'
+import { EmptyState, ErrorNote } from '../../ui/feedback'
 import { IconCheck } from '../../ui/icons'
 import { EventLine } from './Stats'
 
-function Tile({ label, value, to, search, tone }: { label: string; value: number | undefined; to: string; search?: Record<string, string>; tone?: 'amber' }) {
+function Tile({ label, value, failed, to, search, tone }: { label: string; value: number | undefined; failed?: boolean; to: string; search?: Record<string, string>; tone?: 'amber' }) {
   const { i18n } = useTranslation()
   return (
     <Link to={to} search={search} className="card block p-4 hover:shadow-md">
       <p className="text-xs font-medium text-stone-500">{label}</p>
-      <p className={cx('mt-1 text-2xl font-semibold tabular', tone === 'amber' && value ? 'text-amber-700' : 'text-stone-900')}>{value === undefined ? '…' : formatNumber(value, i18n.language)}</p>
+      <p className={cx('mt-1 text-2xl font-semibold tabular', tone === 'amber' && value ? 'text-amber-700' : 'text-stone-900')}>{value !== undefined ? formatNumber(value, i18n.language) : failed ? '—' : '…'}</p>
     </Link>
   )
 }
@@ -47,6 +47,8 @@ export function DashboardScreen() {
     },
   ]
   const lastRun = runs.data?.pages[0]?.items[0]
+  const counts = [total, visible, hidden, pendingFiles]
+  const countError = counts.find((q) => q.isError)?.error
 
   return (
     <div className="space-y-8">
@@ -77,11 +79,12 @@ export function DashboardScreen() {
           {t('dashboard.health')}
         </h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Tile label={t('dashboard.products')} value={total.data} to="/admin/catalog" />
-          <Tile label={t('dashboard.visible')} value={visible.data} to="/admin/catalog" search={{ visibility: 'visible' }} />
-          <Tile label={t('dashboard.waitingImages')} value={pendingFiles.data} to="/admin/catalog" search={{ visibility: 'pending_files' }} tone="amber" />
-          <Tile label={t('dashboard.hidden')} value={hidden.data} to="/admin/catalog" search={{ visibility: 'hidden' }} />
+          <Tile label={t('dashboard.products')} value={total.data} failed={total.isError} to="/admin/catalog" />
+          <Tile label={t('dashboard.visible')} value={visible.data} failed={visible.isError} to="/admin/catalog" search={{ visibility: 'visible' }} />
+          <Tile label={t('dashboard.waitingImages')} value={pendingFiles.data} failed={pendingFiles.isError} to="/admin/catalog" search={{ visibility: 'pending_files' }} tone="amber" />
+          <Tile label={t('dashboard.hidden')} value={hidden.data} failed={hidden.isError} to="/admin/catalog" search={{ visibility: 'hidden' }} />
         </div>
+        <ErrorNote error={countError} onRetry={() => counts.forEach((q) => q.isError && void q.refetch())} />
         {lastRun && (
           <p className="text-xs text-stone-500">
             {t('dashboard.lastImport', { when: formatRelative(lastRun.created_at, i18n.language) })}{' '}
@@ -104,6 +107,8 @@ export function DashboardScreen() {
         >
           {requests.isPending ? (
             <Loading />
+          ) : requests.isError ? (
+            <ErrorNote error={requests.error} onRetry={() => void requests.refetch()} />
           ) : pending.length === 0 ? (
             <p className="text-sm text-stone-500">{t('dashboard.noRequests')}</p>
           ) : (
@@ -136,6 +141,8 @@ export function DashboardScreen() {
         >
           {events.isPending ? (
             <Loading />
+          ) : events.isError ? (
+            <ErrorNote error={events.error} onRetry={() => void events.refetch()} />
           ) : (events.data?.pages[0]?.items.length ?? 0) === 0 ? (
             <EmptyState title={t('dashboard.noActivity')}>{t('dashboard.noActivityHint')}</EmptyState>
           ) : (

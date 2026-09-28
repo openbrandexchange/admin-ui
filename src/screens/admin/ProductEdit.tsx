@@ -30,7 +30,7 @@ export function ProductEditScreen() {
     return (
       <div className="space-y-4">
         {back}
-        <ErrorNote error={product.error} />
+        <ErrorNote error={product.error} onRetry={() => void product.refetch()} />
       </div>
     )
 

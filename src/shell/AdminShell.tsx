@@ -57,13 +57,14 @@ export function AdminShell() {
         <IconEye size={18} />
         {t('admin.nav.viewPortal')}
       </Link>
-      <div className="flex items-center justify-between px-3">
-        <LanguageSwitcher />
-        <button type="button" className={buttonClass('ghost', 'sm')} onClick={() => logout.mutate(undefined, { onSettled: () => navigate({ to: '/login' }) })}>
-          <IconLogout size={16} />
-          <span className="sr-only sm:not-sr-only">{t('common.logout')}</span>
-        </button>
+      <div className="px-3">
+        <LanguageSwitcher className="max-w-full" />
       </div>
+      {/* Its own row: "Log out" is long in several languages and must never wrap next to the language picker. */}
+      <button type="button" className={cx(linkCls, 'w-full')} onClick={() => logout.mutate(undefined, { onSettled: () => navigate({ to: '/login' }) })}>
+        <IconLogout size={18} />
+        <span className="min-w-0 flex-1 truncate text-left">{t('common.logout')}</span>
+      </button>
       <p className="truncate px-3 text-xs text-stone-500">{session.data?.user?.email}</p>
     </div>
   )

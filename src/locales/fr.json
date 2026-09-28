@@ -26,6 +26,7 @@
     "menu": "Menu",
     "language": "Langue",
     "viewAll": "Tout voir",
+    "retry": "Réessayer",
     "secret": "Secret",
     "shownOnce": "Copiez-le maintenant et conservez-le en lieu sûr. Pour votre sécurité, il ne s'affiche qu'une seule fois.",
     "worksWith": "Compatible Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Bienvenue",
-    "introRetailer": "Vous êtes invité à consulter les visuels produits et les données articles pour {{retailer}}. Choisissez un mot de passe pour commencer.",
+    "introRetailer": "{{brand}} vous invite, pour {{retailer}}, à consulter ses visuels produits et ses données articles. Choisissez un mot de passe pour commencer.",
     "introAdmin": "Vous êtes invité à gérer cet espace. Choisissez un mot de passe pour commencer.",
     "submit": "Créer mon compte",
     "invalidTitle": "Cette invitation ne fonctionne plus",
@@ -919,6 +920,7 @@
       "selectedAll_many": "{{count}} articles sont dans votre sélection.",
       "selectedAll_other": "{{count}} articles sont dans votre sélection.",
       "selectionCap": "Une sélection contient au plus {{max}} articles ; les {{max}} premiers ont été ajoutés.",
+      "selectionFull": "Votre sélection est pleine : elle contient au plus {{max}} articles. Retirez-en d'abord quelques-uns.",
       "downloadAll": "Tout télécharger",
       "downloadAllTitle_one": "Télécharger {{count}} article",
       "downloadAllTitle_many": "Télécharger les {{count}} articles",

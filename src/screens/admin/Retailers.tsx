@@ -57,7 +57,7 @@ export function RetailersScreen() {
       {retailers.isPending ? (
         <Loading />
       ) : retailers.isError ? (
-        <ErrorNote error={retailers.error} />
+        <ErrorNote error={retailers.error} onRetry={() => void retailers.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState title={t('retailers.emptyTitle')}>{t('retailers.empty')}</EmptyState>
       ) : (

@@ -119,7 +119,7 @@ export function ImportSourcesTab() {
       {sources.isPending ? (
         <Loading />
       ) : sources.isError ? (
-        <ErrorNote error={sources.error} />
+        <ErrorNote error={sources.error} onRetry={() => void sources.refetch()} />
       ) : sources.data.items.length === 0 ? (
         <EmptyState title={t('sources.emptyTitle')}>{t('sources.empty')}</EmptyState>
       ) : (

@@ -26,6 +26,7 @@
     "menu": "Menu",
     "language": "Lingwa",
     "viewAll": "Ara kollox",
+    "retry": "Erġa’ pprova",
     "secret": "Ċavetta sigrieta",
     "shownOnce": "Ikkopjaha issa u żommha f’post sigur. Għal raġunijiet ta’ sigurtà, tintwera biss din id-darba.",
     "worksWith": "Jaħdem ma’ Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Merħba",
-    "introRetailer": "Ġejt mistieden tara ritratti tal-prodotti u dettalji tal-oġġetti għal {{retailer}}. Ibda billi tissettja password.",
+    "introRetailer": "{{brand}} stiednek, f’isem {{retailer}}, tara r-ritratti tal-prodotti u d-dettalji tal-oġġetti tagħha. Ibda billi tissettja password.",
     "introAdmin": "Ġejt mistieden tamministra dan il-portal. Ibda billi tissettja password.",
     "submit": "Oħloq il-kont tiegħi",
     "invalidTitle": "Din l-istedina m’għadhiex taħdem",
@@ -951,6 +952,7 @@
       "selectedAll_many": "Oġġetti fl-għażla: {{count}}.",
       "selectedAll_other": "Oġġetti fl-għażla: {{count}}.",
       "selectionCap": "Għażla tista’ jkollha massimu ta’ {{max}} oġġett; żdiedu l-ewwel {{max}}.",
+      "selectionFull": "L-għażla tiegħek hija mimlija: massimu ta’ {{max}} oġġett. L-ewwel neħħi xi wħud.",
       "downloadAll": "Niżżel kollox",
       "downloadAllTitle_one": "Niżżel l-oġġetti ({{count}})",
       "downloadAllTitle_two": "Niżżel l-oġġetti ({{count}})",

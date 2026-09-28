@@ -26,6 +26,7 @@
     "menu": "Menu",
     "language": "Taal",
     "viewAll": "Alles bekijken",
+    "retry": "Opnieuw proberen",
     "secret": "Geheim",
     "shownOnce": "Kopieer het nu en bewaar het op een veilige plek. Voor je veiligheid tonen we het maar één keer.",
     "worksWith": "Werkt met Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Welkom",
-    "introRetailer": "Je bent uitgenodigd om de productbeelden en artikeldata te bekijken voor {{retailer}}. Kies een wachtwoord om te beginnen.",
+    "introRetailer": "{{brand}} heeft je namens {{retailer}} uitgenodigd om de productbeelden en artikeldata te bekijken. Kies een wachtwoord om te beginnen.",
     "introAdmin": "Je bent uitgenodigd om deze beeldbank te beheren. Kies een wachtwoord om te beginnen.",
     "submit": "Account aanmaken",
     "invalidTitle": "Deze uitnodiging werkt niet meer",
@@ -903,6 +904,7 @@
       "selectedAll_one": "{{count}} artikel staat in je selectie.",
       "selectedAll_other": "{{count}} artikelen staan in je selectie.",
       "selectionCap": "Een selectie bevat hooguit {{max}} artikelen; de eerste {{max}} zijn toegevoegd.",
+      "selectionFull": "Je selectie is vol: er passen hooguit {{max}} artikelen in. Haal er eerst een paar uit.",
       "downloadAll": "Alles downloaden",
       "downloadAllTitle_one": "{{count}} artikel downloaden",
       "downloadAllTitle_other": "Alle {{count}} artikelen downloaden",

@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { api, req } from '../../api/client'
 import { passwordProblem } from '../../lib/validate'
-import { useSessionSetter } from '../../queries/session'
+import { useBranding, useSessionSetter } from '../../queries/session'
 import { Button, Loading, TextField } from '../../ui/controls'
 import { ErrorNote, Notice } from '../../ui/feedback'
 import { NewPasswordFields } from './Password'
@@ -19,6 +19,7 @@ export function InviteScreen() {
   const { token } = useParams({ from: '/public/invite/$token' })
   const navigate = useNavigate()
   const setSession = useSessionSetter()
+  const branding = useBranding()
   // Once accepted, the token is spent: never re-read it (the new session clears the cache, which would refetch).
   const [accepted, setAccepted] = useState(false)
   const invite = useQuery({
@@ -47,7 +48,7 @@ export function InviteScreen() {
     },
   })
 
-  if (invite.isPending) return <Loading />
+  if (invite.isPending || branding.isPending) return <Loading />
   if (invite.isError)
     return (
       <PublicCard title={t('invite.invalidTitle')}>
@@ -65,7 +66,7 @@ export function InviteScreen() {
   return (
     <PublicCard
       title={t('invite.title')}
-      intro={inv.retailer_name ? t('invite.introRetailer', { retailer: inv.retailer_name }) : t('invite.introAdmin')}
+      intro={inv.retailer_name ? t('invite.introRetailer', { retailer: inv.retailer_name, brand: branding.data?.name || '—' }) : t('invite.introAdmin')}
     >
       <form
         className="space-y-4"

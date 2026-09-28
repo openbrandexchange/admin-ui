@@ -57,8 +57,10 @@ export function CatalogScreen() {
     },
   })
 
+  const [full, setFull] = useState(false)
   const toggle = (id: string) => {
     const next = selected.has(id) ? [...selected].filter((x) => x !== id) : [...selected, id]
+    setFull(next.length > max)
     if (next.length > max) return
     setSelection.mutate(next)
   }
@@ -126,11 +128,12 @@ export function CatalogScreen() {
           {selectAll.isSuccess && <Notice tone="ok">{t('portal.catalog.selectedAll', { count: selectAll.data })}</Notice>}
           <ErrorNote error={selectAll.error ?? setSelection.error} />
           {total > max && selectAll.isSuccess && <Notice tone="warn">{t('portal.catalog.selectionCap', { max })}</Notice>}
+          {full && <Notice tone="warn">{t('portal.catalog.selectionFull', { max })}</Notice>}
 
           {products.isPending ? (
             <Loading />
           ) : products.isError ? (
-            <ErrorNote error={products.error} />
+            <ErrorNote error={products.error} onRetry={() => void products.refetch()} />
           ) : items.length === 0 ? (
             <EmptyState title={t('portal.catalog.emptyTitle')}>{nFilters || search.q ? t('portal.catalog.emptyFiltered') : t('portal.catalog.empty')}</EmptyState>
           ) : (

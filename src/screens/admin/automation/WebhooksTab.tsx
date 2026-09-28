@@ -15,7 +15,7 @@ function Deliveries({ id }: { id: string }) {
   const { t, i18n } = useTranslation()
   const q = useQuery(webhookDeliveriesQuery(id))
   if (q.isPending) return <Loading />
-  if (q.isError) return <ErrorNote error={q.error} />
+  if (q.isError) return <ErrorNote error={q.error} onRetry={() => void q.refetch()} />
   if (!q.data.items.length) return <p className="text-xs text-stone-500">{t('webhooks.noDeliveries')}</p>
   return (
     <ul className="space-y-1 text-xs">
@@ -89,7 +89,7 @@ export function WebhooksTab() {
       {hooks.isPending ? (
         <Loading />
       ) : hooks.isError ? (
-        <ErrorNote error={hooks.error} />
+        <ErrorNote error={hooks.error} onRetry={() => void hooks.refetch()} />
       ) : hooks.data.items.length === 0 ? (
         <EmptyState title={t('webhooks.emptyTitle')}>{t('webhooks.empty')}</EmptyState>
       ) : (

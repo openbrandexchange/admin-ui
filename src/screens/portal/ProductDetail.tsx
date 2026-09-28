@@ -8,7 +8,7 @@ import { localized } from '../../lib/localized'
 import { humanize } from '../../lib/prefs'
 import { portalProductQuery, useSelection, useSetSelection, useViewer } from '../../queries/portal'
 import { Badge, Button, Loading, cx } from '../../ui/controls'
-import { EmptyState, ErrorNote } from '../../ui/feedback'
+import { EmptyState, ErrorNote, tabListKeys } from '../../ui/feedback'
 import { IconCheck, IconChevronLeft, IconImage, IconPlus, IconSparkle } from '../../ui/icons'
 import { DownloadButton, VariantHelp, VariantPicker, useVariant } from './DownloadTools'
 
@@ -20,7 +20,7 @@ export function PortalProductScreen() {
     return (
       <div className="space-y-4">
         <BackLink />
-        <ErrorNote error={product.error} />
+        <ErrorNote error={product.error} onRetry={() => void product.refetch()} />
       </div>
     )
   return (
@@ -76,10 +76,11 @@ function Product({ product }: { product: ProductDetail }) {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
       <section aria-label={t('portal.product.images')} className="space-y-3">
         {colourCodes.length > 1 && (
-          <div role="tablist" aria-label={t('portal.product.colours')} className="flex flex-wrap gap-2">
+          <div role="tablist" aria-label={t('portal.product.colours')} onKeyDown={tabListKeys} className="flex flex-wrap gap-2">
             {colourCodes.map((c) => (
               <button
                 key={c}
+                type="button"
                 role="tab"
                 aria-selected={c === colour}
                 onClick={() => {

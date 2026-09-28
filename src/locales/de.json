@@ -26,6 +26,7 @@
     "menu": "Menü",
     "language": "Sprache",
     "viewAll": "Alle anzeigen",
+    "retry": "Erneut versuchen",
     "secret": "Geheimnis",
     "shownOnce": "Kopieren Sie es jetzt und bewahren Sie es sicher auf. Zu Ihrer Sicherheit wird es nur dieses eine Mal angezeigt.",
     "worksWith": "Funktioniert mit Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Willkommen",
-    "introRetailer": "Sie wurden eingeladen, die Produktbilder und Artikeldaten für {{retailer}} anzusehen. Wählen Sie ein Passwort, um zu beginnen.",
+    "introRetailer": "{{brand}} hat Sie für {{retailer}} eingeladen, die Produktbilder und Artikeldaten anzusehen. Wählen Sie ein Passwort, um zu beginnen.",
     "introAdmin": "Sie wurden eingeladen, dieses Portal zu verwalten. Wählen Sie ein Passwort, um zu beginnen.",
     "submit": "Konto erstellen",
     "invalidTitle": "Diese Einladung funktioniert nicht mehr",
@@ -903,6 +904,7 @@
       "selectedAll_one": "{{count}} Artikel ist in Ihrer Auswahl.",
       "selectedAll_other": "{{count}} Artikel sind in Ihrer Auswahl.",
       "selectionCap": "Eine Auswahl umfasst höchstens {{max}} Artikel; die ersten {{max}} wurden hinzugefügt.",
+      "selectionFull": "Ihre Auswahl ist voll: Sie umfasst höchstens {{max}} Artikel. Entfernen Sie zuerst einige.",
       "downloadAll": "Alle herunterladen",
       "downloadAllTitle_one": "{{count}} Artikel herunterladen",
       "downloadAllTitle_other": "Alle {{count}} Artikel herunterladen",

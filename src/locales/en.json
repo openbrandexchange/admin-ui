@@ -26,6 +26,7 @@
     "menu": "Menu",
     "language": "Language",
     "viewAll": "View all",
+    "retry": "Try again",
     "secret": "Secret",
     "shownOnce": "Copy it now and keep it somewhere safe. For your security it is shown only this once.",
     "worksWith": "Works with Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Welcome",
-    "introRetailer": "You've been invited to see the product images and article data for {{retailer}}. Choose a password to get started.",
+    "introRetailer": "{{brand}} has invited you, for {{retailer}}, to see its product images and article data. Choose a password to get started.",
     "introAdmin": "You've been invited to manage this portal. Choose a password to get started.",
     "submit": "Create my account",
     "invalidTitle": "This invitation no longer works",
@@ -903,6 +904,7 @@
       "selectedAll_one": "{{count}} article is in your selection.",
       "selectedAll_other": "{{count}} articles are in your selection.",
       "selectionCap": "A selection holds at most {{max}} articles; the first {{max}} were added.",
+      "selectionFull": "Your selection is full: it holds at most {{max}} articles. Remove some first.",
       "downloadAll": "Download all",
       "downloadAllTitle_one": "Download {{count}} article",
       "downloadAllTitle_other": "Download all {{count}} articles",

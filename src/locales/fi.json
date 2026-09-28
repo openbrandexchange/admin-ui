@@ -26,6 +26,7 @@
     "menu": "Valikko",
     "language": "Kieli",
     "viewAll": "Näytä kaikki",
+    "retry": "Yritä uudelleen",
     "secret": "Salaisuus",
     "shownOnce": "Kopioi se nyt ja säilytä turvallisessa paikassa. Turvallisuussyistä se näytetään vain tämän kerran.",
     "worksWith": "Toimii Open Brand Exchangen kanssa"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Tervetuloa",
-    "introRetailer": "Sinut on kutsuttu katsomaan tuotekuvia ja tuotetietoja yritykselle {{retailer}}. Aloita valitsemalla salasana.",
+    "introRetailer": "Tuotemerkki {{brand}} on kutsunut sinut yrityksen {{retailer}} puolesta katsomaan tuotekuviaan ja tuotetietojaan. Aloita valitsemalla salasana.",
     "introAdmin": "Sinut on kutsuttu hallinnoimaan tätä portaalia. Aloita valitsemalla salasana.",
     "submit": "Luo tilini",
     "invalidTitle": "Kutsu ei ole enää voimassa",
@@ -903,6 +904,7 @@
       "selectedAll_one": "{{count}} tuote on valikoimassasi.",
       "selectedAll_other": "{{count}} tuotetta on valikoimassasi.",
       "selectionCap": "Valikoimaan mahtuu enintään {{max}} tuotetta; ensimmäiset {{max}} lisättiin.",
+      "selectionFull": "Valikoimasi on täynnä: siihen mahtuu enintään {{max}} tuotetta. Poista ensin joitakin.",
       "downloadAll": "Lataa kaikki",
       "downloadAllTitle_one": "Lataa {{count}} tuote",
       "downloadAllTitle_other": "Lataa kaikki {{count}} tuotetta",

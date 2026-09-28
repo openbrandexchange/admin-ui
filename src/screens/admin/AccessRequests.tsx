@@ -6,7 +6,7 @@ import type { AdminAccessRequest, InviteResult } from '../../api/types'
 import { countryName, formatDate, formatRelative } from '../../lib/format'
 import { accessRequestsQuery, brandsQuery, retailersQuery, useAccessRequestMutations } from '../../queries/admin'
 import { Badge, Button, Checkbox, Loading, PageHeader, SelectField, TextArea, cx } from '../../ui/controls'
-import { Dialog, EmptyState, ErrorNote, LoadMore, Notice } from '../../ui/feedback'
+import { Dialog, EmptyState, ErrorNote, LoadMore, Notice, tabListKeys } from '../../ui/feedback'
 import { InviteLink } from './RetailerDetail'
 
 type Status = 'pending' | 'approved' | 'rejected'
@@ -198,7 +198,7 @@ export function AccessRequestsScreen() {
           {approved.invite && <InviteLink result={approved.invite} />}
         </div>
       )}
-      <div role="tablist" className="flex gap-1 border-b border-stone-200">
+      <div role="tablist" aria-label={t('admin.nav.requests')} onKeyDown={tabListKeys} className="flex gap-1 border-b border-stone-200">
         {(['pending', 'approved', 'rejected'] as Status[]).map((s) => (
           <Link key={s} role="tab" aria-selected={status === s} to="/admin/requests" search={{ status: s === 'pending' ? undefined : s }} className={cx('-mb-px border-b-2 px-3 py-2 text-sm font-medium', status === s ? 'border-accent' : 'border-transparent text-stone-500')}>
             {t(`requests.tab.${s}`)}
@@ -208,7 +208,7 @@ export function AccessRequestsScreen() {
       {requests.isPending ? (
         <Loading />
       ) : requests.isError ? (
-        <ErrorNote error={requests.error} />
+        <ErrorNote error={requests.error} onRetry={() => void requests.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState title={t(`requests.empty.${status}`)}>{status === 'pending' ? t('requests.emptyHint') : null}</EmptyState>
       ) : (

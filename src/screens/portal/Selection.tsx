@@ -24,7 +24,7 @@ export function SelectionScreen() {
   const products = useQueries({ queries: ids.slice(0, shown).map((id) => portalProductQuery(id)) })
 
   if (selection.isPending) return <Loading />
-  if (selection.isError) return <ErrorNote error={selection.error} />
+  if (selection.isError) return <ErrorNote error={selection.error} onRetry={() => void selection.refetch()} />
 
   const images = selection.data.image_count
   const syncMax = viewer.data?.limits?.sync_zip_max_images ?? 400
@@ -54,6 +54,7 @@ export function SelectionScreen() {
         )}
       </div>
 
+      <ErrorNote error={setSelection.error} />
       {ids.length === 0 ? (
         <EmptyState
           title={t('portal.selection.emptyTitle')}

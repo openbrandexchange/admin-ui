@@ -208,7 +208,7 @@ export function ImportsScreen() {
         {runs.isPending ? (
           <Loading />
         ) : runs.isError ? (
-          <ErrorNote error={runs.error} />
+          <ErrorNote error={runs.error} onRetry={() => void runs.refetch()} />
         ) : items.length === 0 ? (
           <EmptyState title={t('imports.emptyTitle')}>{t('imports.empty')}</EmptyState>
         ) : (

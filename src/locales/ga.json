@@ -26,6 +26,7 @@
     "menu": "Roghchlár",
     "language": "Teanga",
     "viewAll": "Féach ar fad",
+    "retry": "Bain triail eile as",
     "secret": "Eochair rúnda",
     "shownOnce": "Cóipeáil anois í agus coinnigh in áit shábháilte í. Ar chúiseanna slándála, ní thaispeántar í ach an uair seo.",
     "worksWith": "Oibríonn sé le Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Fáilte",
-    "introRetailer": "Tugadh cuireadh duit grianghraif táirge agus sonraí earraí a fheiceáil do {{retailer}}. Tosaigh trí phasfhocal a shocrú.",
+    "introRetailer": "Thug {{brand}} cuireadh duit, thar ceann {{retailer}}, a ghrianghraif táirge agus a shonraí earraí a fheiceáil. Tosaigh trí phasfhocal a shocrú.",
     "introAdmin": "Tugadh cuireadh duit an tairseach seo a bhainistiú. Tosaigh trí phasfhocal a shocrú.",
     "submit": "Cruthaigh mo chuntas",
     "invalidTitle": "Ní oibríonn an cuireadh seo a thuilleadh",
@@ -951,6 +952,7 @@
       "selectedAll_many": "Earraí i do rogha: {{count}}.",
       "selectedAll_other": "Earraí i do rogha: {{count}}.",
       "selectionCap": "Is féidir {{max}} earra ar a mhéad a bheith i rogha; cuireadh na chéad {{max}} leis.",
+      "selectionFull": "Tá do rogha lán: {{max}} earra ar a mhéad. Bain cuid acu amach ar dtús.",
       "downloadAll": "Íoslódáil gach rud",
       "downloadAllTitle_one": "Íoslódáil earraí ({{count}})",
       "downloadAllTitle_two": "Íoslódáil earraí ({{count}})",

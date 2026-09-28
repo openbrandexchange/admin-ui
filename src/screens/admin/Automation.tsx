@@ -1,3 +1,4 @@
+import { tabListKeys } from '../../ui/feedback'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
@@ -24,7 +25,7 @@ export function AutomationScreen() {
   return (
     <div className="space-y-6">
       <PageHeader title={t('automation.title')} description={t('automation.intro')} />
-      <div role="tablist" aria-label={t('automation.title')} className="flex flex-wrap gap-1 border-b border-stone-200">
+      <div role="tablist" aria-label={t('automation.title')} onKeyDown={tabListKeys} className="flex flex-wrap gap-1 border-b border-stone-200">
         {TABS.map((id) => (
           <Link
             key={id}

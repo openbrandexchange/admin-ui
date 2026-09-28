@@ -26,6 +26,7 @@
     "menu": "Meny",
     "language": "Språk",
     "viewAll": "Se alle",
+    "retry": "Prøv igjen",
     "secret": "Hemmelighet",
     "shownOnce": "Kopier den nå og oppbevar den et trygt sted. Av sikkerhetshensyn vises den bare denne ene gangen.",
     "worksWith": "Fungerer med Open Brand Exchange"
@@ -148,7 +149,7 @@
   },
   "invite": {
     "title": "Velkommen",
-    "introRetailer": "Du er invitert til å se produktbilder og varedata for {{retailer}}. Velg et passord for å komme i gang.",
+    "introRetailer": "{{brand}} har invitert deg på vegne av {{retailer}} til å se produktbildene og varedataene deres. Velg et passord for å komme i gang.",
     "introAdmin": "Du er invitert til å administrere denne portalen. Velg et passord for å komme i gang.",
     "submit": "Opprett kontoen min",
     "invalidTitle": "Invitasjonen virker ikke lenger",
@@ -903,6 +904,7 @@
       "selectedAll_one": "{{count}} vare er i utvalget ditt.",
       "selectedAll_other": "{{count}} varer er i utvalget ditt.",
       "selectionCap": "Et utvalg kan ha høyst {{max}} varer; de første {{max}} er lagt til.",
+      "selectionFull": "Utvalget ditt er fullt: det kan ha høyst {{max}} varer. Fjern noen først.",
       "downloadAll": "Last ned alle",
       "downloadAllTitle_one": "Last ned {{count}} vare",
       "downloadAllTitle_other": "Last ned alle {{count}} varer",

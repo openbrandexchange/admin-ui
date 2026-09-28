@@ -29,7 +29,7 @@ export function TeamTab() {
       {users.isPending ? (
         <Loading />
       ) : users.isError ? (
-        <ErrorNote error={users.error} />
+        <ErrorNote error={users.error} onRetry={() => void users.refetch()} />
       ) : (
         <ul className="divide-y divide-stone-100 rounded-lg border border-stone-200">
           {users.data.items.map((u) => (
