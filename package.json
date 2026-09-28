@@ -15,12 +15,17 @@
     "build:mock": "vite build --mode mock --outDir dist-mock",
     "preview:mock": "vite preview --mode mock --outDir dist-mock --port 4174 --strictPort",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "gen:api": "node scripts/gen-api.mjs",
     "sync-fixtures": "node scripts/sync-fixtures.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "i18n:check": "vitest run tests/i18n.test.ts",
     "e2e": "playwright test",
-    "check": "npm run typecheck && npm test && npm run build"
+    "size": "node scripts/check-bundle.mjs dist",
+    "licenses": "node scripts/check-licenses.mjs",
+    "audit:prod": "npm audit --omit=dev --audit-level=low",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run size"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.0",
@@ -33,6 +38,8 @@
     "react-i18next": "^15.5.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/vite": "^4.1.0",
     "@testing-library/jest-dom": "^6.6.0",
@@ -41,11 +48,16 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
     "jsdom": "^26.1.0",
     "msw": "^2.10.0",
     "openapi-typescript": "^7.9.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.0",
+    "typescript-eslint": "^8.70.1",
     "vite": "^7.1.0",
     "vitest": "^3.2.0"
   },

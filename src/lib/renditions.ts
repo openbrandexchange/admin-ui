@@ -75,7 +75,7 @@ async function decode(file: Blob): Promise<{ img: Drawable; size: Size; close: (
     img.src = url
     await img.decode()
     return { img, size: { width: img.naturalWidth, height: img.naturalHeight }, close: () => URL.revokeObjectURL(url) }
-  } catch (e) {
+  } catch {
     URL.revokeObjectURL(url)
     throw new Error('decode_failed')
   }

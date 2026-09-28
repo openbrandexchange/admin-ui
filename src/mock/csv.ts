@@ -5,7 +5,7 @@ import { parseMaterials } from '../lib/materials'
 import { gtinValid } from '../lib/validate'
 
 export function parseCsv(text: string): string[][] {
-  const src = text.replace(/^﻿/, '')
+  const src = text.replace(/^\uFEFF/, '')
   const firstLine = src.split(/\r?\n/, 1)[0] ?? ''
   const count = (ch: string) => {
     let n = 0

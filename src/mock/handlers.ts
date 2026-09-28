@@ -78,7 +78,7 @@ function admin(d: MockDb): MockUser {
 }
 
 const publicUser = (u: MockUser): User => {
-  const { password: _p, ...rest } = u // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { password: _p, ...rest } = u  
   return rest
 }
 
@@ -211,7 +211,7 @@ function productDetail(d: MockDb, p: Rec, u: MockUser): ProductDetail {
     .filter((a) => a.data.product_external_id === p.external_id && assetVisible(d, a))
     .sort((a, b) => String(a.data.color_code ?? '').localeCompare(String(b.data.color_code ?? '')) || a.data.position - b.data.position)
     .map((a) => assetView(d, a, p, originals))
-  const { brand_external_id: _b, status: _s, ...data } = p.data // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { brand_external_id: _b, status: _s, ...data } = p.data  
   return { ...(data as object), id: p.id, external_id: p.external_id, brand_id: brand.id, style_number: p.data.style_number, name: p.data.name, updated_at: p.updated_at, created_at: p.created_at, variants, assets } as ProductDetail
 }
 
@@ -355,7 +355,7 @@ function withVisibility(d: MockDb, r: Rec): Rec {
 function ingestPut(d: MockDb, list: Rec[], kind: Rec['kind'], externalId: string, data: Record<string, unknown>) {
   const existing = findRec(list, externalId)
   const status = (data.status as 'published' | 'unpublished' | undefined) ?? existing?.status ?? d.settings.defaults?.ingest_status ?? 'published'
-  const { status: _s, ...rest } = data // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { status: _s, ...rest } = data  
   if (!existing) {
     const r = record(d, kind, externalId, rest, status)
     list.push(r)
@@ -395,12 +395,12 @@ function newApiClient(d: MockDb, retailerId: string, name: string, scopes?: stri
   const secret = token('obxs_')
   const c = { id: newId(d, 'cli'), client_id: token('obxc_').slice(0, 20), name, retailer_id: retailerId, scopes: (scopes ?? ['catalog:read', 'media:read', ...(d.settings.portal?.allow_original_download ? ['media:original'] : [])]) as never, status: 'active' as const, created_at: nowIso(), last_used_at: null, secret }
   d.apiClients.push(c)
-  const { secret: _s, ...client } = c // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { secret: _s, ...client } = c  
   return { client, client_secret: secret, token_endpoint: `${d.settings.node?.public_url}/obx/v1/oauth/token`, discovery_url: d.settings.node?.discovery_url ?? '' }
 }
 
 const publicClient = (c: MockDb['apiClients'][number]) => {
-  const { secret: _s, ...rest } = c // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { secret: _s, ...rest } = c  
   return rest
 }
 
@@ -707,7 +707,7 @@ export const handlers = [
       admin(d)
       for (const r of d.importRuns) if (Date.now() - new Date(r.created_at).getTime() > 800) finishRun(d, r)
       const src = url.searchParams.get('source_id')
-      return HttpResponse.json(page(d.importRuns.filter((r) => !src || r.source_id === src).map(({ _pending, ...r }: ImportRun & { _pending?: unknown }) => r), url, 25)) // eslint-disable-line @typescript-eslint/no-unused-vars
+      return HttpResponse.json(page(d.importRuns.filter((r) => !src || r.source_id === src).map(({ _pending, ...r }: ImportRun & { _pending?: unknown }) => r), url, 25))  
     }),
   ),
   http.post(
@@ -738,7 +738,7 @@ export const handlers = [
         _pending: { csv, assetsCsv, manifest, mode: options.mode, dryRun: options.dry_run, defaultLang: options.default_language },
       }
       d.importRuns.unshift(run)
-      const { _pending, ...visible } = run // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { _pending, ...visible } = run  
       return HttpResponse.json(visible, { status: 202 })
     }),
   ),
@@ -749,7 +749,7 @@ export const handlers = [
       const r = d.importRuns.find((x) => x.id === params.id)
       if (!r) throw stop(404, 'not_found')
       if (Date.now() - new Date(r.created_at).getTime() > 800) finishRun(d, r)
-      const { _pending, ...visible } = r as ImportRun & { _pending?: unknown } // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { _pending, ...visible } = r as ImportRun & { _pending?: unknown }  
       return HttpResponse.json(visible)
     }),
   ),
@@ -1328,7 +1328,7 @@ export const handlers = [
     route(({ d }) => {
       const u = me(d)
       for (const j of d.downloadJobs) advanceJob(j)
-      return HttpResponse.json({ items: d.downloadJobs.filter((j) => j.user_id === u.id).map(({ user_id: _u, ...j }) => j) }) // eslint-disable-line @typescript-eslint/no-unused-vars
+      return HttpResponse.json({ items: d.downloadJobs.filter((j) => j.user_id === u.id).map(({ user_id: _u, ...j }) => j) })  
     }),
   ),
   http.post(
@@ -1343,7 +1343,7 @@ export const handlers = [
       const job = { id: newId(d, 'job'), user_id: u.id, status: 'queued' as const, source: b.source, variant: b.variant, include_data_csv: b.include_data_csv ?? true, created_at: nowIso(), finished_at: null, expires_at: null, progress: { done: 0, total }, file_url: null, bytes: null, files: null, error: null }
       d.downloadJobs.unshift(job)
       logEvent(d, u, { kind: 'bulk_zip', variant: b.variant, product_id: null, asset_id: null, usage_event: null, files: total, bytes: null })
-      const { user_id: _u, ...visible } = job // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { user_id: _u, ...visible } = job  
       return HttpResponse.json(visible, { status: 202 })
     }),
   ),
