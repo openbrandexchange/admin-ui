@@ -1,7 +1,9 @@
 // axe-core on every main screen of both roles and the public pages, desktop and phone.
+// Every retailer screen is also checked for sideways scrolling (the portal is used on phones).
 import { test } from '@playwright/test'
-import { admin, buyer, chooseEnglish, expectAccessible, logIn } from './helpers'
+import { admin, buyer, chooseEnglish, expectAccessible, expectNoSideways, failOnCspViolations, logIn } from './helpers'
 
+failOnCspViolations()
 test.beforeEach(async ({ page }) => chooseEnglish(page))
 
 test('public pages', async ({ page }) => {
@@ -19,12 +21,15 @@ test('first-run setup', async ({ page }) => {
 test('retailer portal', async ({ page }) => {
   await logIn(page, buyer)
   await expectAccessible(page, 'catalog')
+  await expectNoSideways(page)
   await page.getByRole('list', { name: 'Articles' }).getByRole('link').first().click()
   await page.getByRole('heading', { name: 'Sizes and EAN' }).waitFor()
   await expectAccessible(page, 'article')
+  await expectNoSideways(page)
   for (const path of ['./selection', './ean', './downloads', './account']) {
     await page.goto(path)
     await expectAccessible(page, path)
+    await expectNoSideways(page)
   }
 })
 
@@ -55,6 +60,7 @@ test('brand admin', async ({ page }) => {
   for (const path of paths) {
     await page.goto(path)
     await expectAccessible(page, path)
+    await expectNoSideways(page)
   }
   await page.goto('./admin/retailers')
   await page.getByRole('main').getByRole('link').filter({ hasText: /Boutique/ }).first().click()

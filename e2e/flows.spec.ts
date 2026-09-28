@@ -1,8 +1,9 @@
 // The main flows of both roles, end to end in a real browser against the mock node
 // (the whole portal API runs in a service worker). Desktop and phone.
 import { expect, test } from '@playwright/test'
-import { admin, buyer, chooseEnglish, expectAccessible, expectNoSideways, logIn } from './helpers'
+import { admin, buyer, chooseEnglish, expectAccessible, failOnCspViolations, expectNoSideways, logIn } from './helpers'
 
+failOnCspViolations()
 test.beforeEach(async ({ page }) => chooseEnglish(page))
 
 test.describe('retailer', () => {

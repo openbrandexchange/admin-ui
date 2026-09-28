@@ -8,6 +8,22 @@ import { thirdPartyNotices } from './scripts/third-party-notices'
 // `base: './'` makes every asset path relative; index.html carries <base href="/"> so deep
 // SPA-fallback URLs (/admin/catalog/KO-1001) still resolve assets. A node mounted under a
 // sub-path only rewrites that one tag (see README "For node implementers").
+// The strictest Content-Security-Policy the UI works under (README "Security headers"). The
+// preview server sends it, so every Playwright run proves the UI needs nothing looser. Mock
+// mode adds only worker-src for its service worker.
+export const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self'",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ')
+
 export default defineConfig(({ mode }) => ({
   base: './',
   plugins: [react(), tailwindcss(), ...(mode === 'mock' ? [] : [thirdPartyNotices()])],
@@ -21,6 +37,13 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     assetsDir: 'assets',
     chunkSizeWarningLimit: 600,
+  },
+  preview: {
+    headers: {
+      'Content-Security-Policy': CSP + (mode === 'mock' ? "; worker-src 'self'" : ''),
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'same-origin',
+    },
   },
   server: {
     // `npm run dev` against a real node: OBX_NODE_URL=http://localhost:8080 npm run dev

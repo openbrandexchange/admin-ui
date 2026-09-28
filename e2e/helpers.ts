@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 export const admin = { email: 'admin@kestrel.example', password: 'kestrel-admin-2026' }
 export const buyer = { email: 'buyer@shop.example', password: 'kestrel-shop-2026' }
@@ -33,4 +33,22 @@ export async function expectAccessible(page: Page, what: string) {
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
   const summary = result.violations.map((v) => `${v.id} (${v.impact}): ${v.help}\n    ${v.nodes.slice(0, 5).map((n) => n.target.join(' ')).join('\n    ')}`)
   expect(summary, `accessibility problems on ${what}`).toEqual([])
+}
+
+/**
+ * Fail the test when the browser blocks anything under the preview server's strict
+ * Content-Security-Policy (vite.config.ts): nodes can then send that policy as is.
+ */
+export function failOnCspViolations() {
+  const seen = new WeakMap<Page, string[]>()
+  test.beforeEach(async ({ page }) => {
+    const list: string[] = []
+    seen.set(page, list)
+    page.on('console', (m) => {
+      if (m.type() === 'error' && /Content Security Policy/i.test(m.text())) list.push(m.text())
+    })
+  })
+  test.afterEach(async ({ page }) => {
+    expect(seen.get(page) ?? [], 'Content-Security-Policy violations').toEqual([])
+  })
 }
