@@ -5096,7 +5096,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Zip; entries named `<filename>` (variant suffix `_web`/`_square` before `.jpg`). */
+            /** @description Zip; entries named `<filename>` (variant suffix `_web`/`_square` before `.jpg`) and `assets.csv`, one row per image with its effective rights, embargo and AI provenance (import-format.md §2.3). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5122,7 +5122,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Zip; one folder per style number. */
+            /** @description Zip; one folder per style number, and `assets.csv` at the top level, one row per image with its effective rights, embargo and AI provenance (import-format.md §2.3). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5277,7 +5277,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Zip. */
+            /** @description Zip; one folder per style number, `assets.csv` at the top level (one row per image with its effective rights, embargo and AI provenance, import-format.md §2.3) and `data.csv` (the article data) when `include_data_csv`. */
             200: {
                 headers: {
                     [name: string]: unknown;
