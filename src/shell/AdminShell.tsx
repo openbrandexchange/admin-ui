@@ -8,6 +8,7 @@ import { sessionQuery, useLogout } from '../queries/session'
 import { buttonClass, cx } from '../ui/controls'
 import { IconBolt, IconBox, IconChart, IconCog, IconEye, IconHome, IconInbox, IconLogout, IconMenu, IconUpload, IconUsers, IconX } from '../ui/icons'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
+import { InMainContext } from './Fallbacks'
 
 const linkCls = 'flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900'
 const activeCls = 'bg-white text-stone-900 shadow-xs ring-1 ring-stone-200 hover:bg-white'
@@ -101,7 +102,9 @@ export function AdminShell() {
           </div>
         )}
         <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
-          <Outlet />
+          <InMainContext.Provider value={true}>
+            <Outlet />
+          </InMainContext.Provider>
         </main>
         <footer className="flex justify-center py-6">
           <WorksWithBadge />

@@ -305,6 +305,8 @@ export function makeRouter(queryClient: QueryClient, opts: { history?: Parameter
     routeTree,
     context: { queryClient },
     basepath: basepath(),
+    defaultErrorComponent: RouteError,
+    defaultNotFoundComponent: NotFound,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,

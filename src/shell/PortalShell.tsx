@@ -9,6 +9,7 @@ import { Loading, cx, buttonClass } from '../ui/controls'
 import { ErrorNote } from '../ui/feedback'
 import { IconBarcode, IconDownload, IconGrid, IconList, IconLogout, IconMenu, IconUser, IconX } from '../ui/icons'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
+import { InMainContext } from './Fallbacks'
 
 const navCls = 'inline-flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900'
 const activeCls = 'bg-accent-soft text-accent-strong hover:bg-accent-soft hover:text-accent-strong'
@@ -104,7 +105,9 @@ export function PortalShell() {
         )}
       </header>
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
-        <Outlet />
+        <InMainContext.Provider value={true}>
+            <Outlet />
+          </InMainContext.Provider>
       </main>
       <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-xs text-stone-500 sm:px-6">
         <span>

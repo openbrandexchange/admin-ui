@@ -33,37 +33,46 @@ test('retailer portal', async ({ page }) => {
   }
 })
 
-test('brand admin', async ({ page }) => {
-  await logIn(page, admin)
-  const paths = [
-    './admin',
-    './admin/catalog',
-    './admin/catalog/KO-1001',
-    './admin/catalog/new',
-    './admin/imports',
-    './admin/automation',
-    './admin/automation?tab=tokens',
-    './admin/automation?tab=recipes',
-    './admin/automation?tab=webhooks',
-    './admin/automation/sources/new',
-    './admin/retailers',
-    './admin/retailers/new',
-    './admin/requests',
-    './admin/stats',
-    './admin/settings',
-    './admin/settings?tab=portal',
-    './admin/settings?tab=defaults',
-    './admin/settings?tab=team',
-    './admin/settings?tab=account',
-    './admin/settings?tab=system',
-  ]
-  for (const path of paths) {
-    await page.goto(path)
-    await expectAccessible(page, path)
-    await expectNoSideways(page)
+const ADMIN_PATHS = [
+  './admin',
+  './admin/catalog',
+  './admin/catalog/KO-1001',
+  './admin/catalog/new',
+  './admin/imports',
+  './admin/automation',
+  './admin/automation?tab=tokens',
+  './admin/automation?tab=recipes',
+  './admin/automation?tab=webhooks',
+  './admin/automation/sources/new',
+  './admin/retailers',
+  './admin/retailers/new',
+  './admin/requests',
+  './admin/stats',
+  './admin/settings',
+  './admin/settings?tab=portal',
+  './admin/settings?tab=defaults',
+  './admin/settings?tab=team',
+  './admin/settings?tab=account',
+  './admin/settings?tab=system',
+]
+
+// One test per screen, so a slow runner never hits the per-test timeout.
+test.describe('brand admin', () => {
+  for (const path of ADMIN_PATHS) {
+    test(path.replace('./', '/'), async ({ page }) => {
+      await logIn(page, admin)
+      await page.goto(path)
+      await expectAccessible(page, path)
+      await expectNoSideways(page)
+    })
   }
-  await page.goto('./admin/retailers')
-  await page.getByRole('main').getByRole('link').filter({ hasText: /Boutique/ }).first().click()
-  await page.getByRole('heading', { level: 1 }).waitFor()
-  await expectAccessible(page, 'retailer detail')
+
+  test('retailer detail', async ({ page }) => {
+    await logIn(page, admin)
+    await page.goto('./admin/retailers')
+    await page.getByRole('main').getByRole('link').filter({ hasText: /Boutique/ }).first().click()
+    await page.getByRole('heading', { level: 1 }).waitFor()
+    await expectAccessible(page, 'retailer detail')
+    await expectNoSideways(page)
+  })
 })

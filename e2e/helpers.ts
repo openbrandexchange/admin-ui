@@ -28,7 +28,11 @@ export async function expectNoSideways(page: Page) {
 
 /** axe-core, WCAG 2.1 A + AA. Fails with a readable list of the violations. */
 export async function expectAccessible(page: Page, what: string) {
-  await page.waitForLoadState('networkidle')
+  // Not 'networkidle': screens that follow a running job poll the node and never go idle.
+  await page.waitForLoadState('load')
+  await expect(page.getByRole('main')).toBeVisible()
+  await expect(page.getByRole('status', { name: 'Loading…' })).toHaveCount(0)
+  await page.waitForTimeout(150)
   await expect(page.getByRole('status', { name: 'Loading…' })).toHaveCount(0)
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
   const summary = result.violations.map((v) => `${v.id} (${v.impact}): ${v.help}\n    ${v.nodes.slice(0, 5).map((n) => n.target.join(' ')).join('\n    ')}`)

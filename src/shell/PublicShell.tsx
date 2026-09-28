@@ -2,6 +2,7 @@ import { Outlet } from '@tanstack/react-router'
 import { useBranding } from '../queries/session'
 import { useApplyBranding, usePortalTitle } from '../lib/branding'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
+import { InMainContext } from './Fallbacks'
 
 /** Login, invite, reset, request access and setup: a calm centred page in the brand's colours. */
 export function PublicShell() {
@@ -26,7 +27,9 @@ export function PublicShell() {
       </header>
       <main id="main" tabIndex={-1} className="flex flex-1 items-start justify-center px-4 pb-12 pt-4 sm:pt-12">
         <div className="w-full max-w-md space-y-6">
-          <Outlet />
+          <InMainContext.Provider value={true}>
+            <Outlet />
+          </InMainContext.Provider>
         </div>
       </main>
       <footer className="flex justify-center pb-6">
