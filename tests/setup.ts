@@ -4,6 +4,7 @@ import { cleanup, configure } from '@testing-library/react'
 import { setupServer } from 'msw/node'
 import { handlers } from '../src/mock/handlers'
 import { resetDb } from '../src/mock/db'
+import { resetPrefs } from '../src/lib/prefs'
 
 // Node 25+ ships its own (disabled) localStorage global that shadows jsdom's: use a plain one.
 class MemoryStorage implements Storage {
@@ -87,6 +88,7 @@ beforeAll(() => {
 beforeEach(() => {
   sessionStorage.clear()
   localStorage.clear()
+  resetPrefs()
   resetDb('seeded')
 })
 afterEach(() => cleanup())

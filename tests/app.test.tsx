@@ -183,6 +183,22 @@ describe('retailer portal', () => {
     expect(within(versions).getByRole('radio', { name: /web/i })).toBeChecked()
   })
 
+  it('prepares the zip in the file version picked in the dialog', async () => {
+    const r = await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    await r.router.navigate({ to: '/ean' })
+    await r.user.click(await screen.findByLabelText(/^EANs$/))
+    await r.user.paste('2000100101018')
+    await r.user.click(screen.getByRole('button', { name: /find articles/i }))
+    await r.user.click(await screen.findByRole('button', { name: /download images of these articles/i }))
+    const dialog = await screen.findByRole('dialog')
+    const versions = within(dialog).getByRole('radiogroup', { name: /file version/i })
+    await r.user.click(within(versions).getByRole('radio', { name: /^square$/i }))
+    expect(within(versions).getByRole('radio', { name: /^square$/i })).toBeChecked()
+    await r.user.click(within(dialog).getByRole('button', { name: /prepare zip/i }))
+    await waitFor(() => expect(db().downloadJobs[0]?.variant).toBe('square'))
+  })
+
   it('sends the user to the login page when the session ends', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })

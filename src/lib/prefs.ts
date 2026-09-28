@@ -1,5 +1,5 @@
 // Per-browser UI preferences (density, download variant). Never server state.
-import { useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 function read<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
   try {
@@ -10,19 +10,43 @@ function read<T extends string>(key: string, allowed: readonly T[], fallback: T)
   }
 }
 
+// One value per key for the whole page: every component that reads a preference sees a change made
+// anywhere else at once (the variant picked in a dialog is the variant the dialog downloads).
+const memory = new Map<string, string>()
+const listeners = new Map<string, Set<() => void>>()
+
+function subscribe(key: string, fn: () => void) {
+  let set = listeners.get(key)
+  if (!set) listeners.set(key, (set = new Set()))
+  set.add(fn)
+  return () => void set.delete(fn)
+}
+
 export function usePref<T extends string>(key: string, allowed: readonly T[], fallback: T): [T, (v: T) => void] {
-  const [value, setValue] = useState<T>(() => read(key, allowed, fallback))
+  const value = useSyncExternalStore(
+    (fn) => subscribe(key, fn),
+    () => {
+      const v = memory.get(key)
+      return v !== undefined && allowed.includes(v as T) ? (v as T) : read(key, allowed, fallback)
+    },
+  )
   return [
     value,
     (v: T) => {
-      setValue(v)
+      memory.set(key, v)
       try {
         localStorage.setItem(key, v)
       } catch {
-        /* private mode */
+        /* private mode: the choice still holds for this page */
       }
+      for (const fn of listeners.get(key) ?? []) fn()
     },
   ]
+}
+
+/** Test helper: forget in-page preferences (localStorage is cleared separately). */
+export function resetPrefs() {
+  memory.clear()
 }
 
 /** Start of the UTC day `days` ago: stable within a day, so it can live in query keys and URLs. */
