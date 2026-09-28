@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { thirdPartyNotices } from './scripts/third-party-notices'
 
 // One static single-page app for both the retailer portal (/) and the brand admin (/admin).
 // `base: './'` makes every asset path relative; index.html carries <base href="/"> so deep
@@ -9,7 +10,7 @@ import tailwindcss from '@tailwindcss/vite'
 // sub-path only rewrites that one tag (see README "For node implementers").
 export default defineConfig(({ mode }) => ({
   base: './',
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), ...(mode === 'mock' ? [] : [thirdPartyNotices()])],
   // Mock mode serves the spec's fixture images and the MSW worker; the production build ships neither.
   publicDir: mode === 'mock' ? 'mock-public' : false,
   define: {
