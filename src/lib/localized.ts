@@ -24,3 +24,16 @@ export function cleanLocalized(text: Record<string, string>): LocalizedText | nu
   for (const [k, v] of Object.entries(text)) if (v.trim()) out[k] = v.trim()
   return Object.keys(out).length ? out : null
 }
+
+/**
+ * A LocalizedText for a JSON merge patch (RFC 7396). Objects merge member by member, so a
+ * language that was cleared must be sent as `null`, otherwise the node keeps its old text.
+ * Everything cleared → `null` (the whole text goes).
+ */
+export function localizedPatch(before: LocalizedText | null | undefined, edited: Record<string, string>): Record<string, string | null> | null {
+  const clean = cleanLocalized(edited)
+  if (!clean) return null
+  const out: Record<string, string | null> = { ...clean }
+  for (const k of Object.keys(before ?? {})) if (!(k in clean)) out[k] = null
+  return out
+}

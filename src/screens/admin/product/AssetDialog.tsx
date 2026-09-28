@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { AdminAsset, AssetData, Channel, Role, View } from '../../../api/types'
-import { cleanLocalized } from '../../../lib/localized'
+import { localizedPatch } from '../../../lib/localized'
 import { humanize } from '../../../lib/prefs'
 import { uploadAssetFiles } from '../../../lib/upload'
 import { CHANNELS, ROLES, VIEWS } from '../../../lib/vocab'
@@ -57,7 +57,7 @@ export function AssetDialog({ asset, serverRenders, mutations, onClose }: { asse
         patch: {
           role,
           view: (view || null) as View | null,
-          alt_text: cleanLocalized(alt),
+          alt_text: localizedPatch(d.alt_text, alt) as never,
           status: published ? 'published' : 'unpublished',
           rights: {
             license: customLicence ? 'custom' : 'retailer-use',

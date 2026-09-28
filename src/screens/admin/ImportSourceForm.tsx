@@ -22,7 +22,7 @@ export function ImportSourceEditScreen() {
   const { id } = useParams({ from: '/admin/automation/sources/$id' })
   const sources = useQuery(importSourcesQuery)
   if (sources.isPending) return <Loading />
-  if (sources.isError) return <ErrorNote error={sources.error} />
+  if (sources.isError) return <ErrorNote error={sources.error} onRetry={() => void sources.refetch()} />
   const source = sources.data.items.find((s) => s.id === id)
   if (!source) return <ErrorNote error={new ApiError(404, null)} />
   return <SourceForm source={source} />
@@ -66,7 +66,14 @@ function SourceForm({ source }: { source?: ImportSource }) {
 
   function build(): ImportSourceInput | null {
     if (!name.trim()) return null
-    const schedule = { frequency: freq, ...(freq === 'daily' || freq === 'weekly' ? { time } : {}), ...(freq === 'weekly' ? { weekday } : {}), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }
+    // On an update the body is a merge patch: a field that no longer applies is sent as null.
+    const unset = source ? null : undefined
+    const schedule = {
+      frequency: freq,
+      time: freq === 'daily' || freq === 'weekly' ? time : unset,
+      weekday: freq === 'weekly' ? weekday : unset,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }
     let config: Record<string, unknown>
     const credentials: Record<string, unknown> = {}
     if (kind === 'https_url') {

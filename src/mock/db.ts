@@ -44,7 +44,7 @@ export interface MockDb {
   setupRequired: boolean
   sessionUserId: string | null
   csrf: string
-  settings: Settings & { branding?: { portal_name?: Record<string, string> | null } }
+  settings: Settings
   users: MockUser[]
   invites: Record<string, string> // token -> user id
   brands: Rec[]

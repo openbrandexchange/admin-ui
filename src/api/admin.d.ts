@@ -1283,6 +1283,8 @@ export interface components {
             logo_url?: string | null;
             accent_color?: string | null;
             welcome_text?: components["schemas"]["LocalizedText"] | null;
+            /** @description The brand's own word for its portal, per language (e.g. {"nl":"Merkbeeldbank"}). The UI shows "<name> · <word>"; without a text for the reader's language it uses the brand's en text, then its first text, then the glossary word for that language. */
+            portal_name?: components["schemas"]["LocalizedText"] | null;
             languages: components["schemas"]["LanguageTag"][];
             default_language: components["schemas"]["LanguageTag"];
             access_requests_enabled: boolean;
@@ -1354,6 +1356,8 @@ export interface components {
                 readonly logo_url?: string | null;
                 accent_color?: string | null;
                 welcome_text?: components["schemas"]["LocalizedText"] | null;
+                /** @description Overrides the local portal word ("Beeldbank", "Händlerportal" ...) per language; null uses the glossary word. See PublicBranding.portal_name. */
+                portal_name?: components["schemas"]["LocalizedText"] | null;
             };
             portal?: {
                 /** @default true */
@@ -1874,9 +1878,9 @@ export interface components {
             etag: string;
             created_at: components["schemas"]["DateTime"];
             updated_at: components["schemas"]["DateTime"];
-            /** @description The stored write model (BrandInput/ProductInput/VariantInput/AssetInput) with defaults applied. For assets 'files' lists the current blobs. */
+            /** @description The stored write model (BrandInput/ProductInput/VariantInput/AssetInput) with defaults applied. For assets: `rights` is the full effective Rights object (node default rights merged with the fields the brand sent), `provenance` the full Provenance with its defaults, and `files` lists every current blob (original and web/square/thumb, including renditions the node made itself) with sha256, width and height. */
             data: Record<string, never>;
-            /** @description Assets only: files still required before the asset becomes visible. */
+            /** @description Present for assets only (an empty array when nothing is missing); omitted for brands, products and variants. Files still required before the asset becomes visible. */
             missing_files?: components["schemas"]["RenditionName"][] | null;
         } & {
             [key: string]: unknown;
@@ -2147,7 +2151,7 @@ export interface components {
         ImportRowError: {
             /** @description products.csv, assets.csv or the image file name. */
             file: string;
-            /** @description 1-based data row (header = row 0); null for image files. */
+            /** @description 1-based data row; null for header, file-level and image-file problems. */
             row: number | null;
             column?: string | null;
             /**

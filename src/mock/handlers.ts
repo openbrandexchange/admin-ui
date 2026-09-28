@@ -20,6 +20,7 @@ import type {
 import { gtinValid } from '../lib/validate'
 import { applyImport, brandByKey, db, DEMO, newId, record, resetDb, save, slug, touch, type ManifestItem, type MockDb } from './db'
 import type { MockUser, Rec } from './types'
+import { mergePatch } from './mergePatch'
 
 const API = '*/admin/api'
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
@@ -295,7 +296,7 @@ function publicBranding(d: MockDb): PublicBranding {
     access_requests_enabled: d.settings.portal?.access_requests_enabled ?? true,
     setup_required: d.setupRequired,
     brands: d.brands.filter((x) => x.status === 'published').map((x) => ({ id: x.id, name: String(x.data.name) })),
-    ...({ portal_name: (b as { portal_name?: unknown }).portal_name ?? null } as object),
+    portal_name: b.portal_name ?? null,
   }
 }
 
@@ -372,16 +373,7 @@ function ingestPatch(_d: MockDb, list: Rec[], externalId: string, patch: Record<
   const existing = findRec(list, externalId)
   if (!existing) throw stop(404, 'not_found')
   const { status, ...rest } = patch
-  const mergeDeep = (a: Record<string, unknown>, b: Record<string, unknown>): Record<string, unknown> => {
-    const out = { ...a }
-    for (const [k, v] of Object.entries(b)) {
-      if (v === null) out[k] = null
-      else if (typeof v === 'object' && !Array.isArray(v) && typeof a[k] === 'object' && a[k] && !Array.isArray(a[k]) && k !== 'files') out[k] = mergeDeep(a[k] as Record<string, unknown>, v as Record<string, unknown>)
-      else out[k] = v
-    }
-    return out
-  }
-  existing.data = mergeDeep(existing.data, rest)
+  existing.data = mergePatch(existing.data, rest, ['files']) as Record<string, unknown>
   if (status === 'published' || status === 'unpublished') existing.status = status
   touch(existing)
   return HttpResponse.json({ result: 'updated', kind: existing.kind, external_id: externalId, id: existing.id, etag: existing.etag })
@@ -548,7 +540,7 @@ export const handlers = [
     route(async ({ request, d }) => {
       admin(d)
       const b = await body<Record<string, Record<string, unknown>>>(request)
-      for (const k of ['company', 'branding', 'portal', 'defaults'] as const) if (b[k]) (d.settings as Record<string, unknown>)[k] = { ...(d.settings[k] ?? {}), ...b[k] }
+      for (const k of ['company', 'branding', 'portal', 'defaults'] as const) if (k in b) (d.settings as Record<string, unknown>)[k] = mergePatch(d.settings[k], b[k])
       return HttpResponse.json(d.settings)
     }),
   ),

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { localized, cleanLocalized } from '../src/lib/localized'
+import { localized, cleanLocalized, localizedPatch } from '../src/lib/localized'
+import { mergePatch } from '../src/mock/mergePatch'
 import { csvDelimiter, pickLanguage } from '../src/i18n/languages'
 import { formatMaterials, parseMaterials, unbalancedParts } from '../src/lib/materials'
 import { gtinValid, splitCodes, passwordProblem, slugify } from '../src/lib/validate'
@@ -128,4 +129,19 @@ describe('translation keys with a colon', () => {
     await initI18n('en')
     expect(i18next.t('tokens.scope.ingest:read')).toBe('read what is published')
   })
+})
+
+describe('JSON merge patch (RFC 7396) as nodes apply it', () => {
+  it('merges objects member by member and removes members set to null', () => {
+    expect(mergePatch({ a: { en: 'x', nl: 'y' }, b: 1 }, { a: { en: null, de: 'z' } })).toEqual({ a: { nl: 'y', de: 'z' }, b: 1 })
+  })
+  it('replaces arrays and the named wholesale members', () => {
+    expect(mergePatch({ list: [1, 2], files: { web: 1, thumb: 2 } }, { list: [3], files: { web: 9 } }, ['files'])).toEqual({ list: [3], files: { web: 9 } })
+  })
+})
+
+describe('LocalizedText in a merge patch', () => {
+  it('sends null for a language that was cleared', () => expect(localizedPatch({ en: 'a', nl: 'b' }, { en: '', nl: 'c' })).toEqual({ en: null, nl: 'c' }))
+  it('sends null for the whole text when everything was cleared', () => expect(localizedPatch({ en: 'a' }, { en: ' ' })).toBeNull())
+  it('sends just the texts when nothing was there before', () => expect(localizedPatch(null, { de: 'x' })).toEqual({ de: 'x' }))
 })

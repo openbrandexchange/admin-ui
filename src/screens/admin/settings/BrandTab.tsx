@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { LocalizedText, Settings } from '../../../api/types'
+import type { Settings } from '../../../api/types'
 import { applyAccent } from '../../../lib/accent'
 import { COUNTRIES } from '../../../lib/countries'
 import { countryName } from '../../../lib/format'
-import { cleanLocalized } from '../../../lib/localized'
+import { localizedPatch } from '../../../lib/localized'
 import { emailProblem, hexProblem, urlProblem } from '../../../lib/validate'
 import { useLogoMutations, useUpdateSettings } from '../../../queries/admin'
 import { Button, Field, Saved, Section, SelectField, TextField } from '../../../ui/controls'
@@ -12,13 +12,11 @@ import { ErrorNote } from '../../../ui/feedback'
 import { BrandMark } from '../../../shell/common'
 import { LocalizedInput } from '../product/LocalizedInput'
 
-type Branding = NonNullable<Settings['branding']> & { portal_name?: LocalizedText | null }
-
 export function BrandTab({ settings }: { settings: Settings }) {
   const { t, i18n } = useTranslation()
   const update = useUpdateSettings()
   const logo = useLogoMutations()
-  const b = (settings.branding ?? {}) as Branding
+  const b = settings.branding ?? {}
   const c = settings.company ?? {}
   const [company, setCompany] = useState({ name: c.name ?? '', website: c.website ?? '', contact_email: c.contact_email ?? '', country: c.country ?? '' })
   const [displayName, setDisplayName] = useState(b.display_name ?? '')
@@ -121,9 +119,9 @@ export function BrandTab({ settings }: { settings: Settings }) {
               branding: {
                 display_name: displayName.trim() || company.name.trim(),
                 accent_color: accent,
-                welcome_text: cleanLocalized(welcome),
-                portal_name: cleanLocalized(portalName),
-              } as Branding,
+                welcome_text: localizedPatch(b.welcome_text, welcome),
+                portal_name: localizedPatch(b.portal_name, portalName),
+              },
             })
           }}
         >
