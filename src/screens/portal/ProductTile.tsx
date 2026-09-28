@@ -30,7 +30,7 @@ export function ProductTile({ product, selected, onToggle, dense }: { product: P
           )}
         </div>
       </Link>
-      <label className={cx('absolute left-2 top-2 grid size-9 cursor-pointer place-items-center rounded-lg border bg-white/95 shadow-sm', selected ? 'border-accent bg-accent text-accent-contrast' : 'border-stone-300 text-transparent hover:text-stone-400')}>
+      <label className={cx('absolute left-2 top-2 grid size-9 cursor-pointer place-items-center rounded-lg border bg-white/95 shadow-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent', selected ? 'border-accent bg-accent text-accent-contrast' : 'border-stone-300 text-transparent hover:text-stone-400')}>
         <input type="checkbox" className="sr-only" checked={selected} onChange={onToggle} aria-label={t('portal.tile.select', { name: `${product.style_number} ${name}` })} />
         <IconCheck size={18} />
       </label>

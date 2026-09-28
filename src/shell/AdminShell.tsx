@@ -7,7 +7,7 @@ import { accessRequestsQuery, settingsQuery } from '../queries/admin'
 import { sessionQuery, useLogout } from '../queries/session'
 import { buttonClass, cx } from '../ui/controls'
 import { IconBolt, IconBox, IconChart, IconCog, IconEye, IconHome, IconInbox, IconLogout, IconMenu, IconUpload, IconUsers, IconX } from '../ui/icons'
-import { BrandMark, LanguageSwitcher, WorksWithBadge } from './common'
+import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
 
 const linkCls = 'flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900'
 const activeCls = 'bg-white text-stone-900 shadow-xs ring-1 ring-stone-200 hover:bg-white'
@@ -71,6 +71,7 @@ export function AdminShell() {
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
+      <SkipLink />
       <aside className="hidden border-r border-stone-200 bg-stone-100/60 lg:flex lg:flex-col lg:gap-6 lg:px-3 lg:py-5 lg:sticky lg:top-0 lg:h-dvh">
         <Link to="/admin" className="flex items-center gap-3 px-3">
           <BrandMark name={name} logo={settings.data?.branding?.logo_url} />
@@ -99,7 +100,7 @@ export function AdminShell() {
             <div className="mt-3">{footer}</div>
           </div>
         )}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
+        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
           <Outlet />
         </main>
         <footer className="flex justify-center py-6">

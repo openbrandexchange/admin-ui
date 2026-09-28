@@ -76,12 +76,13 @@ function Product({ product }: { product: ProductDetail }) {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
       <section aria-label={t('portal.product.images')} className="space-y-3">
         {colourCodes.length > 1 && (
-          <div role="tablist" aria-label={t('portal.product.colours')} onKeyDown={tabListKeys} className="flex flex-wrap gap-2">
+          <div role="tablist" aria-label={t('portal.product.colours')} className="flex flex-wrap gap-2">
             {colourCodes.map((c) => (
               <button
                 key={c}
                 type="button"
                 role="tab"
+                onKeyDown={tabListKeys}
                 aria-selected={c === colour}
                 onClick={() => {
                   setColour(c)
@@ -244,7 +245,7 @@ function Details({ product, colourName }: { product: ProductDetail; colourName: 
       {variants.length > 0 && (
         <div>
           <h2 className="mb-2 text-sm font-semibold">{t('portal.product.sizes')}</h2>
-          <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white">
+          <div role="region" tabIndex={0} aria-label={t('portal.product.sizes')} className="overflow-x-auto rounded-lg border border-stone-200 bg-white">
             <table className="w-full text-sm">
               <thead className="bg-stone-50 text-left text-xs text-stone-500">
                 <tr>
@@ -257,7 +258,7 @@ function Details({ product, colourName }: { product: ProductDetail; colourName: 
               <tbody className="divide-y divide-stone-100">
                 {variants.map((v) => (
                   <tr key={v.id}>
-                    <td className="px-3 py-1.5">{colourName(v.color.code)} <span className="text-xs text-stone-400">{v.color.code}</span></td>
+                    <td className="px-3 py-1.5">{colourName(v.color.code)} <span className="text-xs text-stone-500">{v.color.code}</span></td>
                     <td className="px-3 py-1.5">{v.size ?? '—'}</td>
                     <td className="px-3 py-1.5 font-mono text-xs tabular">{v.gtin_original ?? v.gtin ?? '—'}</td>
                     <td className="px-3 py-1.5 font-mono text-xs">{v.sku ?? ''}</td>

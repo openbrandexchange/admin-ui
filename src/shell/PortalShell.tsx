@@ -8,7 +8,7 @@ import { sessionQuery, useLogout } from '../queries/session'
 import { Loading, cx, buttonClass } from '../ui/controls'
 import { ErrorNote } from '../ui/feedback'
 import { IconBarcode, IconDownload, IconGrid, IconList, IconLogout, IconMenu, IconUser, IconX } from '../ui/icons'
-import { BrandMark, LanguageSwitcher, WorksWithBadge } from './common'
+import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
 
 const navCls = 'inline-flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900'
 const activeCls = 'bg-accent-soft text-accent-strong hover:bg-accent-soft hover:text-accent-strong'
@@ -39,6 +39,7 @@ export function PortalShell() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <SkipLink />
       {viewer.data.preview && (
         <div className="bg-stone-900 px-4 py-2 text-center text-sm text-white" role="status">
           {t('portal.preview.banner')}{' '}
@@ -53,7 +54,7 @@ export function PortalShell() {
             <BrandMark name={title.brand} logo={branding?.logo_url} />
             <span className="hidden truncate text-sm sm:block">
               <span className="font-semibold text-stone-900">{title.brand}</span>
-              <span className="text-stone-400"> · </span>
+              <span className="text-stone-500" aria-hidden="true"> · </span>
               <span className="text-stone-600">{title.word}</span>
             </span>
           </Link>
@@ -67,15 +68,16 @@ export function PortalShell() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2 lg:ml-2">
-            <LanguageSwitcher className="hidden sm:inline-flex" />
-            <button
-              type="button"
-              className={cx(buttonClass('ghost', 'sm'), 'hidden lg:inline-flex')}
-              onClick={() => logout.mutate(undefined, { onSettled: () => navigate({ to: '/login' }) })}
-            >
-              <IconLogout size={16} />
-              {t('common.logout')}
-            </button>
+            {/* Wrappers carry the responsive display: buttonClass() sets inline-flex itself. */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+            <div className="hidden lg:block">
+              <button type="button" className={buttonClass('ghost', 'sm')} onClick={() => logout.mutate(undefined, { onSettled: () => navigate({ to: '/login' }) })}>
+                <IconLogout size={16} />
+                {t('common.logout')}
+              </button>
+            </div>
             <button type="button" className={cx(buttonClass('ghost', 'sm'), 'lg:hidden')} aria-expanded={menu} aria-controls="portal-menu" onClick={() => setMenu(!menu)}>
               {menu ? <IconX /> : <IconMenu />}
               <span className="sr-only">{t('common.menu')}</span>
@@ -101,7 +103,7 @@ export function PortalShell() {
           </nav>
         )}
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
         <Outlet />
       </main>
       <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-xs text-stone-500 sm:px-6">

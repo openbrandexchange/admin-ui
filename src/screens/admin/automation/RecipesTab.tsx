@@ -25,12 +25,13 @@ export function RecipesTab({ nodeUrl, token }: { nodeUrl: string; token?: string
         </Notice>
       )}
       <div className="grid gap-4 md:grid-cols-[14rem_1fr]">
-        <ul role="tablist" aria-label={t('recipes.title')} aria-orientation="vertical" onKeyDown={tabListKeys} className="space-y-1">
+        <ul role="tablist" aria-label={t('recipes.title')} aria-orientation="vertical" className="space-y-1">
           {snippets.map((s) => (
             <li key={s.id} role="presentation">
               <button
                 type="button"
                 role="tab"
+                onKeyDown={tabListKeys}
                 aria-selected={active === s.id}
                 onClick={() => setActive(s.id)}
                 className={cx('w-full rounded-control px-3 py-2 text-left text-sm', active === s.id ? 'bg-accent-soft font-medium text-accent-strong' : 'hover:bg-stone-100')}
@@ -44,7 +45,7 @@ export function RecipesTab({ nodeUrl, token }: { nodeUrl: string; token?: string
         <div role="tabpanel" className="min-w-0 space-y-3">
           <p className="text-sm text-stone-700">{t(`recipes.${current.id}.body`)}</p>
           <div className="relative">
-            <pre className="overflow-x-auto rounded-lg bg-stone-900 p-4 text-xs leading-relaxed text-stone-100" data-testid="recipe-code">
+            <pre tabIndex={0} aria-label={t(`recipes.${current.id}.title`)} className="overflow-x-auto rounded-lg bg-stone-900 p-4 text-xs leading-relaxed text-stone-100" data-testid="recipe-code">
               <code>{current.code}</code>
             </pre>
             <div className="absolute right-2 top-2">

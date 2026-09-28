@@ -82,7 +82,7 @@ export function ImagesSection({ productExternalId, styleNumber, variants, assets
         <div key={colour || 'all'} className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold">
-              {colour ? colourNames.get(colour) ?? colour : t('portal.product.allColours')} {colour && <span className="text-xs font-normal text-stone-400">{colour}</span>}
+              {colour ? colourNames.get(colour) ?? colour : t('portal.product.allColours')} {colour && <span className="text-xs font-normal text-stone-500">{colour}</span>}
             </h3>
             <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-control border border-stone-300 bg-white px-2.5 text-sm font-medium shadow-xs hover:bg-stone-50 focus-within:outline-2 focus-within:outline-accent">
               <IconUpload size={16} />

@@ -67,7 +67,7 @@ export function FilterPanel({ facets, search, onChange }: { facets: Facets | und
                         onChange={() => onChange({ ...search, [key]: on ? chosen.filter((x) => x !== v.value) : [...chosen, v.value] })}
                       />
                       <span className="flex-1 truncate">{label(v, enumPrefix)}</span>
-                      <span className="text-xs text-stone-400 tabular">{v.count}</span>
+                      <span className="text-xs text-stone-500 tabular">{v.count}</span>
                     </label>
                   </li>
                 )

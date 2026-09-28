@@ -26,7 +26,7 @@ export function ApiKeyCreated({ created, onDone }: { created: ApiClientWithSecre
       </dl>
       <details className="text-xs">
         <summary className="cursor-pointer font-medium text-amber-950">{t('apiKeys.forDevelopers')}</summary>
-        <pre className="mt-2 overflow-x-auto rounded bg-stone-900 p-3 text-[11px] text-stone-100">{curl}</pre>
+        <pre tabIndex={0} className="mt-2 overflow-x-auto rounded bg-stone-900 p-3 text-[11px] text-stone-100">{curl}</pre>
         <CopyButton value={curl} />
       </details>
       <Button size="sm" variant="primary" onClick={onDone}>

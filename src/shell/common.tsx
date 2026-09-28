@@ -71,3 +71,13 @@ export function BrandMark({ name, logo, size = 'md' }: { name: string; logo?: st
     </span>
   )
 }
+
+/** First focusable element on every page: jumps past the header and menu to the content. */
+export function SkipLink() {
+  const { t } = useTranslation()
+  return (
+    <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById('main')?.focus())} className="sr-only z-50 rounded-control bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-lg focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4">
+      {t('common.skipToContent')}
+    </a>
+  )
+}

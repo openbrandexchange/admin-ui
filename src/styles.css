@@ -10,6 +10,9 @@
   --color-accent-soft: var(--accent-soft, #eef2f6);
   --color-accent-strong: var(--accent-strong, #1e293b);
   --radius-control: 0.5rem;
+  /* A shade darker than Tailwind's stone-500, so secondary text keeps 4.5:1 contrast (WCAG AA)
+     on the stone-50/100 backgrounds too, not only on white. */
+  --color-stone-500: oklch(50% 0.014 58);
 }
 
 @layer base {
@@ -22,6 +25,10 @@
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-accent;
+  }
+  /* The skip link moves focus to <main>; the landmark itself needs no ring. */
+  main:focus {
+    @apply outline-none;
   }
   h1,
   h2,
@@ -36,7 +43,7 @@
 
 @layer components {
   .input {
-    @apply block w-full rounded-control border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 shadow-xs placeholder:text-stone-400 disabled:bg-stone-100 disabled:text-stone-500 aria-invalid:border-red-500;
+    @apply block w-full rounded-control border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 shadow-xs placeholder:text-stone-500 disabled:bg-stone-100 disabled:text-stone-500 aria-invalid:border-red-500;
   }
   .card {
     @apply rounded-xl border border-stone-200 bg-white shadow-xs;

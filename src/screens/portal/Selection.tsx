@@ -103,7 +103,7 @@ export function SelectionScreen() {
                         {localized(p.name, i18n.language)}
                       </Link>
                     ) : (
-                      <span className="text-sm text-stone-400">{products[i]?.isError ? t('portal.selection.unavailable') : t('common.loading')}</span>
+                      <span className="text-sm text-stone-500">{products[i]?.isError ? t('portal.selection.unavailable') : t('common.loading')}</span>
                     )}
                     {p && <p className="text-xs text-stone-500">{t('portal.tile.images', { count: p.assets.length })}</p>}
                   </div>

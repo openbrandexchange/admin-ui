@@ -51,7 +51,7 @@ export function VariantsSection({ productExternalId, variants, mutations }: { pr
                 return (
                   <tr key={v.external_id}>
                     <td className="py-1.5 pr-3">
-                      {localized(d.color.name, i18n.language) || d.color.code} <span className="text-xs text-stone-400">{d.color.code}</span>
+                      {localized(d.color.name, i18n.language) || d.color.code} <span className="text-xs text-stone-500">{d.color.code}</span>
                     </td>
                     <td className="py-1.5 pr-3">{d.size ?? '—'}</td>
                     <td className="py-1.5 pr-3 font-mono text-xs">{d.gtin ?? '—'}</td>

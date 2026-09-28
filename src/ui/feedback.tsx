@@ -62,10 +62,15 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
   const { t } = useTranslation()
   useEffect(() => {
     const d = ref.current
-    if (!d) return
-    if (open && !d.open) {
+    if (!d || !open) return
+    // Give focus back to whatever opened the dialog (the dialog unmounts, so the browser can't).
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    if (!d.open) {
       if (typeof d.showModal === 'function') d.showModal()
       else d.setAttribute('open', '')
+    }
+    return () => {
+      if (opener?.isConnected) opener.focus()
     }
   }, [open])
   if (!open) return null
@@ -183,15 +188,17 @@ export function LoadMore({ hasNext, fetching, onMore }: { hasNext: boolean; fetc
 }
 
 /**
- * Arrow-key movement between the tabs of a role="tablist" (WAI-ARIA tabs pattern). Every tab
- * stays reachable with Tab too; this only adds the arrow keys, Home and End.
+ * Arrow-key movement between the tabs of a role="tablist" (WAI-ARIA tabs pattern), set as
+ * onKeyDown on every tab. Each tab stays reachable with Tab too; this adds the arrow keys,
+ * Home and End.
  */
 export function tabListKeys(e: KeyboardEvent<HTMLElement>) {
-  const tabs = [...e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')]
-  const i = tabs.indexOf(document.activeElement as HTMLElement)
-  if (i < 0) return
+  const list = e.currentTarget.closest('[role="tablist"]')
+  if (!list) return
+  const tabs = [...list.querySelectorAll<HTMLElement>('[role="tab"]')]
+  const i = tabs.indexOf(e.currentTarget)
   const next = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: tabs.length - 1 }[e.key]
-  if (next === undefined) return
+  if (i < 0 || next === undefined) return
   e.preventDefault()
   tabs[(next + tabs.length) % tabs.length].focus()
 }

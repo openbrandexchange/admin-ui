@@ -198,9 +198,9 @@ export function AccessRequestsScreen() {
           {approved.invite && <InviteLink result={approved.invite} />}
         </div>
       )}
-      <div role="tablist" aria-label={t('admin.nav.requests')} onKeyDown={tabListKeys} className="flex gap-1 border-b border-stone-200">
+      <div role="tablist" aria-label={t('admin.nav.requests')} className="flex gap-1 border-b border-stone-200">
         {(['pending', 'approved', 'rejected'] as Status[]).map((s) => (
-          <Link key={s} role="tab" aria-selected={status === s} to="/admin/requests" search={{ status: s === 'pending' ? undefined : s }} className={cx('-mb-px border-b-2 px-3 py-2 text-sm font-medium', status === s ? 'border-accent' : 'border-transparent text-stone-500')}>
+          <Link key={s} role="tab" onKeyDown={tabListKeys} aria-selected={status === s} to="/admin/requests" search={{ status: s === 'pending' ? undefined : s }} className={cx('-mb-px border-b-2 px-3 py-2 text-sm font-medium', status === s ? 'border-accent' : 'border-transparent text-stone-500')}>
             {t(`requests.tab.${s}`)}
           </Link>
         ))}
