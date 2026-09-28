@@ -40,6 +40,7 @@ Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'
 - `img-src https:` is only needed when image URLs point to another host (signed URLs from object storage or a CDN). If every image comes from the portal itself, use `img-src 'self' data: blob:`.
 - `data:` is the favicon; `blob:` is the image preview while a brand uploads.
 - The UI never embeds itself or other sites: keep `frame-ancestors 'none'`.
+- The UI calls only its own origin, so it needs no CORS headers. Send CORS headers on the public discovery document only, as the protocol describes; never on `/admin/api/*`.
 
 Also send:
 
