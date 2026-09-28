@@ -4,21 +4,7 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
-## [Unreleased]
-
-### Added
-
-- The setup wizard takes over a setup code from the address fragment (`/setup#code=…`), so a node's installer can open the wizard with the code filled in. The fragment never reaches the server.
-- Settings → About this installation shows the cron address (and when it was last called) on nodes that report `settings.node.cron`.
-- Inviting someone at a shop asks for the language of the e-mail, preset from the shop's country (a shop in Austria gets German).
-
-### Changed
-
-- Downloads start as the web version until the retailer picks another one: ready for a webshop and much smaller than originals.
-- Download texts no longer promise an e-mail (a portal without e-mail sends none); they point to Downloads.
-- The invitation says the brand gave the shop access and invited you; several languages read "on behalf of the shop" before.
-- The setup code hint no longer says the code is only in the log.
-- The setup wizard says the company name is what retailers see at the top of every page, and that the first brand is just the first one in the catalog (it said retailers would see the brand).
+## [0.1.1] - 2026-09-28
 
 ### Fixed
 
@@ -31,11 +17,7 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 - A successful connection test shows its translated result once, not followed by the node's English sentence.
 - Error boxes no longer show technical field codes such as `/config/url`.
 - Checkboxes keep their size next to a long label.
-
-## [0.1.1] - 2026-09-28
-
-### Fixed
-
+- The not-found and error pages have their own main landmark, so screen readers can jump to their content.
 - Clearing the text of one language (welcome text, portal name, image description) now really removes it. The UI sends `null` for that language in the merge patch; before, the node kept the old text.
 - A scheduled import that changes from weekly to daily (or to hourly) no longer keeps the old weekday and time.
 - The approval notice with the invitation link appears after approving an access request, also against a real node.
@@ -47,6 +29,10 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 
 ### Added
 
+- The setup wizard takes over a setup code from the address fragment (`/setup#code=…`), so a node's installer can open the wizard with the code filled in. The fragment never reaches the server.
+- Settings → About this installation shows the cron address (and when it was last called) on nodes that report `settings.node.cron`.
+- Inviting someone at a shop asks for the language of the e-mail, preset from the shop's country (a shop in Austria gets German).
+- The admin's "Get started" list asks to set up e-mail while the node reports that it has none, and links to Settings → System: without e-mail, retailers get no invitations, access decisions or password links.
 - Every screen that loads data shows a "Try again" button when loading fails (not for errors that would fail again, such as "not found"). The dashboard shows "—" for numbers it could not load instead of "…" forever.
 - The catalog says when the selection is full instead of ignoring the tick; failed selection changes show an inline error.
 - Blocking an account and removing the brand logo ask for confirmation first (unblocking does not). A logo over 5 MB gets an inline message instead of being ignored.
@@ -59,6 +45,11 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 
 ### Changed
 
+- Downloads start as the web version until the retailer picks another one: ready for a webshop and much smaller than originals.
+- Download texts no longer promise an e-mail (a portal without e-mail sends none); they point to Downloads.
+- The invitation says the brand gave the shop access and invited you; several languages read "on behalf of the shop" before.
+- The setup code hint no longer says the code is only in the log.
+- The setup wizard says the company name is what retailers see at the top of every page, and that the first brand is just the first one in the catalog (it said retailers would see the brand).
 - Secondary text is one shade darker, so it keeps a 4.5:1 contrast (WCAG AA) on the light grey backgrounds too.
 - The API types are generated from the spec version that includes `branding.portal_name`.
 
