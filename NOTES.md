@@ -1,6 +1,6 @@
 # Notes: decisions and open questions
 
-Where the spec or the brief left room, the simplest reading was chosen. Each item says what the UI does now and what would settle it.
+Where the spec or the project requirements left room, the simplest reading was chosen. Each item says what the UI does now and what would settle it.
 
 ## Spec gaps and readings
 
