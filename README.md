@@ -93,4 +93,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) (commits are signed off under the DCO) an
 
 Apache License 2.0, see [LICENSE](LICENSE) and [NOTICE](NOTICE). The page footer carries a small "Works with Open Brand Exchange" badge.
 
-An initiative of Richard Lindhout · Open Brand Exchange Foundation (in formation).
+Open Brand Exchange Foundation (in formation).

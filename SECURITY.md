@@ -26,4 +26,4 @@ This repository is the browser interface that every Open Brand Exchange portal s
 
 Problems in a portal implementation (authentication, access control, the API itself) belong to that implementation's repository, but you may report them to the same address and we will forward them.
 
-This project is an initiative of Richard Lindhout and will be transferred to the Open Brand Exchange Foundation (in formation).
+This project is published by the Open Brand Exchange Foundation (in formation).
