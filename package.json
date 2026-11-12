@@ -1,6 +1,6 @@
 {
   "name": "@openbrandexchange/admin-ui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Shared static web UI for an Open Brand Exchange portal: brand admin + retailer portal.",
   "license": "Apache-2.0",

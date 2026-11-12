@@ -4,7 +4,7 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
-## [Unreleased]
+## [0.2.1] - 2026-11-12
 
 Excel next to CSV ([spec import-format.md §5](https://github.com/openbrandexchange/spec/blob/main/docs/import-format.md#excel)). The node converts a workbook itself; against a node without the Excel import an upload of a `.xlsx` is refused by the node as before.
 
@@ -107,5 +107,7 @@ First release.
 - 25 languages (the 24 official EU languages and Norwegian Bokmål) with the project glossary, including the e-mail texts nodes send (`dist/locales/`).
 - A mock mode that runs the whole portal API in the browser on the spec's fictional Kestrel Outfitters data.
 
+[0.2.1]: https://github.com/openbrandexchange/admin-ui/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/openbrandexchange/admin-ui/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/openbrandexchange/admin-ui/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/openbrandexchange/admin-ui/releases/tag/v0.1.0
