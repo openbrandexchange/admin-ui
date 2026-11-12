@@ -1923,6 +1923,11 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * @description Label completeness warning (see docs/import-format.md#label-completeness). Never blocks a write or publishing. Clients MUST ignore unknown codes.
+         * @enum {string}
+         */
+        WarningCode: "fibre_composition_missing" | "animal_origin_unknown" | "footwear_materials_missing" | "fibre_percentages_not_100";
         /** IngestResult */
         IngestResult: {
             /** @description 0-based position in the batch (batch only). */
@@ -1946,6 +1951,15 @@ export interface components {
             etag?: string | null;
             error?: components["schemas"]["Problem"] | null;
             warnings?: string[];
+            /** @description Warnings with a stable code (label completeness, docs/import-format.md#label-completeness). Each is also listed as text in warnings. Present only when there are any. */
+            warning_details?: ({
+                code: components["schemas"]["WarningCode"];
+                /** @description JSON Pointer into the write model, e.g. /materials/0. */
+                pointer?: string | null;
+                detail: string;
+            } & {
+                [key: string]: unknown;
+            })[];
         } & {
             [key: string]: unknown;
         };
@@ -1980,21 +1994,36 @@ export interface components {
          */
         Materials: ({
             /**
-             * @description Garment part. Recommended keys: main, outer, lining, filling, trim, sole, upper, insole. 'main' when the product has one composition.
+             * @description Part of the article. Recommended keys: main, outer, lining, filling, padding, trim, pocket_lining, shell (luggage), handle, strap, and for footwear upper, sole, insole. 'main' when the product has one composition. Unknown keys are allowed.
              * @example main
              */
             part: string;
             /** @description Percentages of one part SHOULD sum to 100. */
             fibers: ({
-                /** @description Fibre key, lowercase English (recommended list in docs/import-format.md#fibres), e.g. cotton, organic_cotton, elastane, wool, merino_wool, polyester, recycled_polyester, polyamide, viscose, linen, silk, leather. */
+                /** @description Fibre key: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; recommended list in docs/import-format.md#fibres. Recycled or organic content is a flag, not a fibre: the 0.1 keys `recycled_*` and `organic_*` (e.g. recycled_polyester, organic_cotton) are accepted on input and normalised to the fibre with recycled or organic set. */
                 fiber: string;
                 percentage: number;
+                /** @description The fibre is recycled. Present only when true. */
+                recycled?: boolean;
+                /** @description The fibre is organically grown. Present only when true. */
+                organic?: boolean;
             } & {
                 [key: string]: unknown;
             })[];
         } & {
             [key: string]: unknown;
         })[];
+        /**
+         * FootwearMaterials
+         * @description Footwear labelling (Directive 94/11/EC): the material of the three parts of a shoe, in the directive's four categories. The value is the material that makes up at least 80 % of the surface of the upper and of the lining and sock, and at least 80 % of the volume of the outer sole. Responses include all three parts; null = not stated.
+         */
+        FootwearMaterials: {
+            upper?: ("leather" | "coated_leather" | "textile" | "other") | null;
+            lining_and_sock?: ("leather" | "coated_leather" | "textile" | "other") | null;
+            outer_sole?: ("leather" | "coated_leather" | "textile" | "other") | null;
+        } & {
+            [key: string]: unknown;
+        };
         /**
          * Care
          * @description Ordered care instructions.
@@ -2007,6 +2036,79 @@ export interface components {
             [key: string]: unknown;
         })[];
         /**
+         * Certifications
+         * @description Voluntary certifications the brand states for this product (private schemes, not legal requirements). The node passes them on as stated; checking a licence is up to the reader.
+         */
+        Certifications: ({
+            /** @description Open vocabulary; recommended: gots, ocs, grs, rcs, oeko_tex_standard_100, oeko_tex_made_in_green, bluesign, fsc, lwg, rws, rds. */
+            scheme: string;
+            /** @description The licence, certificate or label number as issued by the scheme. */
+            licence_number?: string | null;
+            /**
+             * @description product: the finished product is certified; material: a material in it is (the product itself is not).
+             * @enum {string}
+             */
+            scope: "product" | "material";
+        } & {
+            [key: string]: unknown;
+        })[];
+        /**
+         * Features
+         * @description Typed product features from the registry in docs/protocol.md#features. Keys of the registry have the type and values listed there; other keys (same key pattern) are allowed and not validated. Only stated features are present; null instead of an empty object.
+         */
+        Features: {
+            /**
+             * @description Luggage: construction of the shell.
+             * @enum {string}
+             */
+            shell?: "hard" | "soft" | "hybrid";
+            /**
+             * @description Luggage: number of wheels.
+             * @enum {integer}
+             */
+            wheels?: 0 | 2 | 4 | 8;
+            /**
+             * @description Luggage, bags: built-in lock.
+             * @enum {string}
+             */
+            lock?: "none" | "combination" | "tsa_combination" | "tsa_key" | "key";
+            /** @description Luggage, bags: has an expansion zip (volume in measurements.volume_expanded_l). */
+            expandable?: boolean;
+            /**
+             * @description Bags, shoes, apparel: main closure.
+             * @enum {string}
+             */
+            closure?: "zip" | "magnet" | "flap" | "buckle" | "drawstring" | "button" | "hook_and_loop" | "laces" | "slip_on" | "open";
+            /** @description Bags: has a padded laptop compartment (size in measurements.laptop_max_inch). */
+            laptop_compartment?: boolean;
+            /**
+             * @description All: resistance to water as stated by the brand.
+             * @enum {string}
+             */
+            water_resistance?: "none" | "water_repellent" | "waterproof";
+            /** @description All: parts that can be removed by the user. */
+            detachable_parts?: ("shoulder_strap" | "handle" | "lining" | "insole" | "hood" | "belt" | "pouch" | "wheels")[];
+            /** @description All: parts the user can adjust. */
+            adjustable_parts?: ("shoulder_strap" | "waist" | "hem" | "cuff")[];
+            /**
+             * @description Apparel: fit.
+             * @enum {string}
+             */
+            fit?: "slim" | "regular" | "relaxed" | "oversized";
+            /**
+             * @description Apparel: sleeve length.
+             * @enum {string}
+             */
+            sleeve_length?: "sleeveless" | "short" | "three_quarter" | "long";
+            /**
+             * @description Apparel: neckline.
+             * @enum {string}
+             */
+            neckline?: "crew" | "v_neck" | "collar" | "hood" | "turtleneck" | "boat" | "scoop";
+        } & {
+            [key: string]: (string | number | boolean) | (string | number | boolean)[];
+        };
+        /**
          * ProductInput
          * @description Ingest write model for a product. Key: external_id (path); when a brand has no separate product id, use the style number.
          */
@@ -2016,14 +2118,19 @@ export interface components {
             name: components["schemas"]["LocalizedText"];
             description?: components["schemas"]["LocalizedText"] | null;
             item_type?: string | null;
+            item_subtype?: string | null;
             gpc_brick?: string | null;
             target_group?: string | null;
             season?: string | null;
             collection?: string | null;
             materials?: components["schemas"]["Materials"] | null;
+            contains_animal_origin?: boolean | null;
+            footwear_materials?: components["schemas"]["FootwearMaterials"] | null;
             care?: components["schemas"]["Care"] | null;
             country_of_origin?: components["schemas"]["CountryCode"] | null;
+            certifications?: components["schemas"]["Certifications"] | null;
             dpp_url?: components["schemas"]["Url"] | null;
+            features?: components["schemas"]["Features"] | null;
             attributes?: {
                 [key: string]: (string | number | boolean) | components["schemas"]["LocalizedText"];
             } | null;
@@ -2043,6 +2150,44 @@ export interface components {
             name?: components["schemas"]["LocalizedText"] | null;
             /** @description Colour name as used in the brand's own systems/labels. */
             supplier_color?: string | null;
+            family?: ("black" | "white" | "grey" | "beige" | "brown" | "red" | "pink" | "orange" | "yellow" | "green" | "blue" | "purple" | "gold" | "silver" | "multicolour" | "transparent") | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * Measurements
+         * @description Measurements of one variant. Numbers only; the unit is part of the key (cm, kg, l, inch). Only the measurements the brand stated are present; null instead of an empty object. How to measure: docs/protocol.md#measurements.
+         */
+        Measurements: {
+            /** @description Vertical, the article standing in normal use. Luggage: outer dimension including wheels, handles and feet. Bags: the body without handles and strap. */
+            height_cm?: number;
+            /** @description Left to right, seen from the front. Luggage: outer dimension including wheels, handles and feet. Bags: the body. */
+            width_cm?: number;
+            /** @description Front to back. Luggage: outer dimension including wheels, handles and feet. Bags: the body. */
+            depth_cm?: number;
+            /** @description Weight of the article itself, without packaging. */
+            weight_kg?: number;
+            /** @description Volume in litres (luggage, bags). */
+            volume_l?: number;
+            /** @description Volume in litres when expanded (luggage and bags with an expansion zip). */
+            volume_expanded_l?: number;
+            /** @description Bags: from the top of the handle to the top of the body, handle held upright. */
+            handle_drop_cm?: number;
+            /** @description Bags: length of the shoulder strap, shortest and longest setting (equal when not adjustable). */
+            strap_length_cm?: {
+                /** @description Shortest setting. */
+                min: number;
+                /** @description Longest setting. */
+                max: number;
+            };
+            /** @description Largest laptop (screen diagonal in inches) the laptop compartment takes. */
+            laptop_max_inch?: number;
+            /** @description Footwear: height of the heel at the back, measured from the floor. */
+            heel_height_cm?: number;
+            /** @description Footwear (boots): height of the shaft, from the top of the insole at the heel to the top of the shaft. */
+            shaft_height_cm?: number;
+            /** @description Trousers: inside leg length, from the crotch seam to the hem. */
+            inseam_cm?: number;
         } & {
             [key: string]: unknown;
         };
@@ -2056,7 +2201,9 @@ export interface components {
             sku?: string | null;
             color: components["schemas"]["Color"];
             size?: string | null;
+            size_length?: string | null;
             size_system?: string | null;
+            measurements?: components["schemas"]["Measurements"] | null;
             status?: components["schemas"]["PublicationStatus"];
         } & {
             [key: string]: unknown;
@@ -2175,11 +2322,12 @@ export interface components {
             row: number | null;
             column?: string | null;
             /**
-             * @description error: row/file skipped. warning: imported with a correction.
+             * @description error: row/file skipped. warning: imported, with a correction or a label completeness warning.
              * @enum {string}
              */
             severity: "error" | "warning";
-            obx_error: components["schemas"]["ErrorCode"];
+            /** @description An error code, or for severity warning also a label completeness warning code. */
+            obx_error: components["schemas"]["ErrorCode"] | components["schemas"]["WarningCode"];
             detail: string;
             value?: string | null;
         } & {
@@ -2391,8 +2539,11 @@ export interface components {
             color: components["schemas"]["Color"];
             /** @description Size label, e.g. 'M', '42', '32/34', 'ONE SIZE'. */
             size?: string | null;
+            /** @description Second size where one exists, e.g. the length of jeans (size 32, size_length 34) or the cup of a bra (size 75, size_length B). */
+            size_length?: string | null;
             /** @description Optional size system, e.g. EU, UK, US, INT, FR, IT. */
             size_system?: string | null;
+            measurements?: components["schemas"]["Measurements"] | null;
             updated_at: components["schemas"]["DateTime"];
         } & {
             [key: string]: unknown;
@@ -2487,8 +2638,10 @@ export interface components {
             style_number: string;
             name: components["schemas"]["LocalizedText"];
             description?: components["schemas"]["LocalizedText"] | null;
-            /** @description Open vocabulary; recommended keys in docs/protocol.md#item-types (e.g. t_shirt, sweater, jacket, jeans, bag). */
+            /** @description Open vocabulary; recommended keys in docs/protocol.md#item-types (e.g. t_shirt, sweater, jacket, jeans, bag, luggage). */
             item_type?: string | null;
+            /** @description Open vocabulary, refines item_type; recommended keys per item type in docs/protocol.md#item-subtypes (e.g. cabin, crossbody, ankle_boot). */
+            item_subtype?: string | null;
             /** @description Optional GS1 GPC brick code. */
             gpc_brick?: string | null;
             /** @description Open vocabulary; recommended: women, men, unisex, girls, boys, kids, baby. */
@@ -2498,9 +2651,14 @@ export interface components {
             /** @description Collection name. */
             collection?: string | null;
             materials?: components["schemas"]["Materials"] | null;
+            /** @description Textile products: true when the product contains non-textile parts of animal origin (Reg. (EU) 1007/2011 Art. 12: the label must then say so); false when it does not; null = not stated. */
+            contains_animal_origin?: boolean | null;
+            footwear_materials?: components["schemas"]["FootwearMaterials"] | null;
             care?: components["schemas"]["Care"] | null;
             country_of_origin?: components["schemas"]["CountryCode"] | null;
+            certifications?: components["schemas"]["Certifications"] | null;
             dpp_url?: components["schemas"]["Url"] | null;
+            features?: components["schemas"]["Features"] | null;
             /** @description Additional brand attributes. Keys lower_snake_case; values string, number, boolean or LocalizedText. */
             attributes?: {
                 [key: string]: (string | number | boolean) | components["schemas"]["LocalizedText"];
@@ -2703,15 +2861,20 @@ export type RenditionName = components['schemas']['RenditionName'];
 export type IngestRecord = components['schemas']['IngestRecord'];
 export type Url = components['schemas']['Url'];
 export type BrandInput = components['schemas']['BrandInput'];
+export type WarningCode = components['schemas']['WarningCode'];
 export type IngestResult = components['schemas']['IngestResult'];
 export type Cursor = components['schemas']['Cursor'];
 export type Sha256 = components['schemas']['Sha256'];
 export type Rendition = components['schemas']['Rendition'];
 export type Materials = components['schemas']['Materials'];
+export type FootwearMaterials = components['schemas']['FootwearMaterials'];
 export type Care = components['schemas']['Care'];
+export type Certifications = components['schemas']['Certifications'];
+export type Features = components['schemas']['Features'];
 export type ProductInput = components['schemas']['ProductInput'];
 export type GtinInput = components['schemas']['GtinInput'];
 export type Color = components['schemas']['Color'];
+export type Measurements = components['schemas']['Measurements'];
 export type VariantInput = components['schemas']['VariantInput'];
 export type Role = components['schemas']['Role'];
 export type View = components['schemas']['View'];
