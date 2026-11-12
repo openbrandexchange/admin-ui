@@ -2,7 +2,7 @@
 // language needs), the same {{placeholders}}, and the glossary words the whole project uses.
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '../src/i18n/languages'
-import { CARE_CODES, CHANNELS, FIBRES, ITEM_TYPES, PARTS, ROLES, TARGET_GROUPS, VIEWS } from '../src/lib/vocab'
+import { ALL_ITEM_SUBTYPES, CARE_CODES, CHANNELS, COLOUR_FAMILIES, FEATURES, FIBRES, FOOTWEAR_MATERIALS, FOOTWEAR_PARTS, ITEM_TYPES, MEASUREMENTS, PARTS, ROLES, TARGET_GROUPS, VIEWS, WARNING_CODES } from '../src/lib/vocab'
 import glossary from '../src/i18n/glossary.json'
 
 const files = import.meta.glob<Record<string, unknown>>('../src/locales/*.json', { eager: true, import: 'default' })
@@ -81,6 +81,17 @@ describe('labels for every stable key', () => {
     ['enum.part', PARTS],
     ['enum.fibre', FIBRES],
     ['enum.care', CARE_CODES],
+    ['enum.itemSubtype', ALL_ITEM_SUBTYPES],
+    ['enum.footwearMaterial', FOOTWEAR_MATERIALS],
+    ['enum.colourFamily', COLOUR_FAMILIES],
+    ['article.footwearPart', FOOTWEAR_PARTS],
+    ['article.feature', Object.keys(FEATURES)],
+    ['product.measure', MEASUREMENTS],
+    ['importErrors', WARNING_CODES],
+    ['labelWarning', WARNING_CODES.flatMap((c) => [`${c}.why`, `${c}.law`])],
+    ...Object.entries(FEATURES)
+      .filter(([, def]) => def.type === 'enum' || def.type === 'list')
+      .map(([key, def]) => [`enum.feature.${key}`, (def as { values: readonly string[] }).values] as [string, readonly string[]]),
   ]
   it.each(families)('%s', (prefix, keys) => {
     expect(keys.filter((k) => !en[`${prefix}.${k}`])).toEqual([])

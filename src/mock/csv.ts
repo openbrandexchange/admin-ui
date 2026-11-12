@@ -48,7 +48,7 @@ export function parseCsv(text: string): string[][] {
   return rows.filter((r) => r.some((c) => c.trim()))
 }
 
-const ALIASES: Record<string, string> = { style: 'style_number', ean: 'gtin', barcode: 'gtin', colour_code: 'color_code', colour_name: 'color_name' }
+const ALIASES: Record<string, string> = { style: 'style_number', ean: 'gtin', barcode: 'gtin', colour_code: 'color_code', colour_name: 'color_name', colour_family: 'color_family' }
 
 export function normHeader(h: string): string {
   const base = h.trim().toLowerCase().replace(/[\s-]+/g, '_')

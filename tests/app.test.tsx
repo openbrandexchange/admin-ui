@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { db, DEMO, resetDb } from '../src/mock/db'
+import { parseCsv } from '../src/mock/csv'
 import { server } from './setup'
 import { renderApp } from './render'
 
@@ -127,7 +128,7 @@ describe('retailer portal', () => {
   it('lists the visible catalog and filters by product type', async () => {
     const r = await loginAs('retailer')
     const grid = await screen.findByRole('list', { name: /articles/i })
-    expect(within(grid).getAllByRole('listitem')).toHaveLength(8)
+    expect(within(grid).getAllByRole('listitem')).toHaveLength(11)
     await r.user.click(within(await screen.findByRole('group', { name: /product type/i })).getByRole('checkbox', { name: /jeans/i }))
     await waitFor(() => expect(within(screen.getByRole('list', { name: /articles/i })).getAllByRole('listitem')).toHaveLength(1))
     expect(r.router.state.location.search).toMatchObject({ item_type: ['jeans'] })
@@ -201,6 +202,68 @@ describe('retailer portal', () => {
     expect(within(versions).getByRole('radio', { name: /^square$/i })).toBeChecked()
     await r.user.click(within(dialog).getByRole('button', { name: /prepare zip/i }))
     await waitFor(() => expect(db().downloadJobs[0]?.variant).toBe('square'))
+  })
+
+  it('shows the label information and measurements of a suitcase', async () => {
+    const r = await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    await r.user.click(screen.getAllByRole('link', { name: /KO-1008/ })[0])
+    const label = await screen.findByRole('region', { name: /label information/i })
+    expect(within(label).getByText(/100% polypropylene/)).toBeInTheDocument()
+    expect(within(label).getByText(/100% polyester \(recycled\)/)).toBeInTheDocument()
+    expect(within(label).getByText('Do not wash')).toBeInTheDocument()
+    expect(within(label).getByText('China')).toBeInTheDocument()
+    expect(within(label).queryByText(/animal origin/i)).toBeNull()
+    const sizes = screen.getByRole('region', { name: /sizes and ean/i })
+    expect(within(sizes).getAllByText('Black').length).toBeGreaterThan(0)
+    expect(within(sizes).getByText('CABIN PLUS')).toBeInTheDocument()
+    const measures = screen.getByRole('region', { name: /^measurements$/i })
+    expect(within(measures).getByText('55 × 40 × 20 cm')).toBeInTheDocument()
+    expect(within(measures).getByText('55 × 40 × 23 cm')).toBeInTheDocument()
+    expect(within(measures).getByText('2.6 kg')).toBeInTheDocument()
+    expect(within(measures).getByText(/36 L · 42 L expanded/)).toBeInTheDocument()
+    const features = screen.getByRole('region', { name: /features/i })
+    expect(within(features).getByText('Hard shell')).toBeInTheDocument()
+    expect(within(features).getByText('TSA combination lock')).toBeInTheDocument()
+    expect(within(features).getByText('4')).toBeInTheDocument()
+    expect(screen.getByText('Cabin size')).toBeInTheDocument()
+  })
+
+  it('shows footwear materials, certifications, the animal-origin line and second sizes', async () => {
+    const r = await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    await r.user.click(screen.getAllByRole('link', { name: /KO-1010/ })[0])
+    const label = await screen.findByRole('region', { name: /label information/i })
+    expect(within(label).getByText('Footwear materials')).toBeInTheDocument()
+    expect(within(label).getByText('Other materials')).toBeInTheDocument()
+    expect(within(label).getByText('LWG')).toBeInTheDocument()
+    expect(within(label).getByText(/a material is certified/)).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /^measurements$/i })).toHaveTextContent(/Shaft height/)
+    expect(screen.getByRole('region', { name: /features/i })).toHaveTextContent('Detachableinsole')
+
+    await r.router.navigate({ to: '/' })
+    await r.user.click((await screen.findAllByRole('link', { name: /KO-1004/ }))[0])
+    const jeans = await screen.findByRole('region', { name: /label information/i })
+    expect(within(jeans).getByText('Contains non-textile parts of animal origin')).toBeInTheDocument()
+    expect(within(screen.getByRole('region', { name: /sizes and ean/i })).getByText('30/32')).toBeInTheDocument()
+    const measures = screen.getByRole('region', { name: /^measurements$/i })
+    expect(within(measures).getByText('34/32')).toBeInTheDocument()
+    expect(within(measures).getAllByText('81 cm').length).toBe(3)
+  })
+
+  it('exports measurements and features in the import format’s columns', async () => {
+    await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    const res = await fetch('http://localhost/admin/api/portal/products/data.csv?delimiter=comma')
+    const text = await res.text()
+    const [head, ...lines] = (text).replace(/^\uFEFF/, '').trim().split('\r\n')
+    const cols = head.split(',')
+    for (const c of ['item_subtype', 'contains_animal_origin', 'footwear_materials', 'certifications', 'feature:wheels', 'feature:detachable_parts', 'color_family', 'size_length', 'height_cm', 'weight_kg', 'volume_expanded_l', 'strap_length_cm', 'laptop_max_inch', 'inseam_cm']) expect(cols, c).toContain(c)
+    const rows = lines.map((l) => Object.fromEntries(parseCsv(l)[0].map((v, i) => [cols[i], v])))
+    const cabin = rows.find((x) => x.sku === 'KO-1008-BLK-CABIN')!
+    expect(cabin).toMatchObject({ 'feature:wheels': '4', 'feature:expandable': 'yes', height_cm: '55', weight_kg: '2.6', volume_expanded_l: '42', color_family: 'black', materials: 'shell: 100% polypropylene; lining: 100% polyester (recycled)' })
+    const messenger = rows.find((x) => x.sku === 'KO-1009-CHR-ONESIZE')!
+    expect(messenger).toMatchObject({ strap_length_cm: '85-140', laptop_max_inch: '15.6', 'feature:detachable_parts': 'shoulder_strap', certifications: 'grs:CU 200901 (material)', contains_animal_origin: 'no' })
   })
 
   it('sends the user to the login page when the session ends', async () => {
@@ -318,11 +381,63 @@ describe('brand admin', () => {
     await waitFor(() => expect(db().retailers.find((x) => x.name === 'Modehaus Berg')?.website).toBe('https://www.modehaus-berg.example'))
   })
 
+  it('shows label warnings with their legal basis, as warnings that do not block', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    const run = db().importRuns.find((x) => x.dry_run)!
+    await r.router.navigate({ to: '/admin/imports/$id', params: { id: run.id } })
+    expect(await screen.findByText(/these are warnings, not errors/i)).toBeInTheDocument()
+    expect(screen.getByText('Fibre composition missing')).toBeInTheDocument()
+    expect(screen.getByText('Animal origin not stated')).toBeInTheDocument()
+    expect(screen.getAllByText('Footwear materials missing')).toHaveLength(2)
+    expect(screen.getByText(/Percentages do not add up to 100%/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Regulation \(EU\) No 1007\/2011/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Directive 94/11/EC')).toHaveLength(2)
+    expect(screen.queryByText(/rows with a problem were skipped/i)).toBeNull()
+  })
+
+  it('shows the article data on the article screen and keeps it when saving', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1009' } })
+    expect(await screen.findByText('GRS')).toBeInTheDocument()
+    expect(screen.getByText('Laptop compartment')).toBeInTheDocument()
+    expect(screen.getByText('up to 15.6 inches')).toBeInTheDocument()
+    expect(screen.getByText('85–140 cm')).toBeInTheDocument()
+    await r.user.click(screen.getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
+    const p = db().products.find((x) => x.external_id === 'KO-1009')!
+    expect(p.data.features).toMatchObject({ laptop_compartment: true, detachable_parts: ['shoulder_strap'] })
+    expect(p.data.certifications).toEqual([{ scheme: 'grs', licence_number: 'CU 200901', scope: 'material' }])
+    expect(p.data.contains_animal_origin).toBe(false)
+    expect(p.data.item_subtype).toBe('laptop_bag')
+  })
+
+  it('edits the measurements of a size', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1008' } })
+    const sizes = await screen.findByRole('region', { name: /colours and sizes/i })
+    await r.user.click(within(sizes).getAllByRole('button', { name: /^edit$/i })[0])
+    const dialog = await screen.findByRole('dialog')
+    const weight = within(dialog).getByLabelText(/^weight \(kg\)$/i)
+    expect(weight).toHaveValue('2.6')
+    await r.user.clear(weight)
+    await r.user.type(weight, '2,4 kg')
+    await r.user.click(within(dialog).getByRole('button', { name: /^save$/i }))
+    expect(within(dialog).getByText(/enter a number/i)).toBeInTheDocument()
+    await r.user.clear(weight)
+    await r.user.type(weight, '2,4')
+    await r.user.click(within(dialog).getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(db().variants.find((v) => v.data.sku === 'KO-1008-BLK-CABIN')!.data.measurements).toEqual({ height_cm: 55, width_cm: 40, depth_cm: 20, weight_kg: 2.4, volume_l: 36, volume_expanded_l: 42 }))
+    expect(db().variants.find((v) => v.data.sku === 'KO-1008-BLK-CABIN')!.data.color.family).toBe('black')
+  })
+
   it('does not call warnings skipped rows', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
     await r.router.navigate({ to: '/admin/imports' })
-    const csv = 'style_number,name:en,gtin,color_code,size,colour_family\nKO-9001,Rain Jacket,2000100909010,NVY,M,blue\n'
+    const csv = 'style_number,name:en,gtin,color_code,size,colour_mood\nKO-9001,Rain Jacket,2000100909010,NVY,M,calm\n'
     await r.user.upload(await screen.findByTestId('import-file-input'), new File([csv], 'products.csv', { type: 'text/csv' }))
     await r.user.click(await screen.findByRole('button', { name: /start import/i }))
     expect(await screen.findByText(/problems and warnings/i, {}, { timeout: 5000 })).toBeInTheDocument()

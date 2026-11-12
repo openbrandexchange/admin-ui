@@ -75,7 +75,7 @@ describe('failed loads offer a retry', () => {
     server.resetHandlers()
     await r.user.click(within(alert).getByRole('button', { name: /try again/i }))
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
-    expect(screen.getByRole('link', { name: /^articles\s*8$/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^articles\s*11$/i })).toBeInTheDocument()
   })
 
   it('shows a catalog error for the retailer and recovers', async () => {
@@ -85,7 +85,7 @@ describe('failed loads offer a retry', () => {
     server.resetHandlers()
     await r.user.click(within(alert).getByRole('button', { name: /try again/i }))
     const grid = await screen.findByRole('list', { name: /articles/i })
-    expect(within(grid).getAllByRole('listitem')).toHaveLength(8)
+    expect(within(grid).getAllByRole('listitem')).toHaveLength(11)
   })
 
   it('does not offer a retry for something that is not there', async () => {

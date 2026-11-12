@@ -2,8 +2,8 @@
 
 The shared web interface for an Open Brand Exchange portal: one static single-page app with
 
-- **the retailer portal** at `/`: browse the catalog, filter, select articles, paste an EAN list, download photos (original, web, square) and article data, prepare large zips, manage your account and API keys for your software;
-- **the brand admin** at `/admin`: dashboard, catalog and article editor (sizes, EANs, photos, usage rights, AI provenance), imports with row-level problems, automatic upload (scheduled imports, access keys, ready-made recipes, notifications), retailers and their access, access requests, statistics and settings;
+- **the retailer portal** at `/`: browse the catalog, filter, read each article's label information (composition, care, origin, footwear materials, certifications), measurements and features, select articles, paste an EAN list, download photos (original, web, square) and article data, prepare large zips, manage your account and API keys for your software;
+- **the brand admin** at `/admin`: dashboard, catalog and article editor (sizes, EANs, measurements, label information, photos, usage rights, AI provenance), imports with row-level problems and label warnings, automatic upload (scheduled imports, access keys, ready-made recipes, notifications), retailers and their access, access requests, statistics and settings;
 - **the public pages**: first-run setup, login, password reset, invitations and the "request access" form.
 
 Every portal implementation (the Cloudflare, Google Cloud & Docker and web-hosting editions) serves this same build. It talks only to the REST Node Admin API described in [`spec/openapi/node-admin.yaml`](https://github.com/openbrandexchange/spec/blob/main/openapi/node-admin.yaml), plus the public access-request endpoint of the protocol.
@@ -77,7 +77,7 @@ CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push a
 - the production build, a gzip bundle budget (`scripts/check-bundle.mjs`) and a check that the committed `dist/` is that build;
 - Playwright end-to-end tests of the main flows of both roles, axe-core (WCAG 2.1 AA) on every screen and open dialog, keyboard paths, all under a strict Content-Security-Policy;
 - licence check of all dependencies and `npm audit` of what ships;
-- when the `OBX_READ_TOKEN` secret is set (needed while the spec repository is private): the generated API types and the glossary checked against the spec.
+- the generated API types and the glossary checked against the spec (with the `OBX_READ_TOKEN` secret, or without one now that the spec repository is public).
 
 Dependabot proposes dependency updates weekly.
 

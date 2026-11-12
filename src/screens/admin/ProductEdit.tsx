@@ -2,11 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import type { ProductData } from '../../api/types'
+import { labelWarnings } from '../../lib/article'
 import { localized } from '../../lib/localized'
 import { adminProductQuery, useProductMutations } from '../../queries/admin'
 import { Loading, PageHeader, Section, Switch } from '../../ui/controls'
 import { ConfirmButton, ErrorNote, Notice } from '../../ui/feedback'
 import { IconChevronLeft, IconEye } from '../../ui/icons'
+import { FeatureList, LabelInfo, LabelWarnings } from '../shared/ArticleData'
 import { StatusBadges } from './Catalog'
 import { ImagesSection } from './product/ImagesSection'
 import { ProductForm } from './product/ProductForm'
@@ -62,6 +64,15 @@ export function ProductEditScreen() {
         <Switch checked={published} onChange={(v) => m.setStatus.mutate(v ? 'published' : 'unpublished')} label={t('product.publishedSwitch')} hint={published ? t('product.publishedOn') : t('product.publishedOff')} />
         {published && record.visibility === 'pending_files' && <Notice tone="warn">{t('product.pendingFilesHint')}</Notice>}
         <ErrorNote error={m.setStatus.error} />
+      </Section>
+
+      <Section title={t('article.label')} description={t('product.labelHint')}>
+        <div className="space-y-4">
+          <LabelWarnings warnings={labelWarnings(data)} />
+          <LabelInfo product={data} heading={false} />
+          {!data.materials?.length && !data.care?.length && !data.country_of_origin && !data.footwear_materials && !data.certifications?.length && <p className="text-sm text-stone-500">{t('product.labelEmpty')}</p>}
+          <FeatureList features={data.features} />
+        </div>
       </Section>
 
       <Section title={t('product.details')}>

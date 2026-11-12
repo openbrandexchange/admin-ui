@@ -17,7 +17,10 @@ import type {
   User,
   Variant,
 } from '../api/types'
+import { formatCertifications, formatFeature, formatFootwear, formatMeasurement, labelWarnings } from '../lib/article'
+import { formatMaterials } from '../lib/materials'
 import { gtinValid } from '../lib/validate'
+import { FEATURE_KEYS, MEASUREMENTS } from '../lib/vocab'
 import { applyImport, brandByKey, db, DEMO, newId, record, resetDb, save, slug, touch, type ManifestItem, type MockDb } from './db'
 import type { MockUser, Rec } from './types'
 import { mergePatch } from './mergePatch'
@@ -200,7 +203,7 @@ function assetView(d: MockDb, a: Rec, product: Rec, withOriginal: boolean): Asse
 function variantView(d: MockDb, v: Rec, product: Rec): Variant {
   const brand = brandByKey(d, product.data.brand_external_id)!
   const gtin = v.data.gtin as string | null
-  return { id: v.id, external_id: v.external_id, product_id: product.id, brand_id: brand.id, gtin: gtin ? gtin.padStart(14, '0') : null, gtin_original: gtin, sku: v.data.sku ?? null, color: v.data.color, size: v.data.size ?? null, size_system: v.data.size_system ?? null, updated_at: v.updated_at }
+  return { id: v.id, external_id: v.external_id, product_id: product.id, brand_id: brand.id, gtin: gtin ? gtin.padStart(14, '0') : null, gtin_original: gtin, sku: v.data.sku ?? null, color: { family: null, ...v.data.color }, size: v.data.size ?? null, size_length: v.data.size_length ?? null, size_system: v.data.size_system ?? null, measurements: v.data.measurements ?? null, updated_at: v.updated_at }
 }
 
 function productDetail(d: MockDb, p: Rec, u: MockUser): ProductDetail {
@@ -300,23 +303,38 @@ function publicBranding(d: MockDb): PublicBranding {
   }
 }
 
+/** The portal's article data CSV: the import format's columns in its order (import-format.md §1.2). */
 function csvOf(d: MockDb, products: Rec[], delimiter: string) {
   const sep = delimiter === 'semicolon' ? ';' : ','
   const langs = d.settings.portal?.languages ?? ['en']
-  const cols = ['brand', 'style_number', ...langs.map((l) => `name:${l}`), 'item_type', 'season', 'collection', 'gtin', 'sku', 'color_code', ...langs.map((l) => `color_name:${l}`), 'size', 'image_files']
+  const extraFeatures = [...new Set(products.flatMap((p) => Object.keys(p.data.features ?? {})))].filter((k) => !(FEATURE_KEYS as string[]).includes(k)).sort()
+  const featureCols = [...FEATURE_KEYS, ...extraFeatures]
+  const cols = [
+    'brand', 'style_number', ...langs.map((l) => `name:${l}`), ...langs.map((l) => `description:${l}`), 'item_type', 'item_subtype', 'target_group', 'season', 'collection', 'gpc_brick',
+    'materials', 'contains_animal_origin', 'footwear_materials', 'care', 'country_of_origin', 'certifications', 'dpp_url', ...featureCols.map((k) => `feature:${k}`),
+    'variant_id', 'gtin', 'sku', 'color_code', ...langs.map((l) => `color_name:${l}`), 'color_family', 'supplier_color', 'size', 'size_length', 'size_system', ...MEASUREMENTS, 'image_files',
+  ]
   const esc = (v: unknown) => {
     const s = v == null ? '' : String(v)
     return /["\n\r;,]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
   }
+  const yesNo = (v: unknown) => (v == null ? '' : v ? 'yes' : 'no')
   const lines = [cols.join(sep)]
   for (const p of products) {
     const brand = brandByKey(d, p.data.brand_external_id)
-    for (const v of d.variants.filter((x) => x.data.product_external_id === p.external_id && x.status === 'published')) {
+    const x = p.data
+    const productCells = [
+      brand?.data.name, x.style_number, ...langs.map((l) => x.name?.[l]), ...langs.map((l) => x.description?.[l]), x.item_type, x.item_subtype, x.target_group, x.season, x.collection, x.gpc_brick,
+      formatMaterials(x.materials), yesNo(x.contains_animal_origin), formatFootwear(x.footwear_materials), (x.care ?? []).map((c: { code: string }) => c.code).join('|'), x.country_of_origin, formatCertifications(x.certifications), x.dpp_url,
+      ...featureCols.map((k) => formatFeature(x.features?.[k])),
+    ]
+    for (const v of d.variants.filter((y) => y.data.product_external_id === p.external_id && y.status === 'published')) {
       const files = d.assets.filter((a) => a.data.product_external_id === p.external_id && a.data.color_code === v.data.color.code && assetVisible(d, a)).map((a) => a.data.filename)
-      lines.push([brand?.data.name, p.data.style_number, ...langs.map((l) => p.data.name?.[l]), p.data.item_type, p.data.season, p.data.collection, v.data.gtin, v.data.sku, v.data.color.code, ...langs.map((l) => v.data.color.name?.[l]), v.data.size, files.join('|')].map(esc).join(sep))
+      const y = v.data
+      lines.push([...productCells, v.external_id, y.gtin, y.sku, y.color.code, ...langs.map((l) => y.color.name?.[l]), y.color.family, y.color.supplier_color, y.size, y.size_length, y.size_system, ...MEASUREMENTS.map((k) => formatMeasurement(y.measurements, k)), files.join('|')].map(esc).join(sep))
     }
   }
-  return '﻿' + lines.join('\r\n') + '\r\n'
+  return '\uFEFF' + lines.join('\r\n') + '\r\n'
 }
 
 function zipResponse(name: string, files: Record<string, string>) {
@@ -352,21 +370,22 @@ function withVisibility(d: MockDb, r: Rec): Rec {
   return { ...r, visibility: r.status === 'published' ? 'visible' : 'hidden' }
 }
 
-function ingestPut(d: MockDb, list: Rec[], kind: Rec['kind'], externalId: string, data: Record<string, unknown>) {
+function ingestPut(d: MockDb, list: Rec[], kind: Rec['kind'], externalId: string, data: Record<string, unknown>, warningDetails: { code: string; pointer: string; detail: string }[] = []) {
+  const extra = warningDetails.length ? { warnings: warningDetails.map((w) => w.detail), warning_details: warningDetails } : {}
   const existing = findRec(list, externalId)
   const status = (data.status as 'published' | 'unpublished' | undefined) ?? existing?.status ?? d.settings.defaults?.ingest_status ?? 'published'
   const { status: _s, ...rest } = data  
   if (!existing) {
     const r = record(d, kind, externalId, rest, status)
     list.push(r)
-    return HttpResponse.json({ result: 'created', kind, external_id: externalId, id: r.id, etag: r.etag }, { status: 201 })
+    return HttpResponse.json({ result: 'created', kind, external_id: externalId, id: r.id, etag: r.etag, ...extra }, { status: 201 })
   }
   const merged = kind === 'asset' && !rest.files ? { ...rest, files: existing.data.files } : rest
-  if (JSON.stringify(existing.data) === JSON.stringify(merged) && existing.status === status) return HttpResponse.json({ result: 'unchanged', kind, external_id: externalId, id: existing.id, etag: existing.etag })
+  if (JSON.stringify(existing.data) === JSON.stringify(merged) && existing.status === status) return HttpResponse.json({ result: 'unchanged', kind, external_id: externalId, id: existing.id, etag: existing.etag, ...extra })
   existing.data = merged
   existing.status = status
   touch(existing)
-  return HttpResponse.json({ result: 'updated', kind, external_id: externalId, id: existing.id, etag: existing.etag })
+  return HttpResponse.json({ result: 'updated', kind, external_id: externalId, id: existing.id, etag: existing.etag, ...extra })
 }
 
 function ingestPatch(_d: MockDb, list: Rec[], externalId: string, patch: Record<string, unknown>) {
@@ -611,7 +630,7 @@ export const handlers = [
       const b = await body(request)
       if (!b.style_number || !b.name) throw stop(422, 'validation_failed', undefined, [{ pointer: b.style_number ? '/name' : '/style_number', obx_error: 'validation_failed', detail: 'Required.' }])
       if (!b.brand_external_id) b.brand_external_id = d.brands[0]?.external_id ?? null
-      return ingestPut(d, d.products, 'product', params.id, b)
+      return ingestPut(d, d.products, 'product', params.id, b, labelWarnings(b as never).map((w) => ({ code: w.code, pointer: `/${w.column}`, detail: w.part ? `${w.code} (${w.part})` : w.code })))
     }),
   ),
   http.patch(`${API}/catalog/products/:id`, route(async ({ request, params, d }) => (admin(d), ingestPatch(d, d.products, params.id, await body(request))))),
@@ -758,7 +777,7 @@ export const handlers = [
     `${API}/import-template.csv`,
     route(({ d }) => {
       admin(d)
-      const csv = 'brand,style_number,name:en,name:nl,item_type,season,materials,care,gtin,color_code,color_name:en,size\r\nKestrel,KO-9001,Rain Jacket,Regenjas,jacket,AW26,outer: 100% polyamide,wash_30|do_not_bleach,2000100101018,NVY,Navy,M\r\n'
+      const csv = 'brand,style_number,name:en,name:nl,item_type,season,materials,contains_animal_origin,care,country_of_origin,feature:closure,gtin,color_code,color_name:en,color_family,size,weight_kg\r\nKestrel,KO-9001,Rain Jacket,Regenjas,jacket,AW26,outer: 100% polyamide (recycled); lining: 100% polyester,no,wash_30|do_not_bleach,PT,zip,2000100101018,NVY,Navy,blue,M,0.45\r\n'
       return new HttpResponse('﻿' + csv, { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="products-template.csv"' } })
     }),
   ),
@@ -1193,6 +1212,17 @@ export const handlers = [
       })
     }),
   ),
+  // Before products/:id, which would otherwise take data.csv for an article id.
+  http.get(
+    `${API}/portal/products/data.csv`,
+    route(({ d, url }) => {
+      const u = me(d)
+      if (!d.settings.portal?.allow_article_data_export) throw stop(403, 'forbidden')
+      const ids = new Set(portalProducts(d, u, filterFrom(url)).map((p) => p.id))
+      logEvent(d, u, { kind: 'csv', variant: null, product_id: null, asset_id: null, usage_event: null, files: 0, bytes: null })
+      return new HttpResponse(csvOf(d, d.products.filter((p) => ids.has(p.id)), url.searchParams.get('delimiter') ?? 'comma'), { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="products.csv"' } })
+    }),
+  ),
   http.get(
     `${API}/portal/products/:id`,
     route(({ params, d }) => {
@@ -1313,16 +1343,6 @@ export const handlers = [
       const ids = new Set(d.selections[u.id] ?? [])
       logEvent(d, u, { kind: 'csv', variant: null, product_id: null, asset_id: null, usage_event: null, files: 0, bytes: null })
       return new HttpResponse(csvOf(d, d.products.filter((p) => ids.has(p.id)), url.searchParams.get('delimiter') ?? 'comma'), { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="selection.csv"' } })
-    }),
-  ),
-  http.get(
-    `${API}/portal/products/data.csv`,
-    route(({ d, url }) => {
-      const u = me(d)
-      if (!d.settings.portal?.allow_article_data_export) throw stop(403, 'forbidden')
-      const ids = new Set(portalProducts(d, u, filterFrom(url)).map((p) => p.id))
-      logEvent(d, u, { kind: 'csv', variant: null, product_id: null, asset_id: null, usage_event: null, files: 0, bytes: null })
-      return new HttpResponse(csvOf(d, d.products.filter((p) => ids.has(p.id)), url.searchParams.get('delimiter') ?? 'comma'), { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="products.csv"' } })
     }),
   ),
   http.get(

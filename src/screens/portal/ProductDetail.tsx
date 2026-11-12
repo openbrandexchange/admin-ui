@@ -10,6 +10,7 @@ import { portalProductQuery, useSelection, useSetSelection, useViewer } from '..
 import { Badge, Button, Loading, cx } from '../../ui/controls'
 import { EmptyState, ErrorNote, tabListKeys } from '../../ui/feedback'
 import { IconCheck, IconChevronLeft, IconImage, IconPlus, IconSparkle } from '../../ui/icons'
+import { FeatureList, LabelInfo, MeasurementsTable, SizesTable } from '../shared/ArticleData'
 import { DownloadButton, VariantHelp, VariantPicker, useVariant } from './DownloadTools'
 
 export function PortalProductScreen() {
@@ -74,7 +75,7 @@ function Product({ product }: { product: ProductDetail }) {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <section aria-label={t('portal.product.images')} className="space-y-3">
+      <section aria-label={t('portal.product.images')} className="min-w-0 space-y-3">
         {colourCodes.length > 1 && (
           <div role="tablist" aria-label={t('portal.product.colours')} className="flex flex-wrap gap-2">
             {colourCodes.map((c) => (
@@ -137,13 +138,14 @@ function Product({ product }: { product: ProductDetail }) {
         )}
       </section>
 
-      <section className="space-y-6">
+      <section className="min-w-0 space-y-6">
         <div className="space-y-2">
           <p className="font-mono text-sm text-stone-500">{product.style_number}</p>
           <h1 className="text-2xl font-semibold tracking-tight">{localized(product.name, lang)}</h1>
           <div className="flex flex-wrap gap-1.5">
             {brand && <Badge tone="accent">{brand.name}</Badge>}
             {product.item_type && <Badge>{t(`enum.itemType.${product.item_type}`, { defaultValue: humanize(product.item_type) })}</Badge>}
+            {product.item_subtype && <Badge>{t(`enum.itemSubtype.${product.item_subtype}`, { defaultValue: humanize(product.item_subtype) })}</Badge>}
             {product.target_group && <Badge>{t(`enum.targetGroup.${product.target_group}`, { defaultValue: humanize(product.target_group) })}</Badge>}
             {product.season && <Badge>{product.season}</Badge>}
             {product.collection && <Badge>{product.collection}</Badge>}
@@ -237,81 +239,20 @@ function ImageFacts({ asset }: { asset: Asset }) {
 }
 
 function Details({ product, colourName }: { product: ProductDetail; colourName: (c: string) => string }) {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language
+  const { t } = useTranslation()
   const variants = [...product.variants].sort((a, b) => a.color.code.localeCompare(b.color.code))
+  const rows = variants.map((v) => ({ ...v, key: v.id, ean: v.gtin_original ?? v.gtin ?? null }))
   return (
     <div className="space-y-6">
+      <LabelInfo product={product} />
       {variants.length > 0 && (
         <div>
           <h2 className="mb-2 text-sm font-semibold">{t('portal.product.sizes')}</h2>
-          <div role="region" tabIndex={0} aria-label={t('portal.product.sizes')} className="overflow-x-auto rounded-lg border border-stone-200 bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-stone-50 text-left text-xs text-stone-500">
-                <tr>
-                  <th className="px-3 py-2 font-medium">{t('fields.colour')}</th>
-                  <th className="px-3 py-2 font-medium">{t('fields.size')}</th>
-                  <th className="px-3 py-2 font-medium">{t('glossary.ean')}</th>
-                  <th className="px-3 py-2 font-medium">{t('fields.sku')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-100">
-                {variants.map((v) => (
-                  <tr key={v.id}>
-                    <td className="px-3 py-1.5">{colourName(v.color.code)} <span className="text-xs text-stone-500">{v.color.code}</span></td>
-                    <td className="px-3 py-1.5">{v.size ?? '—'}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs tabular">{v.gtin_original ?? v.gtin ?? '—'}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs">{v.sku ?? ''}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SizesTable caption={t('portal.product.sizes')} colourName={colourName} rows={rows} measurements={false} />
         </div>
       )}
-      <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-        {product.materials?.length ? (
-          <div>
-            <dt className="font-semibold">{t('portal.product.materials')}</dt>
-            <dd className="mt-1 space-y-0.5 text-stone-700">
-              {product.materials.map((m) => (
-                <p key={m.part}>
-                  {product.materials!.length > 1 && <span className="text-stone-500">{t(`enum.part.${m.part}`, { defaultValue: humanize(m.part) })}: </span>}
-                  {m.fibers.map((f) => `${f.percentage}% ${t(`enum.fibre.${f.fiber}`, { defaultValue: humanize(f.fiber) })}`).join(', ')}
-                </p>
-              ))}
-            </dd>
-          </div>
-        ) : null}
-        {product.care?.length ? (
-          <div>
-            <dt className="font-semibold">{t('portal.product.care')}</dt>
-            <dd className="mt-1 text-stone-700">
-              <ul className="list-disc space-y-0.5 pl-4">
-                {product.care.map((c) => (
-                  <li key={c.code}>{localized(c.text, lang) || t(`enum.care.${c.code}`, { defaultValue: humanize(c.code) })}</li>
-                ))}
-              </ul>
-            </dd>
-          </div>
-        ) : null}
-        {product.country_of_origin && (
-          <div>
-            <dt className="font-semibold">{t('portal.product.origin')}</dt>
-            <dd className="mt-1 text-stone-700">{countryName(product.country_of_origin, lang)}</dd>
-          </div>
-        )}
-        {product.dpp_url && (
-          <div>
-            <dt className="font-semibold">{t('portal.product.passport')}</dt>
-            <dd className="mt-1">
-              <a href={product.dpp_url} target="_blank" rel="noopener noreferrer" className="text-accent-strong underline underline-offset-2">
-                {t('portal.product.passportOpen')}
-              </a>
-            </dd>
-          </div>
-        )}
-      </dl>
+      <MeasurementsTable rows={rows} colourName={colourName} />
+      <FeatureList features={product.features} />
     </div>
   )
 }

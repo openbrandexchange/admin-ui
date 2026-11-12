@@ -37,6 +37,8 @@ const ADMIN_PATHS = [
   './admin',
   './admin/catalog',
   './admin/catalog/KO-1001',
+  './admin/catalog/KO-1008',
+  './admin/catalog/KO-1010',
   './admin/catalog/new',
   './admin/imports',
   './admin/automation',

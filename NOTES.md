@@ -17,6 +17,11 @@ Where the spec or the project requirements left room, the simplest reading was c
 11. **Merge patches clear with null.** Every PATCH is a JSON merge patch; a language whose text was cleared is sent as `null` (`localizedPatch` in `src/lib/localized.ts`), and an import schedule sends `null` for a weekday or time that no longer applies. The mock node applies real RFC 7396 merge patches so the tests catch a regression.
 12. **After an upgrade.** An open tab that asks for a lazily loaded file of the previous version reloads once (`vite:preloadError`, at most once a minute; TanStack Router has the same guard for route modules). Nodes can avoid even that by keeping the previous `assets/` files for a while (docs/node-integration.md).
 13. **Focus after navigation.** When the page changes and the focused element disappeared, focus moves to `<main>`; filter and search changes on the same page never move focus.
+14. **Features are per article, measurements per size.** The spec puts `features` on the product and `measurements` on the variant (protocol.md §5.9). The article page shows the features once, under the sizes table, and a measurement column per key any size has.
+15. **Label warnings without `warning_details`.** The Node Admin API's import errors carry the warning codes in `obx_error`; `IngestResult.warning_details` is optional. The brand's article screen therefore also checks the stored article against import-format.md rule 10 itself (`src/lib/article.ts`), so the hint is there on nodes that do not report the codes yet. The two can only differ when a node reports warnings for item types outside the spec's textile and footwear lists.
+16. **Certification names** are shown as the schemes write them (OEKO-TEX® STANDARD 100, MADE IN GREEN by OEKO-TEX®, bluesign®, FSC®) in every language; unknown schemes upper-cased. The list lives in `src/lib/vocab.ts`.
+17. **"Contains non-textile parts of animal origin"** is shown only when `contains_animal_origin` is `true`; `false` and `null` show nothing on the article page (the brand's form shows "not stated"). The wording per language follows Regulation (EU) No 1007/2011 Art. 12.
+18. **Number formats.** Measurements are formatted with `Intl.NumberFormat` units (centimetre, kilogram, litre, inch), so the decimal separator and the unit follow the reader's language; the CSV keeps the spec's plain numbers.
 
 ## Translations
 
@@ -32,7 +37,8 @@ Things a user or implementer could run into that this repository cannot settle a
 2. **Irish and Maltese counted phrases** use "label: count" ("Grianghraif: 3"). Correct for every number, but a native speaker may prefer full sentences. Close: native review (item 1).
 3. **GDPR self-service export of a retailer's data, retention settings and an audit log of admin actions** are not screens yet: the Node Admin API has no endpoints for them. Deleting a retailer (with its accounts and API keys) and deleting single accounts already work. Close: endpoints in `spec/openapi/node-admin.yaml`, then screens here (Retailer > "Export data", Settings > "Retention", Settings > "Activity log").
 4. **Keyboard users tab through all filters** before they reach the article grid on the catalog. The skip link goes to the page content, which starts with the filters. Close: a second skip link "Skip to results", if testing with users shows it is needed.
-5. **The spec cross-check job in CI** only runs when the `OBX_READ_TOKEN` secret exists (the spec repository is private). Close: the owner adds the secret, or the spec repository becomes public.
+5. **The spec cross-check job in CI** only runs when the `OBX_READ_TOKEN` secret exists or the spec repository is public.
+6. **Features are shown, not edited, in the brand admin.** The article screen shows them and saving keeps them; changing them goes through an import (`feature:<key>` columns) or the Ingest API. Close: a features editor per item type, if brands ask for it.
 
 ## Tests
 

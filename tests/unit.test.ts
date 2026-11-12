@@ -3,6 +3,7 @@ import { localized, cleanLocalized, localizedPatch } from '../src/lib/localized'
 import { mergePatch } from '../src/mock/mergePatch'
 import { csvDelimiter, pickLanguage } from '../src/i18n/languages'
 import { formatMaterials, parseMaterials, unbalancedParts } from '../src/lib/materials'
+import { formatCertifications, formatFeature, formatFootwear, labelWarnings, measurementsFrom, parseCertifications, parseFeature, parseFootwear } from '../src/lib/article'
 import { gtinValid, splitCodes, passwordProblem, slugify, urlProblem, withScheme } from '../src/lib/validate'
 import { accentVars, contrast, parseHex } from '../src/lib/accent'
 import { countryLanguage } from '../src/lib/countries'
@@ -52,14 +53,68 @@ describe('materials grammar', () => {
     expect(r).toEqual({ ok: true, value: [{ part: 'outer', fibers: [{ fiber: 'cotton', percentage: 65 }, { fiber: 'polyamide', percentage: 35 }] }, { part: 'lining', fibers: [{ fiber: 'polyester', percentage: 100 }] }] })
   })
   it('defaults the part to main and round-trips', () => {
-    const r = parseMaterials('100% organic cotton')
-    expect(r.ok && formatMaterials(r.value)).toBe('main: 100% organic_cotton')
+    const r = parseMaterials('100% cotton (organic)')
+    expect(r).toEqual({ ok: true, value: [{ part: 'main', fibers: [{ fiber: 'cotton', percentage: 100, organic: true }] }] })
+    expect(r.ok && formatMaterials(r.value)).toBe('main: 100% cotton (organic)')
+  })
+  it('reads the recycled and organic flags', () => {
+    const r = parseMaterials('outer: 100% polyester (recycled); lining: 50% Cotton (Organic) (recycled), 50% polyamide')
+    expect(r.ok && r.value).toEqual([
+      { part: 'outer', fibers: [{ fiber: 'polyester', percentage: 100, recycled: true }] },
+      { part: 'lining', fibers: [{ fiber: 'cotton', percentage: 50, organic: true, recycled: true }, { fiber: 'polyamide', percentage: 50 }] },
+    ])
+  })
+  it('normalises the 0.1 keys recycled_* and organic_* to the fibre with a flag', () => {
+    const a = parseMaterials('100% recycled_polyester')
+    const b = parseMaterials('100% polyester (recycled)')
+    expect(a).toEqual(b)
+    expect(formatMaterials([{ part: 'main', fibers: [{ fiber: 'organic_cotton', percentage: 100 }] }])).toBe('main: 100% cotton (organic)')
   })
   it('reports what it cannot read', () => expect(parseMaterials('cotton')).toEqual({ ok: false, error: 'cotton' }))
   it('warns when a part does not add up to 100', () => {
     const r = parseMaterials('90% wool')
     expect(r.ok && unbalancedParts(r.value)).toEqual(['main'])
   })
+})
+
+describe('article data cells (import-format.md §1.6)', () => {
+  it('reads footwear materials, with parts not stated as null', () => {
+    expect(parseFootwear('upper: Leather; lining_and_sock: textile')).toEqual({ ok: true, value: { upper: 'leather', lining_and_sock: 'textile', outer_sole: null } })
+    expect(parseFootwear('upper: cardboard').ok).toBe(false)
+    expect(formatFootwear({ upper: 'leather', lining_and_sock: 'leather', outer_sole: 'other' })).toBe('upper: leather; lining_and_sock: leather; outer_sole: other')
+  })
+  it('reads certifications with licence numbers that contain spaces and an optional scope', () => {
+    const r = parseCertifications('GOTS:CU 123456; rws:CU 200101 (material); bluesign')
+    expect(r).toEqual({ ok: true, value: [{ scheme: 'gots', licence_number: 'CU 123456', scope: 'product' }, { scheme: 'rws', licence_number: 'CU 200101', scope: 'material' }, { scheme: 'bluesign', licence_number: null, scope: 'product' }] })
+    expect(r.ok && formatCertifications(r.value)).toBe('gots:CU 123456; rws:CU 200101 (material); bluesign')
+  })
+  it('reads measurements with a decimal comma and a strap range', () => {
+    expect(measurementsFrom({ weight_kg: '2,6', strap_length_cm: '80-130', height_cm: '' })).toEqual({ ok: true, value: { weight_kg: 2.6, strap_length_cm: { min: 80, max: 130 } } })
+    expect(measurementsFrom({ strap_length_cm: '120' })).toEqual({ ok: true, value: { strap_length_cm: { min: 120, max: 120 } } })
+    expect(measurementsFrom({ weight_kg: '2.6 kg' })).toEqual({ ok: false, key: 'weight_kg' })
+    expect(measurementsFrom({})).toEqual({ ok: true, value: null })
+  })
+  it('checks registry features by type and keeps unknown keys as text', () => {
+    expect(parseFeature('wheels', '4')).toBe(4)
+    expect(parseFeature('wheels', '3')).toBeUndefined()
+    expect(parseFeature('expandable', 'yes')).toBe(true)
+    expect(parseFeature('lock', 'TSA combination')).toBe('tsa_combination')
+    expect(parseFeature('detachable_parts', 'shoulder_strap|lining|lining')).toEqual(['shoulder_strap', 'lining'])
+    expect(parseFeature('handle_colour', 'Tan')).toBe('Tan')
+    expect(formatFeature(['shoulder_strap', 'lining'])).toBe('shoulder_strap|lining')
+  })
+})
+
+describe('label completeness warnings (import-format.md rule 10)', () => {
+  it('gives the warnings of the spec test file', () => {
+    expect(labelWarnings({ item_type: 't_shirt', materials: null, contains_animal_origin: false }).map((w) => w.code)).toEqual(['fibre_composition_missing'])
+    expect(labelWarnings({ item_type: 'scarf', materials: [{ part: 'main', fibers: [{ fiber: 'wool', percentage: 100 }] }] }).map((w) => w.code)).toEqual(['animal_origin_unknown'])
+    expect(labelWarnings({ item_type: 'sneakers', materials: [{ part: 'upper', fibers: [{ fiber: 'polyester', percentage: 100 }] }] }).map((w) => w.code)).toEqual(['footwear_materials_missing'])
+    expect(labelWarnings({ item_type: 'shirt', materials: [{ part: 'main', fibers: [{ fiber: 'cotton', percentage: 60 }, { fiber: 'polyester', percentage: 30 }] }], contains_animal_origin: false })).toEqual([{ code: 'fibre_percentages_not_100', column: 'materials', part: 'main' }])
+    expect(labelWarnings({ item_type: 'sandals', footwear_materials: { upper: 'leather', lining_and_sock: 'leather', outer_sole: null } }).map((w) => w.code)).toEqual(['footwear_materials_missing'])
+    expect(labelWarnings({ item_type: 't_shirt', materials: [{ part: 'main', fibers: [{ fiber: 'cotton', percentage: 100 }] }], contains_animal_origin: false })).toEqual([])
+  })
+  it('gives no label warnings for other item types', () => expect(labelWarnings({ item_type: 'jewelry', materials: null })).toEqual([]))
 })
 
 describe('codes and validation', () => {

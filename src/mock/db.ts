@@ -23,6 +23,8 @@ import type {
   WebhookSubscription,
 } from '../api/types'
 import { checkGtin, localizedFrom, materialsFrom, parseImageName, rowsOf, truthy, type RowError } from './csv'
+import { labelWarnings, measurementsFrom, parseCertifications, parseFeature, parseFootwear, type FeatureValue } from '../lib/article'
+import { COLOUR_FAMILIES, MEASUREMENTS } from '../lib/vocab'
 
 export const DEMO = {
   admin: { email: 'admin@kestrel.example', password: 'kestrel-admin-2026' },
@@ -66,7 +68,7 @@ export interface MockDb {
   selections: Record<string, string[]>
 }
 
-const STORAGE = 'obx.mock.v1'
+const STORAGE = 'obx.mock.v2'
 const now = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const daysAgo = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString().replace(/\.\d{3}Z$/, 'Z')
 
@@ -96,7 +98,7 @@ function baseSettings(): MockDb['settings'] {
       public_url: origin,
       discovery_url: `${origin}/.well-known/obx`,
       software: 'mock node (admin-ui)',
-      version: '0.1.0',
+      version: '0.2.0',
       email_configured: false,
       renditions_server_generated: true,
       max_upload_bytes: 200 * 1024 * 1024,
@@ -152,6 +154,13 @@ export function brandByKey(db: MockDb, key: string | null | undefined): Rec | un
 
 // ---------------------------------------------------------------- canonical import
 
+const LABEL_DETAIL: Record<string, string> = {
+  fibre_composition_missing: 'The fibre composition is missing (Regulation (EU) No 1007/2011).',
+  animal_origin_unknown: 'State whether the article contains non-textile parts of animal origin (Regulation (EU) No 1007/2011, Art. 12).',
+  footwear_materials_missing: 'The materials of upper, lining and sock and outer sole are missing (Directive 94/11/EC).',
+  fibre_percentages_not_100: 'The percentages do not add up to 100 (Regulation (EU) No 1007/2011, Art. 9).',
+}
+
 export interface ManifestItem {
   file: string
   sha256: string
@@ -196,7 +205,8 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
 
   if (input.csv) {
     const { header, rows } = rowsOf(input.csv)
-    const known = /^(brand|product_id|style_number|name|description|item_type|target_group|season|collection|gpc_brick|materials|care|country_of_origin|dpp_url|status|variant_id|gtin|sku|color_code|color_name|supplier_color|size|size_system|variant_status|attr|image_files)(:.*)?$/
+    const known = new RegExp(`^(brand|product_id|style_number|name|description|item_type|item_subtype|target_group|season|collection|gpc_brick|materials|contains_animal_origin|footwear_materials|care|country_of_origin|certifications|dpp_url|status|feature|attr|variant_id|gtin|sku|color_code|color_name|color_family|supplier_color|size|size_length|size_system|${MEASUREMENTS.join('|')}|variant_status|image_files)(:.*)?$`)
+    const featureKeys = header.filter((h) => h.startsWith('feature:')).map((h) => h.slice(8))
     for (const h of header) if (!known.test(h)) err({ file: 'products.csv', row: null, column: h, obx_error: 'validation_failed', detail: 'Unknown column, ignored.', value: null }, 'warning')
     rows.forEach((row, i) => {
       const n = i + 1
@@ -214,26 +224,45 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
         seen.add(productId)
         const materials = row.materials ? materialsFrom(row.materials) : null
         if (row.materials && materials === undefined) err({ file: 'products.csv', row: n, column: 'materials', obx_error: 'validation_failed', detail: 'Could not read the materials.', value: row.materials }, 'warning')
+        const footwear = parseFootwear(row.footwear_materials ?? '')
+        if (!footwear.ok) return err({ file: 'products.csv', row: n, column: 'footwear_materials', obx_error: 'validation_failed', detail: 'Use upper, lining_and_sock and outer_sole with leather, coated_leather, textile or other.', value: row.footwear_materials })
+        const certifications = parseCertifications(row.certifications ?? '')
+        if (!certifications.ok) return err({ file: 'products.csv', row: n, column: 'certifications', obx_error: 'validation_failed', detail: 'Use scheme:licence number, separated by ;.', value: row.certifications })
+        const features: Record<string, FeatureValue> = {}
+        for (const key of featureKeys) {
+          const v = parseFeature(key, row[`feature:${key}`] ?? '')
+          if (v === undefined) return err({ file: 'products.csv', row: n, column: `feature:${key}`, obx_error: 'validation_failed', detail: 'Not a value of this feature.', value: row[`feature:${key}`] })
+          if (v !== null) features[key] = v
+        }
+        const animal = (row.contains_animal_origin ?? '').trim()
+        const product = {
+          brand_external_id: brand?.external_id ?? null,
+          style_number: row.style_number,
+          name,
+          description: localizedFrom(row, 'description', lang),
+          item_type: row.item_type ? row.item_type.toLowerCase().replace(/\s+/g, '_') : null,
+          item_subtype: row.item_subtype ? row.item_subtype.toLowerCase().replace(/\s+/g, '_') : null,
+          target_group: row.target_group || null,
+          season: row.season || null,
+          collection: row.collection || null,
+          materials: materials ?? null,
+          contains_animal_origin: animal ? truthy(animal) : null,
+          footwear_materials: footwear.value,
+          care: row.care ? row.care.split('|').map((code) => ({ code: code.trim() })) : null,
+          country_of_origin: row.country_of_origin || null,
+          certifications: certifications.value,
+          dpp_url: row.dpp_url || null,
+          features: Object.keys(features).length ? features : null,
+        }
         upsert(
           target.products,
           'product',
           productId,
-          {
-            brand_external_id: brand?.external_id ?? null,
-            style_number: row.style_number,
-            name,
-            description: localizedFrom(row, 'description', lang),
-            item_type: row.item_type ? row.item_type.toLowerCase().replace(/\s+/g, '_') : null,
-            target_group: row.target_group || null,
-            season: row.season || null,
-            collection: row.collection || null,
-            materials: materials ?? null,
-            care: row.care ? row.care.split('|').map((code) => ({ code: code.trim() })) : null,
-            country_of_origin: row.country_of_origin || null,
-            dpp_url: row.dpp_url || null,
-          },
+          product,
           (row.status as 'published' | 'unpublished') || undefined,
         )
+        // Rule 10: label completeness warnings, at most once per code (per part) and product.
+        for (const w of labelWarnings(product)) err({ file: 'products.csv', row: n, column: w.column, obx_error: w.code, detail: LABEL_DETAIL[w.code] + (w.part ? ` (${w.part})` : ''), value: null }, 'warning')
       }
       const hasVariant = row.gtin || row.variant_id || row.sku || row.color_code || row.size
       if (!hasVariant) return
@@ -242,15 +271,21 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
       if (!row.color_code) return err({ file: 'products.csv', row: n, column: 'color_code', obx_error: 'validation_failed', detail: 'Colour code is required for a size row.', value: null })
       const gtin = row.gtin?.replace(/\s/g, '') || null
       const vid = row.variant_id || gtin || [row.style_number, row.color_code, row.size].filter(Boolean).join('-')
+      const family = (row.color_family ?? '').trim().toLowerCase().replace(/^gray$/, 'grey').replace(/^multicolor$/, 'multicolour')
+      if (family && !(COLOUR_FAMILIES as readonly string[]).includes(family)) return err({ file: 'products.csv', row: n, column: 'color_family', obx_error: 'validation_failed', detail: 'Not a colour family.', value: row.color_family })
+      const measurements = measurementsFrom(row)
+      if (!measurements.ok) return err({ file: 'products.csv', row: n, column: measurements.key, obx_error: 'validation_failed', detail: 'Use a number without unit, like 2.6.', value: row[measurements.key] })
       const clash = gtin && target.variants.find((v) => v.data.gtin === gtin && v.external_id !== vid)
       if (clash) return err({ file: 'products.csv', row: n, column: 'gtin', obx_error: 'gtin_conflict', detail: `This EAN already belongs to ${clash.data.product_external_id}.`, value: gtin })
       upsert(target.variants, 'variant', vid, {
         product_external_id: productId,
         gtin,
         sku: row.sku || null,
-        color: { code: row.color_code, name: localizedFrom(row, 'color_name', lang), supplier_color: row.supplier_color || null },
+        color: { code: row.color_code, name: localizedFrom(row, 'color_name', lang), supplier_color: row.supplier_color || null, family: family || null },
         size: row.size || null,
+        size_length: row.size_length || null,
         size_system: row.size_system || null,
+        measurements: measurements.value,
       })
     })
     if (input.mode === 'mirror') {
@@ -322,6 +357,16 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
 
 // ---------------------------------------------------------------- seeding
 
+/** spec fixtures/imports/label-warnings.csv (conformance I-IMP-8). */
+const LABEL_CHECK_CSV = `brand,style_number,name:en,item_type,materials,contains_animal_origin,footwear_materials
+Kestrel,KL-8001,Label Test Tee,t_shirt,,no,
+Kestrel,KL-8002,Label Test Scarf,scarf,main: 100% wool,,
+Kestrel,KL-8003,Label Test Sneaker,sneakers,upper: 100% polyester,,
+Kestrel,KL-8004,Label Test Shirt,shirt,"main: 60% cotton, 30% polyester",no,
+Kestrel,KL-8005,Label Test Sandal,sandals,,,upper: leather; lining_and_sock: leather
+Kestrel,KL-8006,Label Test Complete,t_shirt,main: 100% cotton,no,
+`
+
 export function seedDb(): MockDb {
   const db = emptyDb()
   db.setupRequired = false
@@ -367,6 +412,11 @@ export function seedDb(): MockDb {
   })
   db.events.sort((a, b) => b.at.localeCompare(a.at))
   db.importRuns.push({ id: newId(db, 'imp'), source_id: null, trigger: 'upload', status: 'succeeded', mode: 'upsert', dry_run: false, created_at: daysAgo(3), started_at: daysAgo(3), finished_at: daysAgo(3), files: [{ name: 'products.csv', bytes: productsCsv.length, sha256: null }], counts: outcome.counts, error: null, errors_preview: [] })
+  // A check of the spec's label test file (fixtures/imports/label-warnings.csv): label warnings only.
+  const check = applyImport(db, { csv: LABEL_CHECK_CSV, dryRun: true, defaultLang: 'en' })
+  const checkRun: ImportRun = { id: newId(db, 'imp'), source_id: null, trigger: 'upload', status: 'succeeded', mode: 'upsert', dry_run: true, created_at: daysAgo(1), started_at: daysAgo(1), finished_at: daysAgo(1), files: [{ name: 'products.csv', bytes: LABEL_CHECK_CSV.length, sha256: null }], counts: check.counts, error: null, errors_preview: check.errors.slice(0, 50) as ImportRowError[] }
+  db.importRuns.unshift(checkRun)
+  db.importErrors[checkRun.id] = check.errors as ImportRowError[]
   return db
 }
 

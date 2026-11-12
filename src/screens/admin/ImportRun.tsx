@@ -8,14 +8,19 @@ import { importErrorsQuery, importRunQuery } from '../../queries/admin'
 import { Badge, Loading, PageHeader, Section, Spinner } from '../../ui/controls'
 import { ErrorNote, LoadMore, Notice } from '../../ui/feedback'
 import { IconChevronLeft } from '../../ui/icons'
+import { WARNING_CODES } from '../../lib/vocab'
+import { LabelWarningText } from '../shared/ArticleData'
 import { RUN_TONE } from './Imports'
+
+const isLabelWarning = (e: ImportRowError) => e.severity === 'warning' && (WARNING_CODES as readonly string[]).includes(e.obx_error)
 
 function ErrorRow({ e }: { e: ImportRowError }) {
   const { t } = useTranslation()
+  const label = isLabelWarning(e)
   return (
     <tr className={e.severity === 'error' ? 'bg-red-50/40' : 'bg-amber-50/40'}>
       <td className="px-3 py-2 align-top">
-        <Badge tone={e.severity === 'error' ? 'red' : 'amber'}>{t(`imports.severity.${e.severity}`)}</Badge>
+        <Badge tone={e.severity === 'error' ? 'red' : 'amber'}>{label ? t('labelWarning.badge') : t(`imports.severity.${e.severity}`)}</Badge>
       </td>
       <td className="px-3 py-2 align-top font-mono text-xs">
         {e.file}
@@ -24,8 +29,14 @@ function ErrorRow({ e }: { e: ImportRowError }) {
       <td className="px-3 py-2 align-top font-mono text-xs">{e.column ?? ''}</td>
       <td className="px-3 py-2 align-top font-mono text-xs break-all">{e.value ?? ''}</td>
       <td className="px-3 py-2 align-top text-sm">
-        <span className="block">{t(`importErrors.${e.obx_error}`, { defaultValue: '' }) || e.detail}</span>
-        {t(`importErrors.${e.obx_error}`, { defaultValue: '' }) && <span className="block text-xs text-stone-500">{e.detail}</span>}
+        {label ? (
+          <LabelWarningText code={e.obx_error} />
+        ) : (
+          <>
+            <span className="block">{t(`importErrors.${e.obx_error}`, { defaultValue: '' }) || e.detail}</span>
+            {t(`importErrors.${e.obx_error}`, { defaultValue: '' }) && <span className="block text-xs text-stone-500">{e.detail}</span>}
+          </>
+        )}
       </td>
     </tr>
   )
@@ -101,6 +112,14 @@ export function ImportRunScreen() {
 
       {(c.errors > 0 || c.warnings > 0) && (
         <Section title={t('imports.problems')} description={c.errors > 0 ? t('imports.problemsHint') : undefined}>
+          {errorItems.some(isLabelWarning) && (
+            <div className="mb-3">
+              <Notice tone="warn">
+                <span className="block font-semibold">{t('labelWarning.title')}</span>
+                {t('labelWarning.intro')}
+              </Notice>
+            </div>
+          )}
           <div role="region" tabIndex={0} aria-label={t('imports.problems')} className="overflow-x-auto rounded-lg border border-stone-200">
             <table className="w-full text-left">
               <thead className="bg-stone-50 text-xs text-stone-500">

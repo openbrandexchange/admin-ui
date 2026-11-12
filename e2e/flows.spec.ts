@@ -10,7 +10,7 @@ test.describe('retailer', () => {
   test('finds an article, downloads an image and builds a selection', async ({ page }) => {
     await logIn(page, buyer)
     const list = page.getByRole('list', { name: 'Articles' })
-    await expect(list.getByRole('listitem')).toHaveCount(8)
+    await expect(list.getByRole('listitem')).toHaveCount(11)
 
     // Search narrows the list and lands in the URL (shareable, survives reload).
     await page.getByRole('searchbox', { name: 'Search' }).fill('KO-1001')

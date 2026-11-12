@@ -47,7 +47,7 @@ test('logs in with the keyboard only', async ({ page }) => {
 
 test('selects an article with the space bar', async ({ page }) => {
   await logIn(page, buyer)
-  await expect(page.getByRole('list', { name: 'Articles' }).getByRole('listitem')).toHaveCount(8)
+  await expect(page.getByRole('list', { name: 'Articles' }).getByRole('listitem')).toHaveCount(11)
   await tabTo(page, "(el) => /^Select KO-1001/.test(el?.getAttribute('aria-label') ?? '')")
   // The checkbox itself is visually hidden; its tile button shows the focus ring.
   const ring = await page.evaluate(() => getComputedStyle(document.activeElement!.closest('label')!).outlineStyle)

@@ -4,6 +4,31 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
+## [0.2.0] - 2026-11-12
+
+Article data for fashion, shoes, bags and luggage, following spec 0.2.0 ([proposal 0002](https://github.com/openbrandexchange/spec/blob/main/docs/proposals/0002-product-data.md)). Additive: against a 0.1 node every screen works as before and the new parts stay hidden.
+
+### Added
+
+- **Label information on the retailer's article page**, in label order: composition per part with "recycled" and "organic", "Contains non-textile parts of animal origin" when the brand says so, footwear materials (upper, lining and sock, outer sole: leather, coated leather, textile, other materials), care instructions as text in label order, country of origin and certifications (scheme by its own name, licence number, whether the article or a material is certified). Only what the brand stated is shown.
+- **Sizes with their measurements**: second size (jeans 30/32), colour family, and a column per measurement any size has (H × W × D, weight, volume and expanded volume, handle drop, strap length, laptop size, heel and shaft height, inside leg), in cm, kg, l and inch formatted for the reader's language.
+- **Features** as readable labels: shell, wheels, lock, expandable, closure, laptop compartment, water resistance, detachable and adjustable parts, fit, sleeve length, neckline. Features outside the registry show with their own key.
+- The article kind (`item_subtype`, for example "Cabin size" or "Ankle boot") as a tag next to the product type; the product type "Luggage".
+- **Brand admin, article screen**: the same label information, measurements and features as retailers see them, and a notice when the label information is incomplete, with what is missing, why and the legal basis. The article form edits the kind, "non-textile parts of animal origin", the footwear materials and the certifications; materials accept `(recycled)` and `(organic)`. The size dialog edits the second size, the colour family and all measurements.
+- **Label warnings in import results** (`fibre_composition_missing`, `animal_origin_unknown`, `footwear_materials_missing`, `fibre_percentages_not_100`): marked "Label", explained in plain words with the legal basis (Regulation (EU) No 1007/2011, Directive 94/11/EC), and stated to be warnings that do not block publishing.
+- All new texts in the 25 languages; the legal line "Contains non-textile parts of animal origin" and the footwear words follow the official wording of each language. Certification schemes keep their own names (GOTS, OEKO-TEX® STANDARD 100, …).
+- Mock mode: the spec's 0.2 fixtures (11 articles, among them the suitcase KO-1008, the laptop bag KO-1009 and the Chelsea boot KO-1010, with their images), and a checked import with label warnings in the import history. The mock's article data CSV has the 0.2 columns of the import format.
+
+### Changed
+
+- The API types are generated from spec 0.2.0. Materials are shown and saved with the 0.2 fibre flags: the 0.1 keys `recycled_polyester`, `organic_cotton` … read as the fibre with "recycled" or "organic".
+- Saving an article or a size keeps the article data the form does not edit (features, attributes), so nothing a PIM or import sent is lost.
+- The mock demo data is stored under a new key, so an open demo tab picks up the new articles.
+
+### Fixed
+
+- Mock mode: the catalog's article data download no longer answers "not found".
+
 ## [0.1.1] - 2026-09-28
 
 ### Fixed

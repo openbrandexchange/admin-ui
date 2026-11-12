@@ -9,7 +9,8 @@ import { cleanLocalized } from '../../../lib/localized'
 import { formatMaterials, parseMaterials, unbalancedParts } from '../../../lib/materials'
 import { humanize } from '../../../lib/prefs'
 import { urlProblem } from '../../../lib/validate'
-import { CARE_GROUPS, ITEM_TYPES, TARGET_GROUPS } from '../../../lib/vocab'
+import { formatCertifications, parseCertifications, type FootwearMaterials } from '../../../lib/article'
+import { CARE_GROUPS, FOOTWEAR_ITEM_TYPES, FOOTWEAR_MATERIALS, FOOTWEAR_PARTS, ITEM_SUBTYPES, ITEM_TYPES, TARGET_GROUPS } from '../../../lib/vocab'
 import { brandsQuery } from '../../../queries/admin'
 import { Button, Saved, SelectField, TextField } from '../../../ui/controls'
 import { ErrorNote } from '../../../ui/feedback'
@@ -34,6 +35,10 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
   const [name, setName] = useState<Record<string, string>>({ ...(initial?.name ?? {}) })
   const [description, setDescription] = useState<Record<string, string>>({ ...(initial?.description ?? {}) })
   const [itemType, setItemType] = useState(initial?.item_type ?? '')
+  const [itemSubtype, setItemSubtype] = useState(initial?.item_subtype ?? '')
+  const [animal, setAnimal] = useState(initial?.contains_animal_origin == null ? '' : initial.contains_animal_origin ? 'yes' : 'no')
+  const [footwear, setFootwear] = useState<Record<string, string>>({ ...Object.fromEntries(FOOTWEAR_PARTS.map((k) => [k, initial?.footwear_materials?.[k] ?? ''])) })
+  const [certs, setCerts] = useState(formatCertifications(initial?.certifications))
   const [targetGroup, setTargetGroup] = useState(initial?.target_group ?? '')
   const [season, setSeason] = useState(initial?.season ?? '')
   const [collection, setCollection] = useState(initial?.collection ?? '')
@@ -44,12 +49,16 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
   const [touched, setTouched] = useState(false)
 
   const parsed = parseMaterials(materials)
+  const parsedCerts = parseCertifications(certs)
+  const subtypes: readonly string[] = (ITEM_SUBTYPES as Record<string, readonly string[]>)[itemType] ?? []
+  const showFootwear = (FOOTWEAR_ITEM_TYPES as readonly string[]).includes(itemType) || FOOTWEAR_PARTS.some((k) => footwear[k])
   const server = error instanceof ApiError ? error.fieldErrors() : {}
   const nameValue = cleanLocalized(name)
   const errs = {
     style: touched && !style.trim() ? t('validate.required') : server['/style_number'],
     name: touched && !nameValue ? t('validate.required') : server['/name'],
     materials: !parsed.ok ? t('product.materialsInvalid', { part: parsed.error }) : server['/materials'],
+    certs: !parsedCerts.ok ? t('product.certificationsInvalid', { entry: parsedCerts.error }) : server['/certifications'],
     dpp: touched && dpp.trim() && urlProblem(dpp) ? t('validate.url') : server['/dpp_url'],
     brand: server['/brand_external_id'],
   }
@@ -65,7 +74,8 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
       onSubmit={(e) => {
         e.preventDefault()
         setTouched(true)
-        if (!style.trim() || !nameValue || !parsed.ok || (dpp.trim() && urlProblem(dpp))) return
+        if (!style.trim() || !nameValue || !parsed.ok || !parsedCerts.ok || (dpp.trim() && urlProblem(dpp))) return
+        const fm = FOOTWEAR_PARTS.some((k) => footwear[k]) ? (Object.fromEntries(FOOTWEAR_PARTS.map((k) => [k, footwear[k] || null])) as FootwearMaterials) : null
         const cleanDescription = cleanLocalized(description)
         onSubmit({
           ...(brand && { brand_external_id: brand }),
@@ -73,13 +83,19 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
           name: nameValue,
           description: cleanDescription,
           item_type: itemType || null,
+          item_subtype: itemSubtype || null,
           target_group: targetGroup || null,
           season: season.trim() || null,
           collection: collection.trim() || null,
           materials: parsed.value,
+          contains_animal_origin: animal ? animal === 'yes' : null,
+          footwear_materials: fm,
           care: care.length ? care.map((code) => ({ code })) : null,
           country_of_origin: origin || null,
+          certifications: parsedCerts.ok ? parsedCerts.value : null,
           dpp_url: dpp.trim() || null,
+          // Features are shown on the article screen and kept as they are when saving.
+          ...(initial?.features && { features: initial.features }),
           ...(initial?.attributes && { attributes: initial.attributes }),
           ...(initial?.gpc_brick && { gpc_brick: initial.gpc_brick }),
         })
@@ -110,6 +126,17 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
             </option>
           ))}
         </SelectField>
+        {(subtypes.length > 0 || itemSubtype) && (
+          <SelectField label={t('fields.itemSubtype')} value={itemSubtype} onChange={(e) => setItemSubtype(e.target.value)}>
+            <option value="">—</option>
+            {itemSubtype && !subtypes.includes(itemSubtype) && <option value={itemSubtype}>{t(`enum.itemSubtype.${itemSubtype}`, { defaultValue: humanize(itemSubtype) })}</option>}
+            {sorted(subtypes, 'enum.itemSubtype').map(({ k, label }) => (
+              <option key={k} value={k}>
+                {label}
+              </option>
+            ))}
+          </SelectField>
+        )}
         <SelectField label={t('fields.targetGroup')} value={targetGroup} onChange={(e) => setTargetGroup(e.target.value)}>
           <option value="">—</option>
           {TARGET_GROUPS.map((k) => (
@@ -126,14 +153,37 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
         hint={
           parsed.ok && parsed.value && unbalancedParts(parsed.value).length
             ? t('product.materialsNot100', { parts: unbalancedParts(parsed.value).join(', ') })
-            : t('product.materialsHint')
+            : `${t('product.materialsHint')} ${t('product.materialsFlags')}`
         }
         value={materials}
         onChange={(e) => setMaterials(e.target.value)}
         error={errs.materials}
-        placeholder="outer: 65% cotton, 35% polyamide; lining: 100% polyester"
+        placeholder="outer: 65% cotton, 35% polyamide; lining: 100% polyester (recycled)"
         className="[&_input]:font-mono"
       />
+      <SelectField label={t('fields.animalOrigin')} hint={t('product.animalOriginHint')} value={animal} onChange={(e) => setAnimal(e.target.value)}>
+        <option value="">{t('article.notStated')}</option>
+        <option value="yes">{t('article.yes')}</option>
+        <option value="no">{t('article.no')}</option>
+      </SelectField>
+      {showFootwear && (
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">{t('article.footwear')}</legend>
+          <p className="text-xs text-stone-500">{t('product.footwearHint')}</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {FOOTWEAR_PARTS.map((k) => (
+              <SelectField key={k} label={t(`article.footwearPart.${k}`)} value={footwear[k]} onChange={(e) => setFootwear({ ...footwear, [k]: e.target.value })}>
+                <option value="">—</option>
+                {FOOTWEAR_MATERIALS.map((m) => (
+                  <option key={m} value={m}>
+                    {t(`enum.footwearMaterial.${m}`)}
+                  </option>
+                ))}
+              </SelectField>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium">{t('fields.care')}</legend>
         <p className="text-xs text-stone-500">{t('product.careHint')}</p>
@@ -171,6 +221,7 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
               </option>
             ))}
         </SelectField>
+        <TextField label={t('article.certifications')} hint={t('product.certificationsHint')} value={certs} onChange={(e) => setCerts(e.target.value)} error={errs.certs} placeholder="gots:CU 123456; rws:CU 654321 (material)" className="sm:col-span-2 [&_input]:font-mono" />
         <TextField label={t('fields.dppUrl')} hint={t('product.dppHint')} type="url" value={dpp} onChange={(e) => setDpp(e.target.value)} error={errs.dpp} placeholder="https://" />
       </div>
       <ErrorNote error={error} />
