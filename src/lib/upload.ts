@@ -14,11 +14,18 @@ const IMAGE_EXT = /\.(jpe?g|png|webp|tiff?|gif|avif|heic)$/i
 const IGNORED = /(^|\/)(__MACOSX\/|\.DS_Store$|Thumbs\.db$|\.)/
 
 export interface ImportFiles {
+  /** products.csv or products.xlsx */
   csv: File | null
+  /** assets.csv or assets.xlsx */
   assetsCsv: File | null
   images: File[]
   ignored: string[]
+  /** Spreadsheets in another format (.xls, .xlsm, .ods, .numbers …): save them as .xlsx. */
+  otherSheets: string[]
 }
+
+const TABLE = /\.(csv|xlsx)$/i
+const OTHER_SHEET = /\.(xls|xlsm|xlsb|xltx|xltm|ods|numbers)$/i
 
 export function contentTypeFor(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase() ?? ''
@@ -34,6 +41,7 @@ export function contentTypeFor(name: string): string {
       avif: 'image/avif',
       heic: 'image/heic',
       csv: 'text/csv',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }[ext] ?? 'application/octet-stream'
   )
 }
@@ -49,17 +57,19 @@ function unzipAsync(data: Uint8Array): Promise<Record<string, Uint8Array>> {
 }
 
 /**
- * Sort dropped files into products.csv, assets.csv and images. Zips are opened in the browser
+ * Sort dropped files into products.csv/.xlsx, assets.csv/.xlsx and images. The node converts an
+ * Excel workbook itself (spec import-format.md §5); the browser only passes it on. Zips are opened in the browser
  * (folders do not matter, only file names; nested zips are not opened).
  */
 export async function collectImportFiles(dropped: File[]): Promise<ImportFiles> {
-  const out: ImportFiles = { csv: null, assetsCsv: null, images: [], ignored: [] }
+  const out: ImportFiles = { csv: null, assetsCsv: null, images: [], ignored: [], otherSheets: [] }
   const csvs: File[] = []
   const take = (file: File, path = file.name) => {
     if (isIgnored(path)) return
     const name = basename(path)
-    if (/\.csv$/i.test(name)) csvs.push(file)
+    if (TABLE.test(name)) csvs.push(file)
     else if (IMAGE_EXT.test(name)) out.images.push(file)
+    else if (OTHER_SHEET.test(name)) out.otherSheets.push(name)
     else out.ignored.push(path)
   }
   for (const f of dropped) {
@@ -76,10 +86,10 @@ export async function collectImportFiles(dropped: File[]): Promise<ImportFiles> 
       }
     } else take(f)
   }
-  // products.csv by name, else the only other CSV (same rule as scheduled imports).
-  out.assetsCsv = csvs.find((c) => /^assets\.csv$/i.test(c.name)) ?? null
+  // products.csv/.xlsx by name, else the only other CSV or workbook (same rule as scheduled imports).
+  out.assetsCsv = csvs.find((c) => /^assets\.(csv|xlsx)$/i.test(c.name)) ?? null
   const others = csvs.filter((c) => c !== out.assetsCsv)
-  out.csv = others.find((c) => /^products\.csv$/i.test(c.name)) ?? (others.length === 1 ? others[0] : null)
+  out.csv = others.find((c) => /^products\.(csv|xlsx)$/i.test(c.name)) ?? (others.length === 1 ? others[0] : null)
   for (const c of others) if (c !== out.csv) out.ignored.push(c.name)
   // Two images with the same name: the later one wins, like the node would report a duplicate.
   const seen = new Map<string, File>()

@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { downloadFile } from '../../lib/download'
+import { downloadExcel, downloadFile } from '../../lib/download'
 import { usePref } from '../../lib/prefs'
 import { csvDelimiter } from '../../i18n/languages'
 import { useCreateDownloadJob, useViewer } from '../../queries/portal'
@@ -62,6 +62,7 @@ export function DownloadButton({
   variant = 'secondary',
   size = 'md',
   fallbackName,
+  run,
 }: {
   path: string
   query?: Record<string, unknown>
@@ -69,8 +70,10 @@ export function DownloadButton({
   variant?: 'primary' | 'secondary' | 'ghost'
   size?: 'sm' | 'md'
   fallbackName: string
+  /** Instead of saving the file as it comes: e.g. turn the CSV into a workbook first. */
+  run?: () => Promise<unknown>
 }) {
-  const dl = useMutation({ mutationFn: () => downloadFile(path, query, fallbackName) })
+  const dl = useMutation({ mutationFn: run ?? (() => downloadFile(path, query, fallbackName)) })
   return (
     <span className="inline-flex flex-col gap-1">
       <Button variant={variant} size={size} loading={dl.isPending} onClick={() => dl.mutate()}>
@@ -82,15 +85,23 @@ export function DownloadButton({
   )
 }
 
-/** Article data as CSV; hidden when the brand switched article data export off. */
+/**
+ * Article data as CSV and as Excel (the same columns as the CSV and the import template);
+ * hidden when the brand switched article data export off.
+ */
 export function CsvButton({ path, query, children }: { path: string; query?: Record<string, unknown>; children: ReactNode }) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const viewer = useViewer()
   if (!viewer.data?.permissions.article_data_export) return null
   return (
-    <DownloadButton path={path} query={{ ...query, delimiter: csvDelimiter(i18n.language) }} fallbackName="products.csv">
-      {children}
-    </DownloadButton>
+    <>
+      <DownloadButton path={path} query={{ ...query, delimiter: csvDelimiter(i18n.language) }} fallbackName="products.csv">
+        {children}
+      </DownloadButton>
+      <DownloadButton path={path} fallbackName="products.xlsx" run={() => downloadExcel(path, query)}>
+        {t('portal.excel')}
+      </DownloadButton>
+    </>
   )
 }
 

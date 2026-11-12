@@ -4,6 +4,24 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
+## [Unreleased]
+
+Excel next to CSV ([spec import-format.md §5](https://github.com/openbrandexchange/spec/blob/main/docs/import-format.md#excel)). The node converts a workbook itself; against a node without the Excel import an upload of a `.xlsx` is refused by the node as before.
+
+### Added
+
+- **Imports accept `products.xlsx` and `assets.xlsx`** wherever a CSV is accepted (file picker, drag and drop, inside a zip); `.xls`, `.xlsm`, `.ods` and `.numbers` get a hint to save as an Excel workbook first. The upload card links the Excel templates (openbrandexchange.com/downloads/products.xlsx and assets.xlsx) next to the empty CSV template and always shows the image naming rule (KO-1001_NVY_1.jpg).
+- **Import problems by row and column in plain words**: "Row 12, column EAN (C)", from the row, the column and the `detail` locator a node sends for a workbook; column names are the field labels of the reader's language. Sorted by row (the place shown once per cell) or by problem; "Download list (CSV)" saves every problem (all pages) in the reader's delimiter.
+- Messages for `workbook_invalid`, `workbook_unsafe`, `workbook_sheet_missing`, `workbook_too_large` and for Excel conversion errors (an error value such as `#N/A`, a formula without a saved result).
+- **Retailers: "Article data (Excel)"** next to the CSV on the catalog and the selection: the CSV the node serves, written as a one-sheet workbook "Products" in the browser (text cells, so EANs keep leading zeros; bold, frozen header; deflated with `CompressionStream` where available, else stored). Same columns and rows as the CSV; the spec's reference conversion `tools/xlsx.mjs` turns it back into the identical CSV (tested).
+- The retailer's article page shows the brand's own extra fields (`attributes`) under "Other details".
+- All new texts in the 25 languages. Mock mode imports simple workbooks with Excel row numbers.
+
+### Changed
+
+- The language chunks of the build leave out the `email.*` strings (only nodes use them, from `dist/locales/`, which keeps them): about 1.3 kB less per language.
+- The API types are generated from spec f6acec6 (four new error codes).
+
 ## [0.2.0] - 2026-11-12
 
 Article data for fashion, shoes, bags and luggage, following spec 0.2.0 ([proposal 0002](https://github.com/openbrandexchange/spec/blob/main/docs/proposals/0002-product-data.md)). Additive: against a 0.1 node every screen works as before and the new parts stay hidden.

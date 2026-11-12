@@ -24,6 +24,8 @@ import { FEATURE_KEYS, MEASUREMENTS } from '../lib/vocab'
 import { applyImport, brandByKey, db, DEMO, newId, record, resetDb, save, slug, touch, type ManifestItem, type MockDb } from './db'
 import type { MockUser, Rec } from './types'
 import { mergePatch } from './mergePatch'
+import { normHeader } from './csv'
+import { columnLetter, workbookToCsv, WorkbookError, type WorkbookCsv } from './xlsx-read'
 
 const API = '*/admin/api'
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
@@ -423,11 +425,39 @@ const publicClient = (c: MockDb['apiClients'][number]) => {
   return rest
 }
 
+/** Errors of a workbook import as a node reports them (import-format.md §5.5): Excel rows, a cell locator, conversion errors. */
+function fromWorkbook(outcome: ReturnType<typeof applyImport>, book: WorkbookCsv | { fatal: string }) {
+  const file = 'products.xlsx'
+  if ('fatal' in book) {
+    outcome.errors.unshift({ file, row: null, column: null, severity: 'error', obx_error: book.fatal, detail: `The workbook cannot be imported (${book.fatal}).`, value: null })
+    outcome.counts.errors++
+    return
+  }
+  const index = (column: string | null | undefined) => (column ? book.header.findIndex((h) => normHeader(h) === column) : -1)
+  for (const e of outcome.errors) {
+    if (e.file !== 'products.csv') continue
+    e.file = file
+    const j = index(e.column)
+    const at = j >= 0 ? `column ${book.header[j].trim()} (${columnLetter(j + 1)})` : e.column ? `column ${e.column}` : ''
+    if (e.row != null) {
+      e.row = book.excelRows[e.row - 1] ?? e.row + 1
+      e.detail = `row ${e.row}${at ? `, ${at}` : ''}: ${e.detail}`
+    } else if (at) e.detail = `${at}: ${e.detail}`
+  }
+  const conversion = book.errors.map((c) => ({ file, row: c.row, column: c.column, severity: 'error' as const, obx_error: 'validation_failed', detail: `row ${c.row}, column ${c.column ? `${c.column} ` : ''}(${c.letter}): ${c.value.startsWith('=') ? 'formula without a stored value' : `error value ${c.value}`}`, value: c.value }))
+  outcome.errors.push(...conversion)
+  outcome.errors.sort((a, b) => (a.row ?? 0) - (b.row ?? 0))
+  outcome.counts.errors += conversion.length
+  outcome.counts.rows += new Set(conversion.map((c) => c.row)).size
+}
+
 function finishRun(d: MockDb, run: ImportRun) {
   if (run.status !== 'running' && run.status !== 'queued') return
-  const pending = (run as ImportRun & { _pending?: Parameters<typeof applyImport>[1] })._pending
+  const pending = (run as ImportRun & { _pending?: Parameters<typeof applyImport>[1] & { workbook?: WorkbookCsv | { fatal: string } } })._pending
   if (!pending) return
-  const outcome = applyImport(d, pending)
+  const { workbook, ...input } = pending
+  const outcome = applyImport(d, input)
+  if (workbook) fromWorkbook(outcome, workbook)
   run.counts = outcome.counts
   run.status = 'succeeded'
   run.started_at = run.created_at
@@ -739,7 +769,8 @@ export const handlers = [
       const options = JSON.parse((await text('options')) ?? '{}') as { mode?: 'upsert' | 'mirror'; dry_run?: boolean; default_language?: string }
       const csv = await text('csv')
       const assetsCsv = await text('assets_csv')
-      if (!csv && !assetsCsv && !manifest.length) throw stop(400, 'import_invalid', 'Nothing to import.')
+      const workbook = fields['csv.xlsx'] ? (JSON.parse(fields['csv.xlsx']) as WorkbookCsv | { fatal: string }) : undefined
+      if (!csv && !assetsCsv && !manifest.length && !workbook) throw stop(400, 'import_invalid', 'Nothing to import.')
       const run: ImportRun & { _pending?: unknown } = {
         id: newId(d, 'imp'),
         source_id: null,
@@ -750,11 +781,11 @@ export const handlers = [
         created_at: nowIso(),
         started_at: nowIso(),
         finished_at: null,
-        files: [...(csv ? [{ name: 'products.csv', bytes: csv.length, sha256: null }] : []), ...manifest.map((m) => ({ name: m.file, bytes: d.blobs[m.sha256]?.bytes ?? 0, sha256: m.sha256 }))],
+        files: [...(csv || workbook ? [{ name: workbook ? 'products.xlsx' : 'products.csv', bytes: csv?.length ?? 0, sha256: null }] : []), ...manifest.map((m) => ({ name: m.file, bytes: d.blobs[m.sha256]?.bytes ?? 0, sha256: m.sha256 }))],
         counts: { rows: 0, files: 0, created: 0, updated: 0, unchanged: 0, unpublished: 0, errors: 0, warnings: 0 },
         error: null,
         errors_preview: [],
-        _pending: { csv, assetsCsv, manifest, mode: options.mode, dryRun: options.dry_run, defaultLang: options.default_language },
+        _pending: { csv, assetsCsv, manifest, mode: options.mode, dryRun: options.dry_run, defaultLang: options.default_language, workbook },
       }
       d.importRuns.unshift(run)
       const { _pending, ...visible } = run  
@@ -1465,16 +1496,44 @@ async function multipartText(request: Request): Promise<Record<string, string>> 
   const out: Record<string, string> = {}
   const type = request.headers.get('Content-Type') ?? ''
   const raw = await request.arrayBuffer()
+  // Like a node with the Excel import (import-format.md §5): a workbook part becomes the CSV.
+  const take = (name: string, filename: string | undefined, bytes: Uint8Array) => {
+    if (!filename || !/\.xlsx$/i.test(filename)) return void (out[name] = new TextDecoder().decode(bytes))
+    try {
+      const book = workbookToCsv(bytes, name === 'assets_csv' ? 'assets' : 'products')
+      out[name] = book.csv
+      out[`${name}.xlsx`] = JSON.stringify(book)
+    } catch (e) {
+      out[`${name}.xlsx`] = JSON.stringify({ fatal: e instanceof WorkbookError ? e.code : 'workbook_invalid' })
+    }
+  }
   try {
     const form = await new Response(raw, { headers: { 'Content-Type': type } }).formData()
-    for (const [k, v] of form.entries()) out[k] = typeof v === 'string' ? v : await v.text()
+    for (const [k, v] of form.entries()) {
+      if (typeof v === 'string') out[k] = v
+      else take(k, v.name, new Uint8Array(await v.arrayBuffer()))
+    }
     return out
   } catch {
+    // jsdom's XMLHttpRequest body: split the bytes at the boundary (binary-safe for workbooks).
     const boundary = /boundary=([^;]+)/.exec(type)?.[1]
     if (!boundary) return out
-    for (const part of new TextDecoder().decode(raw).split(`--${boundary}`)) {
-      const m = /^\r\nContent-Disposition: form-data; name="([^"]+)"[^\r]*\r\n(?:Content-Type: [^\r]*\r\n)?\r\n([\s\S]*)\r\n$/.exec(part)
-      if (m) out[m[1]] = m[2]
+    const bytes = new Uint8Array(raw)
+    const latin1 = (b: Uint8Array) => Array.from(b, (c) => String.fromCharCode(c)).join('')
+    const text = latin1(bytes)
+    const marker = `--${boundary}`
+    let at = text.indexOf(marker)
+    while (at >= 0) {
+      const next = text.indexOf(marker, at + marker.length)
+      if (next < 0) break
+      const part = text.slice(at + marker.length, next)
+      const headEnd = part.indexOf('\r\n\r\n')
+      const head = part.slice(0, headEnd)
+      const name = /name="([^"]+)"/.exec(head)?.[1]
+      const filename = /filename="([^"]*)"/.exec(head)?.[1]
+      const start = at + marker.length + headEnd + 4
+      if (name && headEnd >= 0) take(name, filename, bytes.slice(start, next - 2))
+      at = next
     }
     return out
   }

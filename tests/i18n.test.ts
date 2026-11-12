@@ -98,7 +98,7 @@ describe('labels for every stable key', () => {
   })
 
   it('has a message for every OBX error code', () => {
-    const codes = ['invalid_request', 'validation_failed', 'unauthorized', 'invalid_token', 'access_revoked', 'insufficient_scope', 'forbidden', 'not_found', 'method_not_allowed', 'conflict', 'precondition_failed', 'payload_too_large', 'unsupported_media_type', 'rate_limited', 'limit_exceeded', 'cursor_invalid', 'cursor_expired', 'export_expired', 'original_not_allowed', 'invalid_gtin', 'gtin_conflict', 'position_conflict', 'checksum_mismatch', 'blob_missing', 'upload_incomplete', 'unknown_parent', 'files_missing', 'import_invalid', 'mass_unpublish_refused', 'unsafe_url', 'csrf_failed', 'invalid_credentials', 'account_blocked', 'setup_required', 'setup_completed', 'invite_invalid', 'not_implemented', 'internal_error', 'service_unavailable']
+    const codes = ['invalid_request', 'validation_failed', 'unauthorized', 'invalid_token', 'access_revoked', 'insufficient_scope', 'forbidden', 'not_found', 'method_not_allowed', 'conflict', 'precondition_failed', 'payload_too_large', 'unsupported_media_type', 'rate_limited', 'limit_exceeded', 'cursor_invalid', 'cursor_expired', 'export_expired', 'original_not_allowed', 'invalid_gtin', 'gtin_conflict', 'position_conflict', 'checksum_mismatch', 'blob_missing', 'upload_incomplete', 'unknown_parent', 'files_missing', 'import_invalid', 'mass_unpublish_refused', 'workbook_invalid', 'workbook_unsafe', 'workbook_sheet_missing', 'workbook_too_large', 'unsafe_url', 'csrf_failed', 'invalid_credentials', 'account_blocked', 'setup_required', 'setup_completed', 'invite_invalid', 'not_implemented', 'internal_error', 'service_unavailable']
     expect(codes.filter((c) => !en[`errors.${c}`])).toEqual([])
   })
 

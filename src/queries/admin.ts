@@ -470,5 +470,19 @@ export const statEventsQuery = (filter: { retailer_id?: string }) =>
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   })
 
+/** Every problem of an import (all pages), for the downloadable list. */
+export async function fetchAllImportErrors(id: string) {
+  const items = []
+  let cursor: string | undefined
+  do {
+    const page = await req(() => api.GET('/admin/api/imports/{id}/errors', { params: { path: { id }, query: { cursor, limit: 200 } } }))
+    items.push(...page.items)
+    cursor = page.next_cursor ?? undefined
+  } while (cursor && items.length < 100_000)
+  return items
+}
+
 export const importTemplateUrl = '/admin/api/import-template.csv'
+/** The Excel templates (spec templates/), published on the project website. */
+export const excelTemplateUrls = { products: 'https://openbrandexchange.com/downloads/products.xlsx', assets: 'https://openbrandexchange.com/downloads/assets.xlsx' }
 export const productPath = (externalId: string) => `/admin/catalog/${seg(externalId)}`

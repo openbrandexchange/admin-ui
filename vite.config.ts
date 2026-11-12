@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { thirdPartyNotices } from './scripts/third-party-notices'
@@ -24,9 +24,26 @@ export const CSP = [
   "frame-ancestors 'none'",
 ].join('; ')
 
+/**
+ * The `email.*` strings are for nodes (dist/locales/, scripts/export-locales.mjs); the browser
+ * never shows them, so the language chunks of the build leave them out.
+ */
+function dropEmailStrings(): Plugin {
+  return {
+    name: 'obx-drop-email-strings',
+    enforce: 'pre',
+    apply: 'build',
+    transform(code, id) {
+      if (!/[/\\]src[/\\]locales[/\\][a-z]{2}\.json$/.test(id)) return
+      const { email: _email, ...ui } = JSON.parse(code) as Record<string, unknown>
+      return { code: JSON.stringify(ui), map: null }
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => ({
   base: './',
-  plugins: [react(), tailwindcss(), ...(mode === 'mock' ? [] : [thirdPartyNotices()])],
+  plugins: [react(), tailwindcss(), dropEmailStrings(), ...(mode === 'mock' ? [] : [thirdPartyNotices()])],
   // Mock mode serves the spec's fixture images and the MSW worker; the production build ships neither.
   publicDir: mode === 'mock' ? 'mock-public' : false,
   define: {

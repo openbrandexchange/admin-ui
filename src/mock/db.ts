@@ -174,6 +174,18 @@ export interface ImportOutcome {
 }
 
 /** Apply products.csv / assets.csv / an images manifest with ingest semantics (simplified). */
+/** attr:<key> (text) and attr:<key>:<lang> (text per language) columns → Product.attributes. */
+function attributesFrom(row: Record<string, string>): Record<string, string | Record<string, string>> | null {
+  const out: Record<string, string | Record<string, string>> = {}
+  for (const [col, v] of Object.entries(row)) {
+    const m = /^attr:([a-z0-9_]+)(?::([a-z]{2}))?$/.exec(col)
+    if (!m || !v.trim()) continue
+    if (m[2]) out[m[1]] = { ...(typeof out[m[1]] === 'object' ? (out[m[1]] as Record<string, string>) : {}), [m[2]]: v.trim() }
+    else out[m[1]] = v.trim()
+  }
+  return Object.keys(out).length ? out : null
+}
+
 export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: string; manifest?: ManifestItem[]; mode?: 'upsert' | 'mirror'; dryRun?: boolean; defaultLang?: string }): ImportOutcome {
   const counts = { rows: 0, files: 0, created: 0, updated: 0, unchanged: 0, unpublished: 0, errors: 0, warnings: 0 }
   const errors: RowError[] = []
@@ -253,6 +265,7 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
           certifications: certifications.value,
           dpp_url: row.dpp_url || null,
           features: Object.keys(features).length ? features : null,
+          attributes: attributesFrom(row),
         }
         upsert(
           target.products,

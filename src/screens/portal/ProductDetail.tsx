@@ -10,7 +10,7 @@ import { portalProductQuery, useSelection, useSetSelection, useViewer } from '..
 import { Badge, Button, Loading, cx } from '../../ui/controls'
 import { EmptyState, ErrorNote, tabListKeys } from '../../ui/feedback'
 import { IconCheck, IconChevronLeft, IconImage, IconPlus, IconSparkle } from '../../ui/icons'
-import { FeatureList, LabelInfo, MeasurementsTable, SizesTable } from '../shared/ArticleData'
+import { AttributeList, FeatureList, LabelInfo, MeasurementsTable, SizesTable } from '../shared/ArticleData'
 import { DownloadButton, VariantHelp, VariantPicker, useVariant } from './DownloadTools'
 
 export function PortalProductScreen() {
@@ -253,6 +253,7 @@ function Details({ product, colourName }: { product: ProductDetail; colourName: 
       )}
       <MeasurementsTable rows={rows} colourName={colourName} />
       <FeatureList features={product.features} />
+      <AttributeList attributes={product.attributes} />
     </div>
   )
 }

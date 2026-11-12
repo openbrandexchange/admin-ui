@@ -22,6 +22,8 @@ Where the spec or the project requirements left room, the simplest reading was c
 16. **Certification names** are shown as the schemes write them (OEKO-TEX® STANDARD 100, MADE IN GREEN by OEKO-TEX®, bluesign®, FSC®) in every language; unknown schemes upper-cased. The list lives in `src/lib/vocab.ts`.
 17. **"Contains non-textile parts of animal origin"** is shown only when `contains_animal_origin` is `true`; `false` and `null` show nothing on the article page (the brand's form shows "not stated"). The wording per language follows Regulation (EU) No 1007/2011 Art. 12.
 18. **Number formats.** Measurements are formatted with `Intl.NumberFormat` units (centimetre, kilogram, litre, inch), so the decimal separator and the unit follow the reader's language; the CSV keeps the spec's plain numbers.
+19. **Excel in the browser, conversion on the node.** An uploaded `.xlsx` goes to the node unchanged; only the node converts it (spec import-format.md §5), so the rows and row numbers are the same on every node. The retailer's Excel download is the other way round: the browser turns the node's CSV into a workbook (`src/lib/xlsx.ts`), so nodes need no Excel writer. Cells are text, the sheet is called `Products`, so the download can be imported again as it is.
+20. **Where a problem is.** The import screen reads the cell from the `detail` locator ("row 12, column ean (C): …", §5.5) and shows it as "Row 12, column EAN (C)"; for a CSV it shows "Row 12, column EAN". The rest of `detail` is shown under the translated title.
 
 ## Translations
 

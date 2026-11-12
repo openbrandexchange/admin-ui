@@ -1,7 +1,10 @@
 // The main flows of both roles, end to end in a real browser against the mock node
 // (the whole portal API runs in a service worker). Desktop and phone.
 import { expect, test } from '@playwright/test'
+import { readFileSync } from 'node:fs'
 import { admin, buyer, chooseEnglish, expectAccessible, failOnCspViolations, expectNoSideways, logIn } from './helpers'
+import { workbookParts, zip as zipFiles } from '../src/lib/xlsx'
+import { readWorkbook } from '../src/mock/xlsx-read'
 
 failOnCspViolations()
 test.beforeEach(async ({ page }) => chooseEnglish(page))
@@ -33,6 +36,16 @@ test.describe('retailer', () => {
     const zip = page.waitForEvent('download')
     await page.getByRole('button', { name: /^Download \d+ images? \(zip\)$/ }).click()
     expect((await zip).suggestedFilename()).toMatch(/\.zip$/)
+
+    // Article data as Excel: the CSV's columns and rows, EANs as text.
+    const xlsx = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'Article data (Excel)' }).click()
+    const file = await xlsx
+    expect(file.suggestedFilename()).toBe('selection.xlsx')
+    const rows = readWorkbook(new Uint8Array(readFileSync((await file.path())!))).map((r) => r.map((c) => c.text))
+    expect(rows[0].slice(0, 2)).toEqual(['brand', 'style_number'])
+    expect(rows.slice(1).every((r) => r[1] === 'KO-1001')).toBe(true)
+    expect(rows.slice(1).map((r) => r[rows[0].indexOf('gtin')])).toContain('2000100101018')
 
     // Emptying asks first, and Cancel keeps everything.
     await page.getByRole('button', { name: 'Empty selection' }).click()
@@ -122,6 +135,40 @@ test.describe('brand admin', () => {
     await expect(page.getByRole('heading', { name: 'Problems and warnings' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('Invalid EAN').first()).toBeVisible()
     await expectAccessible(page, 'import result')
+  })
+
+  test('imports an Excel file and reads every problem by row and column', async ({ page }) => {
+    await logIn(page, admin)
+    await page.goto('./admin/imports')
+    await expect(page.getByRole('link', { name: 'Products (Excel)' })).toHaveAttribute('href', 'https://openbrandexchange.com/downloads/products.xlsx')
+    await expect(page.getByText('KO-1001_NVY_1.jpg', { exact: true })).toBeVisible()
+    const rows = [
+      ['style_number', 'name:en', 'ean', 'color_code', 'size', 'weight_kg'],
+      ['KO-9001', 'Rain Jacket', '2000100101019', 'NVY', 'M', '0.4'],
+      ['KO-9002', 'Wind Jacket', '2000900100017', 'NVY', 'L', '0.5'],
+      ['KO-9003', 'Fleece', '2000900100024', 'GRN', 'S', '=F3*2'],
+      ['KO-9004', 'Gilet', '2000900100031', 'GRN', '', ''],
+    ]
+    const parts = workbookParts(rows).map(([name, xml]): [string, Uint8Array] => [
+      name,
+      Buffer.from(name.endsWith('sheet1.xml') ? xml.replace(/<c r="F4"[^>]*>.*?<\/c>/, '<c r="F4"><f>F3*2</f></c>').replace(/(<row r="5">.*?)(<\/row>)/, '$1<c r="F5" t="e"><v>#N/A</v></c>$2') : xml),
+    ])
+    await page.getByTestId('import-file-input').setInputFiles({ name: 'products.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await zipFiles(parts)) })
+    await expect(page.getByRole('listitem').filter({ hasText: 'products.xlsx' })).toBeVisible()
+    await page.getByRole('button', { name: 'Start import' }).click()
+    await expect(page.getByRole('heading', { name: 'Problems and warnings' })).toBeVisible({ timeout: 15_000 })
+    const table = page.getByRole('region', { name: 'Problems and warnings' })
+    await expect(table.getByText('Row 2, column EAN (C)')).toBeVisible()
+    await expect(table.getByText('Row 4, column Weight (kg) (F)')).toBeVisible()
+    await expect(table.getByText('Formula without a saved result: save the file in Excel')).toBeVisible()
+    await expect(table.getByText('Excel error value: type the value itself')).toBeVisible()
+    await expectAccessible(page, 'Excel import result')
+    if (process.env.OBX_SHOTS) await page.screenshot({ path: `${process.env.OBX_SHOTS}/import-excel-errors-${test.info().project.name}.png`, fullPage: true })
+    const list = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'Download list (CSV)' }).click()
+    const csv = readFileSync((await (await list).path())!, 'utf8')
+    expect(csv).toMatch(/^\uFEFFfile,row,column,where,severity,problem,detail,value,code\r\n/)
+    expect(csv).toContain('products.xlsx,2,gtin,"Row 2, column EAN (C)",Skipped,Invalid EAN')
   })
 
   test('approves an access request and gets the invitation link', async ({ page }) => {

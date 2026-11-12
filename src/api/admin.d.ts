@@ -1790,7 +1790,7 @@ export interface components {
          * @description Machine-readable OBX error code (see docs/protocol.md#errors). Clients MUST treat unknown codes by HTTP status.
          * @enum {string}
          */
-        ErrorCode: "invalid_request" | "validation_failed" | "unauthorized" | "invalid_token" | "access_revoked" | "insufficient_scope" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "precondition_failed" | "payload_too_large" | "unsupported_media_type" | "rate_limited" | "limit_exceeded" | "cursor_invalid" | "cursor_expired" | "export_expired" | "original_not_allowed" | "invalid_gtin" | "gtin_conflict" | "position_conflict" | "checksum_mismatch" | "blob_missing" | "upload_incomplete" | "unknown_parent" | "files_missing" | "import_invalid" | "mass_unpublish_refused" | "unsafe_url" | "csrf_failed" | "invalid_credentials" | "account_blocked" | "setup_required" | "setup_completed" | "invite_invalid" | "not_implemented" | "internal_error" | "service_unavailable";
+        ErrorCode: "invalid_request" | "validation_failed" | "unauthorized" | "invalid_token" | "access_revoked" | "insufficient_scope" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "precondition_failed" | "payload_too_large" | "unsupported_media_type" | "rate_limited" | "limit_exceeded" | "cursor_invalid" | "cursor_expired" | "export_expired" | "original_not_allowed" | "invalid_gtin" | "gtin_conflict" | "position_conflict" | "checksum_mismatch" | "blob_missing" | "upload_incomplete" | "unknown_parent" | "files_missing" | "import_invalid" | "mass_unpublish_refused" | "workbook_invalid" | "workbook_unsafe" | "workbook_sheet_missing" | "workbook_too_large" | "unsafe_url" | "csrf_failed" | "invalid_credentials" | "account_blocked" | "setup_required" | "setup_completed" | "invite_invalid" | "not_implemented" | "internal_error" | "service_unavailable";
         /**
          * Problem
          * @description application/problem+json (RFC 9457) error body. Exception: the OAuth2 token endpoint uses RFC 6749 error JSON.
@@ -2316,9 +2316,9 @@ export interface components {
         };
         /** ImportRowError */
         ImportRowError: {
-            /** @description products.csv, assets.csv or the image file name. */
+            /** @description products.csv, assets.csv, products.xlsx, assets.xlsx (Excel import, a node feature) or the image file name. */
             file: string;
-            /** @description 1-based data row; null for header, file-level and image-file problems. */
+            /** @description 1-based data row; for a workbook (products.xlsx, assets.xlsx) the Excel row number, header = row 1. null for header, file-level and image-file problems. */
             row: number | null;
             column?: string | null;
             /**

@@ -6,7 +6,7 @@ import type { ImportRun } from '../../api/types'
 import { downloadFile } from '../../lib/download'
 import { formatBytes, formatRelative } from '../../lib/format'
 import { collectImportFiles, prepareImages, startImport, type ImportFiles, type UploadProgress } from '../../lib/upload'
-import { importRunsQuery, importTemplateUrl, settingsQuery } from '../../queries/admin'
+import { excelTemplateUrls, importRunsQuery, importTemplateUrl, settingsQuery } from '../../queries/admin'
 import { Badge, Button, Checkbox, Loading, PageHeader, Section, Segmented, cx } from '../../ui/controls'
 import { EmptyState, ErrorNote, LoadMore, Notice } from '../../ui/feedback'
 import { IconDownload, IconFile, IconImage, IconUpload } from '../../ui/icons'
@@ -51,7 +51,7 @@ function DropZone({ onFiles, disabled }: { onFiles: (files: File[]) => void; dis
         <input
           type="file"
           multiple
-          accept=".csv,.zip,image/*,.tif,.tiff"
+          accept=".csv,.xlsx,.zip,image/*,.tif,.tiff"
           className="sr-only"
           data-testid="import-file-input"
           onChange={(e) => {
@@ -109,13 +109,20 @@ function UploadCard() {
     <Section
       title={t('imports.uploadTitle')}
       description={t('imports.uploadIntro')}
-      actions={
+    >
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <span className="font-medium text-stone-800">{t('imports.templates')}</span>
+        {(['products', 'assets'] as const).map((k) => (
+          <a key={k} href={excelTemplateUrls[k]} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-accent-strong underline underline-offset-2">
+            <IconDownload size={16} />
+            {t(`imports.excel.${k}`)}
+          </a>
+        ))}
         <Button size="sm" variant="ghost" onClick={() => void downloadFile(importTemplateUrl, undefined, 'products-template.csv')}>
           <IconDownload size={16} />
           {t('imports.template')}
         </Button>
-      }
-    >
+      </div>
       <DropZone onFiles={(f) => collect.mutate(f)} disabled={busy} />
       <ErrorNote error={collect.error} />
       {files && (
@@ -138,6 +145,7 @@ function UploadCard() {
             )}
             {files.ignored.length > 0 && <li className="text-xs text-stone-500">{t('imports.ignored', { count: files.ignored.length, names: files.ignored.slice(0, 5).join(', ') })}</li>}
           </ul>
+          {files.otherSheets.length > 0 && <Notice tone="warn">{t('imports.otherSheet', { names: files.otherSheets.slice(0, 5).join(', ') })}</Notice>}
           {nothing && <Notice tone="warn">{t('imports.nothing')}</Notice>}
           <div className="space-y-2">
             <Segmented
@@ -176,14 +184,14 @@ function UploadCard() {
           </div>
         </div>
       )}
-      <details className="text-sm text-stone-600">
-        <summary className="cursor-pointer font-medium text-stone-800">{t('imports.namingTitle')}</summary>
-        <div className="mt-2 space-y-2">
-          <p>{t('imports.namingIntro')}</p>
-          <p className="font-mono text-xs">KO-1001_NVY_1.jpg · KO-1001_NVY_2_back.jpg · KO-1003_RST_3_model.png</p>
-          <p className="text-xs">{t('imports.namingHint')}</p>
-        </div>
-      </details>
+      <div className="space-y-1.5 rounded-lg bg-stone-50 p-3 text-sm text-stone-600">
+        <h3 className="font-medium text-stone-800">{t('imports.namingTitle')}</h3>
+        <p>{t('imports.namingIntro')}</p>
+        <p className="font-mono text-xs text-stone-800">
+          <span className="font-semibold">KO-1001_NVY_1.jpg</span> · KO-1001_NVY_2_back.jpg · KO-1003_RST_3_model.png
+        </p>
+        <p className="text-xs">{t('imports.namingHint')}</p>
+      </div>
     </Section>
   )
 }

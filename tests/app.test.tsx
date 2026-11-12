@@ -3,11 +3,26 @@ import { screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { db, DEMO, resetDb } from '../src/mock/db'
 import { parseCsv } from '../src/mock/csv'
+import { readWorkbook } from '../src/mock/xlsx-read'
+import { workbookParts, zip } from '../src/lib/xlsx'
 import { server } from './setup'
 import { renderApp } from './render'
 
 // The demo accounts are set to Dutch; these tests read English, so they start from a device
 // where the visitor already picked English (an explicit choice wins over the account language).
+/** jsdom's Blob has neither text() nor arrayBuffer(). */
+function read(b: Blob, as: 'text'): Promise<string>
+function read(b: Blob, as: 'bytes'): Promise<ArrayBuffer>
+function read(b: Blob, as: 'text' | 'bytes') {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader()
+    r.onload = () => resolve(r.result)
+    r.onerror = () => reject(r.error)
+    if (as === 'text') r.readAsText(b)
+    else r.readAsArrayBuffer(b)
+  })
+}
+
 async function loginAs(who: 'admin' | 'retailer', path = '/login', { deviceChoice = 'en' as string | null } = {}) {
   if (deviceChoice) localStorage.setItem('obx.lang', deviceChoice)
   const r = await renderApp(path)
@@ -266,6 +281,25 @@ describe('retailer portal', () => {
     expect(messenger).toMatchObject({ strap_length_cm: '85-140', laptop_max_inch: '15.6', 'feature:detachable_parts': 'shoulder_strap', certifications: 'grs:CU 200901 (material)', contains_animal_origin: 'no' })
   })
 
+  it('downloads the article data as Excel with the CSV export\'s columns and rows', async () => {
+    const saved: Blob[] = []
+    const had = URL.createObjectURL
+    URL.createObjectURL = (b: Blob) => (saved.push(b), 'blob:x')
+    try {
+      const r = await loginAs('retailer')
+      await screen.findByRole('list', { name: /articles/i })
+      await r.user.click(screen.getByRole('button', { name: 'Article data (Excel)' }))
+      await waitFor(() => expect(saved).toHaveLength(1))
+      expect(saved[0].type).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      const book = readWorkbook(new Uint8Array(await read(saved[0], 'bytes'))).map((row) => row.map((c) => c.text))
+      const csv = await (await fetch('http://localhost/admin/api/portal/products/data.csv?delimiter=comma')).text()
+      expect(book).toEqual(parseCsv(csv))
+      expect(book[0][0]).toBe('brand')
+    } finally {
+      URL.createObjectURL = had
+    }
+  })
+
   it('sends the user to the login page when the session ends', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
@@ -454,6 +488,70 @@ describe('brand admin', () => {
     await r.user.click(await screen.findByRole('button', { name: /start import/i }))
     expect(await screen.findByText(/problems and warnings/i, {}, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByText('Invalid EAN')).toBeInTheDocument()
-    expect(screen.getByText(/row 1/)).toBeInTheDocument()
+    expect(screen.getByText('Row 1, column EAN')).toBeInTheDocument()
+  })
+
+  it.each([
+    ['succeeded', 1],
+    ['failed', 0],
+  ] as const)('shows a refused workbook as a problem (run %s)', async (status, errors) => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    const row = { file: 'products.xlsx', row: null, column: null, severity: 'error', obx_error: 'workbook_invalid', detail: 'not a zip file', value: null }
+    const run = { id: 'imp_x', source_id: null, trigger: 'upload', status, mode: 'upsert', dry_run: false, created_at: new Date().toISOString(), started_at: null, finished_at: new Date().toISOString(), files: [{ name: 'products.xlsx', bytes: 10, sha256: null }], counts: { rows: 0, files: 0, created: 0, updated: 0, unchanged: 0, unpublished: 0, errors, warnings: 0 }, error: null, errors_preview: [] }
+    server.use(
+      http.get('*/admin/api/imports/imp_x', () => HttpResponse.json(run)),
+      http.get('*/admin/api/imports/imp_x/errors', () => HttpResponse.json({ items: [row], next_cursor: null })),
+    )
+    await r.router.navigate({ to: '/admin/imports/$id', params: { id: 'imp_x' } })
+    expect(await screen.findByText('Not a readable Excel file')).toBeInTheDocument()
+    expect(screen.getByText('not a zip file')).toBeInTheDocument()
+    expect(screen.queryByText(/imported without problems/i)).toBeNull()
+  })
+
+  it('imports an Excel file and names the cell of every problem', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/imports' })
+    const rows = [
+      ['style_number', 'name:en', 'ean', 'color_code', 'size'],
+      ['KO-9001', 'Rain Jacket', '2000100101019', 'NVY', 'M'],
+      ['KO-9002', 'Wind Jacket', '2000100909010', 'NVY', 'L'],
+      ['KO-9003', 'Fleece', '2000100909027', 'GRN', 'S'],
+    ]
+    const parts = workbookParts(rows).map(([name, xml]): [string, Uint8Array] => [
+      name,
+      new TextEncoder().encode(name.endsWith('sheet1.xml') ? xml.replace(/<c r="E4"[^>]*>.*?<\/c>/, '<c r="E4" t="e"><v>#N/A</v></c>') : xml),
+    ])
+    const file = new File([(await zip(parts)) as BlobPart], 'products.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    await r.user.upload(await screen.findByTestId('import-file-input'), file)
+    expect(await screen.findByText('products.xlsx')).toBeInTheDocument()
+    await r.user.click(await screen.findByRole('button', { name: /start import/i }))
+    expect(await screen.findByText(/problems and warnings/i, {}, { timeout: 5000 })).toBeInTheDocument()
+    const table = screen.getByRole('region', { name: /problems and warnings/i })
+    expect(within(table).getByText('Row 2, column EAN (C)')).toBeInTheDocument()
+    expect(within(table).getByText('Invalid EAN')).toBeInTheDocument()
+    expect(within(table).getByText('Row 4, column Size (E)')).toBeInTheDocument()
+    expect(within(table).getByText('Excel error value: type the value itself')).toBeInTheDocument()
+    expect(within(table).getAllByText('products.xlsx').length).toBeGreaterThan(0)
+    // Sorted by row: row 2 before row 4; by problem the Excel error (E…) comes before the EAN.
+    const places = () => within(table).getAllByText(/^Row \d/).map((e) => e.textContent)
+    expect(places()).toEqual(['Row 2, column EAN (C)', 'Row 4, column Size (E)'])
+    await r.user.click(screen.getByRole('radio', { name: 'By problem' }))
+    expect(places()).toEqual(['Row 4, column Size (E)', 'Row 2, column EAN (C)'])
+
+    const saved: Blob[] = []
+    const had = URL.createObjectURL
+    URL.createObjectURL = (b: Blob) => (saved.push(b), 'blob:x')
+    try {
+      await r.user.click(screen.getByRole('button', { name: 'Download list (CSV)' }))
+      await waitFor(() => expect(saved).toHaveLength(1))
+      const list = parseCsv(await read(saved[0], 'text'))
+      expect(list[0]).toEqual(['file', 'row', 'column', 'where', 'severity', 'problem', 'detail', 'value', 'code'])
+      expect(list[1].slice(0, 4)).toEqual(['products.xlsx', '2', 'gtin', 'Row 2, column EAN (C)'])
+      expect(list[2]).toContain("'#N/A".slice(1))
+    } finally {
+      URL.createObjectURL = had
+    }
   })
 })

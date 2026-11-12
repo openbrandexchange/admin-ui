@@ -133,6 +133,36 @@ export function FeatureList({ features }: { features: ProductInput['features'] }
   )
 }
 
+/**
+ * The brand's own extra fields (Product.attributes): its key as a label, texts in the reader's
+ * language, yes/no and numbers formatted for it.
+ */
+export function AttributeList({ attributes }: { attributes: ProductInput['attributes'] }) {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language
+  const keys = Object.keys(attributes ?? {})
+    .filter((k) => attributes![k] !== null && attributes![k] !== '')
+    .sort()
+  if (!keys.length) return null
+  const value = (v: unknown) =>
+    typeof v === 'boolean' ? (v ? t('article.yes') : t('article.no')) : typeof v === 'number' ? new Intl.NumberFormat(lang).format(v) : typeof v === 'object' ? localized(v as Record<string, string>, lang) : String(v)
+  return (
+    <section aria-labelledby="attributes" className="space-y-2">
+      <h2 id="attributes" className="text-sm font-semibold">
+        {t('article.attributes')}
+      </h2>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+        {keys.map((k) => (
+          <div key={k} className="contents">
+            <dt className="text-stone-500">{humanize(k)}</dt>
+            <dd className="text-stone-800">{value(attributes![k])}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
 /** The size as people say it: "32/34" when there is a second size. */
 export const sizeLabel = (v: Pick<VariantInput, 'size' | 'size_length'>) => [v.size, v.size_length].filter(Boolean).join('/') || '—'
 

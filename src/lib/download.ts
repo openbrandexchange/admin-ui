@@ -29,11 +29,11 @@ export function saveBlob(blob: Blob, filename: string) {
 }
 
 /**
- * Download an API file (image, zip, CSV) with the session cookie. Errors (403
+ * Fetch an API file (image, zip, CSV) with the session cookie. Errors (403
  * original_not_allowed, 400 limit_exceeded ...) come back as ApiError so the UI can show
  * them next to the button instead of navigating to a JSON error page.
  */
-export async function downloadFile(path: string, query?: Record<string, unknown>, fallbackName = 'download'): Promise<string> {
+async function fetchOk(path: string, query?: Record<string, unknown>): Promise<Response> {
   let res: Response
   try {
     res = await fetch(apiUrl(path, query), { credentials: 'same-origin' })
@@ -49,7 +49,27 @@ export async function downloadFile(path: string, query?: Record<string, unknown>
     }
     throw new ApiError(res.status, problem && 'obx_error' in problem ? problem : null, res.statusText)
   }
-  const name = filenameFromDisposition(res.headers.get('content-disposition'), fallbackName)
+  return res
+}
+
+const nameOf = (res: Response, fallback: string) => filenameFromDisposition(res.headers.get('content-disposition'), fallback)
+
+/** Download an API file and save it under the name the server gives. */
+export async function downloadFile(path: string, query?: Record<string, unknown>, fallbackName = 'download'): Promise<string> {
+  const res = await fetchOk(path, query)
+  const name = nameOf(res, fallbackName)
   saveBlob(await res.blob(), name)
   return name
+}
+
+/**
+ * Article data as an Excel workbook: the CSV the portal serves (always comma-separated here),
+ * turned into .xlsx in the browser with the same columns in the same order.
+ */
+export async function downloadExcel(path: string, query?: Record<string, unknown>): Promise<string> {
+  const [res, { csvToXlsx, XLSX_TYPE }] = await Promise.all([fetchOk(path, { ...query, delimiter: 'comma' }), import('./xlsx')])
+  const xlsx = await csvToXlsx(await res.text())
+  const file = nameOf(res, 'products.csv').replace(/\.csv$/i, '') + '.xlsx'
+  saveBlob(new Blob([xlsx as BlobPart], { type: XLSX_TYPE }), file)
+  return file
 }
