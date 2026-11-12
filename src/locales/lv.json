@@ -297,9 +297,17 @@
     "styleHint": "Jūsu preces numurs. Tas identificē preci, un vēlāk to nevar mainīt.",
     "styleLocked": "Preces numurs identificē šo preci, un to nevar mainīt.",
     "seasonHint": "Tā, kā to izmantojat, piemēram, AW26 vai NOS.",
-    "materialsHint": "Kā uz etiķetes: “outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "Nevarēja nolasīt “{{part}}”. Norādiet procentus un materiālu, piemēram, 100% cotton.",
     "materialsNot100": "Procenti daļai {{parts}} kopā nav 100 %.",
+    "materialsEditorHint": "Katrai daļai kā uz etiķetes: procenti, materiāls un, ja attiecas, vai šķiedra ir bioloģiska, pārstrādāta vai reģeneratīva.",
+    "materialPart": "Daļa",
+    "materialPercentage": "Procenti",
+    "materialName": "Materiāls",
+    "materialQualifier": "Ilgtspēja",
+    "addFibre": "Pievienot materiālu",
+    "addPart": "Pievienot daļu",
+    "removeFibre": "Noņemt materiālu",
+    "removePart": "Noņemt daļu",
+    "materialsRowInvalid": "Katrā izmantotajā rindā norādiet procentus no 0 līdz 100 un materiālu.",
     "careHint": "Izvēlieties kopšanas etiķetes simbolus tādā secībā, kā uz etiķetes.",
     "careGroup": {
       "washing": "Mazgāšana",
@@ -376,7 +384,6 @@
     "delete": "Dzēst preci",
     "deleteTitle": "Dzēst {{style}}?",
     "deleteBody": "Prece, tās izmēri un fotoattēli tiks noņemti. Tirgotāju sistēmas uzzinās, ka tā ir pazudusi. To nevar atsaukt.",
-    "materialsFlags": "Ja attiecas, aiz šķiedras pievienojiet (recycled) vai (organic): “100% polyester (recycled)”.",
     "animalOriginHint": "Piemēram, ādas uzšuve, kažokādas apmale vai raga pogas. Ja tādas ir, tas jānorāda uz etiķetes.",
     "footwearHint": "Obligāti uz apavu etiķetes: katras daļas galvenais materiāls (vismaz 80 %).",
     "certificationsHint": "Nav obligāti. Shēma un licences numurs, piemēram, “gots:CU 123456”; pievienojiet (material), ja sertificēts ir tikai materiāls.",
@@ -1259,8 +1266,6 @@
     },
     "fibre": {
       "cotton": "kokvilna",
-      "organic_cotton": "bioloģiskā kokvilna",
-      "recycled_cotton": "pārstrādāta kokvilna",
       "linen": "lins",
       "hemp": "kaņepes",
       "silk": "zīds",
@@ -1276,9 +1281,7 @@
       "cupro": "kupro",
       "acetate": "acetāts",
       "polyester": "poliesters",
-      "recycled_polyester": "pārstrādāts poliesters",
       "polyamide": "poliamīds",
-      "recycled_polyamide": "pārstrādāts poliamīds",
       "elastane": "elastāns",
       "acrylic": "akrils",
       "polypropylene": "polipropilēns",
@@ -1290,6 +1293,11 @@
       "rubber": "gumija",
       "metal": "metāls",
       "other": "citas šķiedras"
+    },
+    "qualifier": {
+      "organic": "bioloģisks",
+      "recycled": "pārstrādāts",
+      "regenerative": "reģeneratīvs"
     },
     "care": {
       "wash_95": "Mazgāt 95 °C",
@@ -1526,8 +1534,6 @@
   "article": {
     "label": "Etiķetes informācija",
     "composition": "Sastāvs",
-    "recycled": "pārstrādāts",
-    "organic": "bioloģisks",
     "animalOrigin": "Satur dzīvnieku izcelsmes netekstila daļas",
     "footwear": "Apavu materiāli",
     "footwearPart": {

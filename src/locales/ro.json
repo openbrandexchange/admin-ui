@@ -297,9 +297,17 @@
     "styleHint": "Codul dvs. propriu de articol. Identifică articolul și nu poate fi schimbat ulterior.",
     "styleLocked": "Codul de articol identifică acest articol și nu poate fi schimbat.",
     "seasonHint": "Așa cum îl folosiți, de exemplu AW26 sau NOS.",
-    "materialsHint": "Ca pe etichetă: „outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "„{{part}}” nu a putut fi citit. Indicați procentul și materialul, de ex. 100% cotton.",
     "materialsNot100": "Procentele pentru {{parts}} nu însumează 100%.",
+    "materialsEditorHint": "Pentru fiecare parte, ca pe etichetă: procentul, materialul și, dacă este cazul, dacă fibra este organică, reciclată sau regenerativă.",
+    "materialPart": "Parte",
+    "materialPercentage": "Procent",
+    "materialName": "Material",
+    "materialQualifier": "Sustenabilitate",
+    "addFibre": "Adaugă material",
+    "addPart": "Adaugă parte",
+    "removeFibre": "Elimină materialul",
+    "removePart": "Elimină partea",
+    "materialsRowInvalid": "Completați un procent între 0 și 100 și un material pe fiecare rând folosit.",
     "careHint": "Alegeți simbolurile de pe eticheta de întreținere, în ordinea de pe etichetă.",
     "careGroup": {
       "washing": "Spălare",
@@ -376,7 +384,6 @@
     "delete": "Șterge articolul",
     "deleteTitle": "Ștergeți {{style}}?",
     "deleteBody": "Articolul, mărimile și fotografiile sale vor fi eliminate. Sistemele comercianților vor afla că a dispărut. Acțiunea nu poate fi anulată.",
-    "materialsFlags": "Adăugați (recycled) sau (organic) după o fibră, unde este cazul: „100% polyester (recycled)”.",
     "animalOriginHint": "De exemplu un ecuson din piele, un garnisaj din blană sau nasturi din corn. Dacă există, eticheta trebuie să menționeze acest lucru.",
     "footwearHint": "Obligatoriu pe eticheta încălțămintei: materialul din care este făcută cea mai mare parte a fiecărei părți (cel puțin 80%).",
     "certificationsHint": "Opțional. Schema și numărul licenței, de ex. „gots:CU 123456”; adăugați (material) când este certificat doar un material.",
@@ -1259,8 +1266,6 @@
     },
     "fibre": {
       "cotton": "bumbac",
-      "organic_cotton": "bumbac organic",
-      "recycled_cotton": "bumbac reciclat",
       "linen": "in",
       "hemp": "cânepă",
       "silk": "mătase",
@@ -1276,9 +1281,7 @@
       "cupro": "cupro",
       "acetate": "acetat",
       "polyester": "poliester",
-      "recycled_polyester": "poliester reciclat",
       "polyamide": "poliamidă",
-      "recycled_polyamide": "poliamidă reciclată",
       "elastane": "elastan",
       "acrylic": "acril",
       "polypropylene": "polipropilenă",
@@ -1290,6 +1293,11 @@
       "rubber": "cauciuc",
       "metal": "metal",
       "other": "alte fibre"
+    },
+    "qualifier": {
+      "organic": "organic",
+      "recycled": "reciclat",
+      "regenerative": "regenerativ"
     },
     "care": {
       "wash_95": "Spălare la 95 °C",
@@ -1526,8 +1534,6 @@
   "article": {
     "label": "Informații pentru etichetă",
     "composition": "Compoziție",
-    "recycled": "reciclat",
-    "organic": "organic",
     "animalOrigin": "Conține părți netextile de origine animală",
     "footwear": "Materialele încălțămintei",
     "footwearPart": {

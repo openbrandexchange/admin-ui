@@ -294,9 +294,17 @@
     "styleHint": "Je eigen artikelnummer. Het identificeert het artikel en kan later niet meer worden gewijzigd.",
     "styleLocked": "Het artikelnummer identificeert dit artikel en kan niet worden gewijzigd.",
     "seasonHint": "Zoals je het zelf gebruikt, bijvoorbeeld AW26 of NOS.",
-    "materialsHint": "Zoals op het label: “outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "We konden “{{part}}” niet lezen. Gebruik een percentage en een materiaal, zoals 100% cotton.",
     "materialsNot100": "De percentages van {{parts}} komen niet uit op 100%.",
+    "materialsEditorHint": "Per onderdeel, zoals op het label: het percentage, het materiaal en waar dat geldt of de vezel biologisch, gerecycled of regeneratief is.",
+    "materialPart": "Onderdeel",
+    "materialPercentage": "Percentage",
+    "materialName": "Materiaal",
+    "materialQualifier": "Duurzaamheid",
+    "addFibre": "Materiaal toevoegen",
+    "addPart": "Onderdeel toevoegen",
+    "removeFibre": "Materiaal verwijderen",
+    "removePart": "Onderdeel verwijderen",
+    "materialsRowInvalid": "Vul op elke regel die je gebruikt een percentage tussen 0 en 100 en een materiaal in.",
     "careHint": "Kies de symbolen van het wasetiket, in de volgorde van het etiket.",
     "careGroup": {
       "washing": "Wassen",
@@ -373,7 +381,6 @@
     "delete": "Artikel verwijderen",
     "deleteTitle": "{{style}} verwijderen?",
     "deleteBody": "Dit verwijdert het artikel, de maten en de beelden. De software van retailers krijgt door dat het weg is. Dit kan niet ongedaan worden gemaakt.",
-    "materialsFlags": "Zet (recycled) of (organic) achter een vezel als dat van toepassing is: “100% polyester (recycled)”.",
     "animalOriginHint": "Bijvoorbeeld een leren patch, een bontrandje of hoornen knopen. Zijn die er, dan moet dat op het label staan.",
     "footwearHint": "Verplicht op het label van schoenen: het materiaal waaruit elk deel grotendeels bestaat (minstens 80%).",
     "certificationsHint": "Optioneel. Keurmerk en licentienummer, zoals “gots:CU 123456”; zet er (material) achter als alleen een materiaal gecertificeerd is.",
@@ -1229,8 +1236,6 @@
     },
     "fibre": {
       "cotton": "katoen",
-      "organic_cotton": "biologisch katoen",
-      "recycled_cotton": "gerecycled katoen",
       "linen": "linnen",
       "hemp": "hennep",
       "silk": "zijde",
@@ -1246,9 +1251,7 @@
       "cupro": "cupro",
       "acetate": "acetaat",
       "polyester": "polyester",
-      "recycled_polyester": "gerecycled polyester",
       "polyamide": "polyamide",
-      "recycled_polyamide": "gerecycled polyamide",
       "elastane": "elastaan",
       "acrylic": "acryl",
       "polypropylene": "polypropyleen",
@@ -1260,6 +1263,11 @@
       "rubber": "rubber",
       "metal": "metaal",
       "other": "overige vezels"
+    },
+    "qualifier": {
+      "organic": "biologisch",
+      "recycled": "gerecycled",
+      "regenerative": "regeneratief"
     },
     "care": {
       "wash_95": "Wassen op 95 °C",
@@ -1496,8 +1504,6 @@
   "article": {
     "label": "Labelinformatie",
     "composition": "Samenstelling",
-    "recycled": "gerecycled",
-    "organic": "biologisch",
     "animalOrigin": "Bevat niet-textieldelen van dierlijke oorsprong",
     "footwear": "Materialen schoeisel",
     "footwearPart": {

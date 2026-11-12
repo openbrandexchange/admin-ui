@@ -294,9 +294,17 @@
     "styleHint": "Your own article (style) number. It identifies the article and cannot be changed later.",
     "styleLocked": "The article number identifies this article and cannot be changed.",
     "seasonHint": "As you use it, for example AW26 or NOS.",
-    "materialsHint": "Like on the label: “outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "We could not read “{{part}}”. Use a percentage and a material, like 100% cotton.",
     "materialsNot100": "The percentages of {{parts}} do not add up to 100%.",
+    "materialsEditorHint": "Per part, as on the label: the percentage, the material and, where it applies, whether the fibre is organic, recycled or regenerative.",
+    "materialPart": "Part",
+    "materialPercentage": "Percentage",
+    "materialName": "Material",
+    "materialQualifier": "Sustainability",
+    "addFibre": "Add material",
+    "addPart": "Add part",
+    "removeFibre": "Remove material",
+    "removePart": "Remove part",
+    "materialsRowInvalid": "Fill in a percentage between 0 and 100 and a material on every line you use.",
     "careHint": "Pick the symbols from the care label, in label order.",
     "careGroup": {
       "washing": "Washing",
@@ -373,7 +381,6 @@
     "delete": "Delete article",
     "deleteTitle": "Delete {{style}}?",
     "deleteBody": "This removes the article, its sizes and its images. Retailers' software will be told it is gone. This cannot be undone.",
-    "materialsFlags": "Add (recycled) or (organic) after a fibre where it applies: “100% polyester (recycled)”.",
     "animalOriginHint": "For example a leather patch, a fur trim or horn buttons. When there are, the label must say so.",
     "footwearHint": "Required on shoe labels: the material that makes up most of each part (at least 80%).",
     "certificationsHint": "Optional. Scheme and licence number, like “gots:CU 123456”; add (material) when only a material is certified.",
@@ -1229,8 +1236,6 @@
     },
     "fibre": {
       "cotton": "cotton",
-      "organic_cotton": "organic cotton",
-      "recycled_cotton": "recycled cotton",
       "linen": "linen",
       "hemp": "hemp",
       "silk": "silk",
@@ -1246,9 +1251,7 @@
       "cupro": "cupro",
       "acetate": "acetate",
       "polyester": "polyester",
-      "recycled_polyester": "recycled polyester",
       "polyamide": "polyamide",
-      "recycled_polyamide": "recycled polyamide",
       "elastane": "elastane",
       "acrylic": "acrylic",
       "polypropylene": "polypropylene",
@@ -1260,6 +1263,11 @@
       "rubber": "rubber",
       "metal": "metal",
       "other": "other fibres"
+    },
+    "qualifier": {
+      "organic": "organic",
+      "recycled": "recycled",
+      "regenerative": "regenerative"
     },
     "care": {
       "wash_95": "Wash at 95 °C",
@@ -1496,8 +1504,6 @@
   "article": {
     "label": "Label information",
     "composition": "Composition",
-    "recycled": "recycled",
-    "organic": "organic",
     "animalOrigin": "Contains non-textile parts of animal origin",
     "footwear": "Footwear materials",
     "footwearPart": {

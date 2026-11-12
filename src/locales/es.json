@@ -297,9 +297,17 @@
     "styleHint": "Tu propia referencia de artículo. Lo identifica y no se puede cambiar más adelante.",
     "styleLocked": "La referencia identifica este artículo y no se puede cambiar.",
     "seasonHint": "Tal como lo usas, por ejemplo AW26 o NOS.",
-    "materialsHint": "Como en la etiqueta: «outer: 65% cotton, 35% polyamide; lining: 100% polyester».",
-    "materialsInvalid": "No hemos podido leer «{{part}}». Usa un porcentaje y un material, como 100% cotton.",
     "materialsNot100": "Los porcentajes de {{parts}} no suman 100 %.",
+    "materialsEditorHint": "Por parte, como en la etiqueta: el porcentaje, el material y, si procede, si la fibra es orgánica, reciclada o regenerativa.",
+    "materialPart": "Parte",
+    "materialPercentage": "Porcentaje",
+    "materialName": "Material",
+    "materialQualifier": "Sostenibilidad",
+    "addFibre": "Añadir material",
+    "addPart": "Añadir parte",
+    "removeFibre": "Quitar material",
+    "removePart": "Quitar parte",
+    "materialsRowInvalid": "Indica un porcentaje entre 0 y 100 y un material en cada línea que uses.",
     "careHint": "Elige los símbolos de la etiqueta de cuidado, en el orden de la etiqueta.",
     "careGroup": {
       "washing": "Lavado",
@@ -376,7 +384,6 @@
     "delete": "Eliminar artículo",
     "deleteTitle": "¿Eliminar {{style}}?",
     "deleteBody": "Se eliminarán el artículo, sus tallas y sus imágenes. El software de los distribuidores sabrá que ya no existe. No se puede deshacer.",
-    "materialsFlags": "Añade (recycled) u (organic) detrás de una fibra cuando corresponda: «100% polyester (recycled)».",
     "animalOriginHint": "Por ejemplo, un parche de piel, un ribete de pelo o botones de cuerno. Si las hay, la etiqueta debe indicarlo.",
     "footwearHint": "Obligatorio en la etiqueta del calzado: el material que forma la mayor parte de cada pieza (al menos el 80 %).",
     "certificationsHint": "Opcional. Sello y número de licencia, como «gots:CU 123456»; añade (material) si solo está certificado un material.",
@@ -1259,8 +1266,6 @@
     },
     "fibre": {
       "cotton": "algodón",
-      "organic_cotton": "algodón orgánico",
-      "recycled_cotton": "algodón reciclado",
       "linen": "lino",
       "hemp": "cáñamo",
       "silk": "seda",
@@ -1276,9 +1281,7 @@
       "cupro": "cupro",
       "acetate": "acetato",
       "polyester": "poliéster",
-      "recycled_polyester": "poliéster reciclado",
       "polyamide": "poliamida",
-      "recycled_polyamide": "poliamida reciclada",
       "elastane": "elastano",
       "acrylic": "acrílico",
       "polypropylene": "polipropileno",
@@ -1290,6 +1293,11 @@
       "rubber": "caucho",
       "metal": "metal",
       "other": "otras fibras"
+    },
+    "qualifier": {
+      "organic": "orgánico",
+      "recycled": "reciclado",
+      "regenerative": "regenerativo"
     },
     "care": {
       "wash_95": "Lavar a 95 °C",
@@ -1526,8 +1534,6 @@
   "article": {
     "label": "Información de etiqueta",
     "composition": "Composición",
-    "recycled": "reciclado",
-    "organic": "orgánico",
     "animalOrigin": "Contiene partes no textiles de origen animal",
     "footwear": "Materiales del calzado",
     "footwearPart": {

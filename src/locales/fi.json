@@ -294,9 +294,17 @@
     "styleHint": "Oma tuotenumeronne. Se yksilöi tuotteen, eikä sitä voi muuttaa myöhemmin.",
     "styleLocked": "Tuotenumero yksilöi tuotteen, eikä sitä voi muuttaa.",
     "seasonHint": "Kuten itse käytätte, esimerkiksi AW26 tai NOS.",
-    "materialsHint": "Kuten tuotelapussa: ”outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "Emme pystyneet lukemaan kohtaa ”{{part}}”. Käytä prosenttia ja materiaalia, esim. 100% cotton.",
     "materialsNot100": "Osan {{parts}} prosentit eivät ole yhteensä 100 %.",
+    "materialsEditorHint": "Osittain kuten tuotelapussa: prosentti, materiaali ja tarvittaessa, onko kuitu luomua, kierrätettyä vai regeneratiivista.",
+    "materialPart": "Osa",
+    "materialPercentage": "Prosentti",
+    "materialName": "Materiaali",
+    "materialQualifier": "Kestävyys",
+    "addFibre": "Lisää materiaali",
+    "addPart": "Lisää osa",
+    "removeFibre": "Poista materiaali",
+    "removePart": "Poista osa",
+    "materialsRowInvalid": "Täytä jokaiselle käyttämällenne riville prosentti väliltä 0–100 ja materiaali.",
     "careHint": "Valitse hoito-ohjelapun symbolit lapun järjestyksessä.",
     "careGroup": {
       "washing": "Pesu",
@@ -373,7 +381,6 @@
     "delete": "Poista tuote",
     "deleteTitle": "Poistetaanko {{style}}?",
     "deleteBody": "Tuote, sen koot ja kuvat poistetaan. Jälleenmyyjien järjestelmät saavat tiedon poistosta. Toimintoa ei voi perua.",
-    "materialsFlags": "Lisää kuidun perään (recycled) tai (organic), jos se pitää paikkansa: ”100% polyester (recycled)”.",
     "animalOriginHint": "Esimerkiksi nahkamerkki, turkisreunus tai sarvinapit. Jos niitä on, se on mainittava tuotelapussa.",
     "footwearHint": "Pakollinen jalkineiden merkinnöissä: materiaali, josta kukin osa on pääosin tehty (vähintään 80 %).",
     "certificationsHint": "Vapaaehtoinen. Sertifiointijärjestelmä ja lisenssinumero, kuten ”gots:CU 123456”; lisää (material), jos vain materiaali on sertifioitu.",
@@ -1229,8 +1236,6 @@
     },
     "fibre": {
       "cotton": "puuvilla",
-      "organic_cotton": "luomupuuvilla",
-      "recycled_cotton": "kierrätyspuuvilla",
       "linen": "pellava",
       "hemp": "hamppu",
       "silk": "silkki",
@@ -1246,9 +1251,7 @@
       "cupro": "kupro",
       "acetate": "asetaatti",
       "polyester": "polyesteri",
-      "recycled_polyester": "kierrätetty polyesteri",
       "polyamide": "polyamidi",
-      "recycled_polyamide": "kierrätetty polyamidi",
       "elastane": "elastaani",
       "acrylic": "akryyli",
       "polypropylene": "polypropeeni",
@@ -1260,6 +1263,11 @@
       "rubber": "kumi",
       "metal": "metalli",
       "other": "muut kuidut"
+    },
+    "qualifier": {
+      "organic": "luomu",
+      "recycled": "kierrätetty",
+      "regenerative": "regeneratiivinen"
     },
     "care": {
       "wash_95": "Pesu 95 °C",
@@ -1496,8 +1504,6 @@
   "article": {
     "label": "Tuotelapun tiedot",
     "composition": "Koostumus",
-    "recycled": "kierrätetty",
-    "organic": "luomu",
     "animalOrigin": "Sisältää eläinperäisiä muita kuin tekstiiliosia",
     "footwear": "Jalkineen materiaalit",
     "footwearPart": {

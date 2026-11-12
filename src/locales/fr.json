@@ -297,9 +297,17 @@
     "styleHint": "Votre propre référence article. Elle identifie l'article et ne pourra plus être modifiée.",
     "styleLocked": "La référence identifie cet article et ne peut pas être modifiée.",
     "seasonHint": "Comme vous l'utilisez, par exemple AW26 ou NOS.",
-    "materialsHint": "Comme sur l'étiquette : « outer: 65% cotton, 35% polyamide; lining: 100% polyester ».",
-    "materialsInvalid": "Nous n'avons pas pu lire « {{part}} ». Indiquez un pourcentage et une matière, comme 100% cotton.",
     "materialsNot100": "Les pourcentages de {{parts}} ne font pas 100 %.",
+    "materialsEditorHint": "Par partie, comme sur l'étiquette : le pourcentage, la matière et, le cas échéant, si la fibre est biologique, recyclée ou régénérative.",
+    "materialPart": "Partie",
+    "materialPercentage": "Pourcentage",
+    "materialName": "Matière",
+    "materialQualifier": "Durabilité",
+    "addFibre": "Ajouter une matière",
+    "addPart": "Ajouter une partie",
+    "removeFibre": "Retirer la matière",
+    "removePart": "Retirer la partie",
+    "materialsRowInvalid": "Indiquez un pourcentage entre 0 et 100 et une matière sur chaque ligne utilisée.",
     "careHint": "Choisissez les symboles de l'étiquette d'entretien, dans l'ordre de l'étiquette.",
     "careGroup": {
       "washing": "Lavage",
@@ -376,7 +384,6 @@
     "delete": "Supprimer l'article",
     "deleteTitle": "Supprimer {{style}} ?",
     "deleteBody": "L'article, ses tailles et ses visuels seront supprimés. Le logiciel des revendeurs sera informé de sa disparition. Cette action est irréversible.",
-    "materialsFlags": "Ajoutez (recycled) ou (organic) après une fibre si c'est le cas : « 100% polyester (recycled) ».",
     "animalOriginHint": "Par exemple un écusson en cuir, une bordure en fourrure ou des boutons en corne. Si c'est le cas, l'étiquette doit l'indiquer.",
     "footwearHint": "Obligatoire sur l'étiquette des chaussures : la matière qui compose la majeure partie de chaque élément (au moins 80 %).",
     "certificationsHint": "Facultatif. Référentiel et numéro de licence, comme « gots:CU 123456 » ; ajoutez (material) si seule une matière est certifiée.",
@@ -1259,8 +1266,6 @@
     },
     "fibre": {
       "cotton": "coton",
-      "organic_cotton": "coton biologique",
-      "recycled_cotton": "coton recyclé",
       "linen": "lin",
       "hemp": "chanvre",
       "silk": "soie",
@@ -1276,9 +1281,7 @@
       "cupro": "cupro",
       "acetate": "acétate",
       "polyester": "polyester",
-      "recycled_polyester": "polyester recyclé",
       "polyamide": "polyamide",
-      "recycled_polyamide": "polyamide recyclé",
       "elastane": "élasthanne",
       "acrylic": "acrylique",
       "polypropylene": "polypropylène",
@@ -1290,6 +1293,11 @@
       "rubber": "caoutchouc",
       "metal": "métal",
       "other": "autres fibres"
+    },
+    "qualifier": {
+      "organic": "biologique",
+      "recycled": "recyclé",
+      "regenerative": "régénératif"
     },
     "care": {
       "wash_95": "Lavage à 95 °C",
@@ -1526,8 +1534,6 @@
   "article": {
     "label": "Informations d'étiquette",
     "composition": "Composition",
-    "recycled": "recyclé",
-    "organic": "biologique",
     "animalOrigin": "Contient des parties non textiles d'origine animale",
     "footwear": "Matières de la chaussure",
     "footwearPart": {

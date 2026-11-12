@@ -303,9 +303,17 @@
     "styleHint": "In-numru tal-oġġett tiegħek. Jidentifika l-oġġett u ma jistax jinbidel aktar tard.",
     "styleLocked": "In-numru tal-oġġett jidentifika dan l-oġġett u ma jistax jinbidel.",
     "seasonHint": "Kif tużah int, pereżempju AW26 jew NOS.",
-    "materialsHint": "Bħal fuq it-tikketta: “outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "“{{part}}” ma setax jinqara. Agħti perċentwal u materjal, eż. 100% cotton.",
     "materialsNot100": "Il-perċentwali għal {{parts}} ma jammontawx għal 100%.",
+    "materialsEditorHint": "Għal kull parti, bħal fuq it-tikketta: il-perċentwal, il-materjal u, fejn japplika, jekk il-fibra hijiex organika, riċiklata jew riġenerattiva.",
+    "materialPart": "Parti",
+    "materialPercentage": "Perċentwal",
+    "materialName": "Materjal",
+    "materialQualifier": "Sostenibbiltà",
+    "addFibre": "Żid materjal",
+    "addPart": "Żid parti",
+    "removeFibre": "Neħħi l-materjal",
+    "removePart": "Neħħi l-parti",
+    "materialsRowInvalid": "Imla perċentwal bejn 0 u 100 u materjal f’kull linja li tuża.",
     "careHint": "Agħżel is-simboli mit-tikketta tal-kura fl-ordni tat-tikketta.",
     "careGroup": {
       "washing": "Ħasil",
@@ -382,7 +390,6 @@
     "delete": "Ħassar l-oġġett",
     "deleteTitle": "Tħassar {{style}}?",
     "deleteBody": "L-oġġett, id-daqsijiet u r-ritratti tiegħu jitneħħew. Is-sistemi tal-bejjiegħa jsiru jafu li sparixxa. Dan ma jistax jitħassar lura.",
-    "materialsFlags": "Żid (recycled) jew (organic) wara fibra fejn japplika: “100% polyester (recycled)”.",
     "animalOriginHint": "Pereżempju biċċa ġilda, bordura tal-pil jew buttuni tal-qrun. Jekk hemm, it-tikketta trid tgħid hekk.",
     "footwearHint": "Obbligatorju fuq it-tikketta taż-żraben: il-materjal ewlieni ta’ kull parti (mill-inqas 80%).",
     "certificationsHint": "Mhux obbligatorju. L-iskema u n-numru tal-liċenzja, bħal “gots:CU 123456”; żid (material) meta materjal biss ikun iċċertifikat.",
@@ -1319,8 +1326,6 @@
     },
     "fibre": {
       "cotton": "qoton",
-      "organic_cotton": "qoton organiku",
-      "recycled_cotton": "qoton riċiklat",
       "linen": "għażel",
       "hemp": "qanneb",
       "silk": "ħarir",
@@ -1336,9 +1341,7 @@
       "cupro": "cupro",
       "acetate": "aċetat",
       "polyester": "poliester",
-      "recycled_polyester": "poliester riċiklat",
       "polyamide": "poliammid",
-      "recycled_polyamide": "poliammid riċiklat",
       "elastane": "elastan",
       "acrylic": "akriliku",
       "polypropylene": "polipropilen",
@@ -1350,6 +1353,11 @@
       "rubber": "gomma",
       "metal": "metall",
       "other": "fibri oħra"
+    },
+    "qualifier": {
+      "organic": "organiku",
+      "recycled": "riċiklat",
+      "regenerative": "riġenerattiv"
     },
     "care": {
       "wash_95": "Aħsel f’95 °C",
@@ -1586,8 +1594,6 @@
   "article": {
     "label": "Informazzjoni tat-tikketta",
     "composition": "Kompożizzjoni",
-    "recycled": "riċiklat",
-    "organic": "organiku",
     "animalOrigin": "Fih partijiet mhux tessili ta’ oriġini mill-annimali",
     "footwear": "Materjali taż-żarbun",
     "footwearPart": {

@@ -294,9 +294,17 @@
     "styleHint": "Ihre eigene Artikelnummer. Sie identifiziert den Artikel und kann später nicht geändert werden.",
     "styleLocked": "Die Artikelnummer identifiziert diesen Artikel und kann nicht geändert werden.",
     "seasonHint": "So wie Sie es verwenden, zum Beispiel AW26 oder NOS.",
-    "materialsHint": "Wie auf dem Etikett: „outer: 65% cotton, 35% polyamide; lining: 100% polyester“.",
-    "materialsInvalid": "„{{part}}“ konnten wir nicht lesen. Verwenden Sie einen Prozentsatz und ein Material, etwa 100% cotton.",
     "materialsNot100": "Die Prozentsätze von {{parts}} ergeben nicht 100 %.",
+    "materialsEditorHint": "Je Teil, wie auf dem Etikett: der Prozentsatz, das Material und gegebenenfalls, ob die Faser bio, recycelt oder regenerativ ist.",
+    "materialPart": "Teil",
+    "materialPercentage": "Prozent",
+    "materialName": "Material",
+    "materialQualifier": "Nachhaltigkeit",
+    "addFibre": "Material hinzufügen",
+    "addPart": "Teil hinzufügen",
+    "removeFibre": "Material entfernen",
+    "removePart": "Teil entfernen",
+    "materialsRowInvalid": "Geben Sie in jeder verwendeten Zeile einen Prozentsatz zwischen 0 und 100 und ein Material an.",
     "careHint": "Wählen Sie die Symbole vom Pflegeetikett in der Reihenfolge des Etiketts.",
     "careGroup": {
       "washing": "Waschen",
@@ -373,7 +381,6 @@
     "delete": "Artikel löschen",
     "deleteTitle": "{{style}} löschen?",
     "deleteBody": "Damit werden der Artikel, seine Größen und Bilder entfernt. Die Software der Händler erfährt, dass er weg ist. Das kann nicht rückgängig gemacht werden.",
-    "materialsFlags": "Ergänzen Sie (recycled) oder (organic) hinter einer Faser, wenn es zutrifft: „100% polyester (recycled)“.",
     "animalOriginHint": "Zum Beispiel ein Lederpatch, ein Pelzbesatz oder Hornknöpfe. Wenn ja, muss es auf dem Etikett stehen.",
     "footwearHint": "Pflicht auf dem Schuhetikett: das Material, aus dem jedes Teil überwiegend besteht (mindestens 80 %).",
     "certificationsHint": "Optional. Siegel und Lizenznummer, etwa „gots:CU 123456“; ergänzen Sie (material), wenn nur ein Material zertifiziert ist.",
@@ -1229,8 +1236,6 @@
     },
     "fibre": {
       "cotton": "Baumwolle",
-      "organic_cotton": "Bio-Baumwolle",
-      "recycled_cotton": "recycelte Baumwolle",
       "linen": "Leinen",
       "hemp": "Hanf",
       "silk": "Seide",
@@ -1246,9 +1251,7 @@
       "cupro": "Cupro",
       "acetate": "Acetat",
       "polyester": "Polyester",
-      "recycled_polyester": "recyceltes Polyester",
       "polyamide": "Polyamid",
-      "recycled_polyamide": "recyceltes Polyamid",
       "elastane": "Elasthan",
       "acrylic": "Polyacryl",
       "polypropylene": "Polypropylen",
@@ -1260,6 +1263,11 @@
       "rubber": "Gummi",
       "metal": "Metall",
       "other": "sonstige Fasern"
+    },
+    "qualifier": {
+      "organic": "bio",
+      "recycled": "recycelt",
+      "regenerative": "regenerativ"
     },
     "care": {
       "wash_95": "Waschen bei 95 °C",
@@ -1496,8 +1504,6 @@
   "article": {
     "label": "Etikettangaben",
     "composition": "Zusammensetzung",
-    "recycled": "recycelt",
-    "organic": "bio",
     "animalOrigin": "Enthält nichttextile Teile tierischen Ursprungs",
     "footwear": "Schuhmaterialien",
     "footwearPart": {

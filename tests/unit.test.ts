@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { localized, cleanLocalized, localizedPatch } from '../src/lib/localized'
 import { mergePatch } from '../src/mock/mergePatch'
 import { csvDelimiter, pickLanguage } from '../src/i18n/languages'
-import { formatMaterials, parseMaterials, unbalancedParts } from '../src/lib/materials'
+import type { Materials } from '../src/api/types'
+import { careByCategory, careInLabelOrder, formatMaterials, nameIn, normaliseMaterials, parseMaterials, unbalancedParts } from '../src/lib/materials'
+import { CARE_CODES, careCategoryOf, MATERIALS, PARTS, QUALIFIERS } from '../src/lib/vocab'
+import { withTermNames } from '../src/mock/terms'
+import careVocab from '../src/mock/fixtures/vocabularies/care.json'
+import materialsVocab from '../src/mock/fixtures/vocabularies/materials.json'
+import partsVocab from '../src/mock/fixtures/vocabularies/parts.json'
+import qualifiersVocab from '../src/mock/fixtures/vocabularies/qualifiers.json'
 import { formatCertifications, formatFeature, formatFootwear, labelWarnings, measurementsFrom, parseCertifications, parseFeature, parseFootwear } from '../src/lib/article'
 import { gtinValid, splitCodes, passwordProblem, slugify, urlProblem, withScheme } from '../src/lib/validate'
 import { accentVars, contrast, parseHex } from '../src/lib/accent'
@@ -47,33 +54,86 @@ describe('language detection', () => {
   })
 })
 
+const m = (code: string) => ({ code })
+const fibre = (material: string, percentage: number, qualifier: string | null = null) => ({ material: m(material), percentage, qualifier: qualifier ? m(qualifier) : null })
+
 describe('materials grammar', () => {
-  it('parses parts and fibres', () => {
+  it('parses parts and fibres into terms', () => {
     const r = parseMaterials('Outer: 65% Cotton, 35% polyamide; lining: 100% polyester')
-    expect(r).toEqual({ ok: true, value: [{ part: 'outer', fibers: [{ fiber: 'cotton', percentage: 65 }, { fiber: 'polyamide', percentage: 35 }] }, { part: 'lining', fibers: [{ fiber: 'polyester', percentage: 100 }] }] })
+    expect(r).toEqual({ ok: true, value: [{ part: m('outer'), fibers: [fibre('cotton', 65), fibre('polyamide', 35)] }, { part: m('lining'), fibers: [fibre('polyester', 100)] }] })
   })
   it('defaults the part to main and round-trips', () => {
     const r = parseMaterials('100% cotton (organic)')
-    expect(r).toEqual({ ok: true, value: [{ part: 'main', fibers: [{ fiber: 'cotton', percentage: 100, organic: true }] }] })
+    expect(r).toEqual({ ok: true, value: [{ part: m('main'), fibers: [fibre('cotton', 100, 'organic')] }] })
     expect(r.ok && formatMaterials(r.value)).toBe('main: 100% cotton (organic)')
   })
-  it('reads the recycled and organic flags', () => {
-    const r = parseMaterials('outer: 100% polyester (recycled); lining: 50% Cotton (Organic) (recycled), 50% polyamide')
+  it('reads one qualifier per fibre, any code', () => {
+    const r = parseMaterials('outer: 100% polyester (recycled); lining: 50% Cotton (Regenerative), 50% wool (Responsible Down)')
     expect(r.ok && r.value).toEqual([
-      { part: 'outer', fibers: [{ fiber: 'polyester', percentage: 100, recycled: true }] },
-      { part: 'lining', fibers: [{ fiber: 'cotton', percentage: 50, organic: true, recycled: true }, { fiber: 'polyamide', percentage: 50 }] },
+      { part: m('outer'), fibers: [fibre('polyester', 100, 'recycled')] },
+      { part: m('lining'), fibers: [fibre('cotton', 50, 'regenerative'), fibre('wool', 50, 'responsible_down')] },
     ])
+    expect(parseMaterials('100% cotton (organic) (recycled)')).toEqual({ ok: false, error: '100% cotton (organic) (recycled)' })
   })
-  it('normalises the 0.1 keys recycled_* and organic_* to the fibre with a flag', () => {
-    const a = parseMaterials('100% recycled_polyester')
-    const b = parseMaterials('100% polyester (recycled)')
-    expect(a).toEqual(b)
-    expect(formatMaterials([{ part: 'main', fibers: [{ fiber: 'organic_cotton', percentage: 100 }] }])).toBe('main: 100% cotton (organic)')
+  it('normalises the 0.1 keys and the 0.2 flags to the material with a qualifier', () => {
+    expect(parseMaterials('100% recycled_polyester')).toEqual(parseMaterials('100% polyester (recycled)'))
+    const old = [{ part: 'main', fibers: [{ fiber: 'organic_cotton', percentage: 90 }, { fiber: 'polyamide', percentage: 10, recycled: true }] }] as unknown as Materials
+    expect(normaliseMaterials(old)).toEqual([{ part: m('main'), fibers: [fibre('cotton', 90, 'organic'), fibre('polyamide', 10, 'recycled')] }])
+    expect(formatMaterials(old)).toBe('main: 90% cotton (organic), 10% polyamide (recycled)')
   })
   it('reports what it cannot read', () => expect(parseMaterials('cotton')).toEqual({ ok: false, error: 'cotton' }))
   it('warns when a part does not add up to 100', () => {
     const r = parseMaterials('90% wool')
     expect(r.ok && unbalancedParts(r.value)).toEqual(['main'])
+  })
+  it('takes a name only in the reader\'s language (or its base language)', () => {
+    expect(nameIn({ en: 'Cotton', nl: 'Katoen' }, 'nl')).toBe('Katoen')
+    expect(nameIn({ en: 'Cotton', 'de-CH': 'Baumwolle' }, 'de')).toBe('Baumwolle')
+    expect(nameIn({ en: 'Cotton' }, 'pl')).toBe('')
+    expect(nameIn(null, 'en')).toBe('')
+  })
+})
+
+describe('care (spec 0.3)', () => {
+  it('groups care by category in label order, codes outside the vocabulary last', () => {
+    const groups = careByCategory([{ code: 'iron_low' }, { code: 'wash_30' }, { code: 'steam_only', category: null }, { code: 'tumble_dry_low' }, { code: 'dry_flat' }])
+    expect(groups.map((g) => [g.category, g.entries.map((e) => e.code)])).toEqual([
+      ['washing', ['wash_30']],
+      ['drying', ['tumble_dry_low', 'dry_flat']],
+      ['ironing', ['iron_low']],
+      [null, ['steam_only']],
+    ])
+  })
+  it('writes care codes in label order', () => expect(careInLabelOrder(['iron_low', 'do_not_bleach', 'wash_30', 'custom', 'dry_flat', 'tumble_dry_low'])).toEqual(['wash_30', 'do_not_bleach', 'dry_flat', 'tumble_dry_low', 'iron_low', 'custom']))
+  it('knows the category of every vocabulary code', () => expect(CARE_CODES.filter((c) => !careCategoryOf(c))).toEqual([]))
+})
+
+describe('vocabularies (spec vocabularies/*.json, copied by sync-fixtures)', () => {
+  const codes = (v: { entries: { code: string }[] }) => v.entries.map((e) => e.code).sort()
+  it('offers exactly the spec codes', () => {
+    expect([...PARTS].sort()).toEqual(codes(partsVocab))
+    expect([...MATERIALS].sort()).toEqual(codes(materialsVocab))
+    expect([...QUALIFIERS].sort()).toEqual(codes(qualifiersVocab))
+    expect([...CARE_CODES].sort()).toEqual(codes(careVocab))
+  })
+  it('puts every care code in the spec category', () => {
+    for (const e of careVocab.entries) expect(careCategoryOf(e.code), e.code).toBe(e.category)
+  })
+  it('lets the mock node answer with names, categories and symbols, keeping unknown codes', () => {
+    const p = withTermNames({ materials: [{ part: m('main'), fibers: [fibre('cotton', 95, 'organic'), { material: { code: 'kapok', name: { en: 'Kapok' } }, percentage: 5 }] }], care: [{ code: 'wash_30' }, { code: 'steam_only' }] })
+    expect(p.materials).toEqual([
+      {
+        part: { code: 'main', name: null },
+        fibers: [
+          { material: { code: 'cotton', name: { en: 'Cotton', nl: 'Katoen', de: 'Baumwolle', fr: 'Coton' } }, percentage: 95, qualifier: { code: 'organic', name: { en: 'Organic', nl: 'Biologisch', de: 'Bio', fr: 'Biologique' } } },
+          { material: { code: 'kapok', name: { en: 'Kapok' } }, percentage: 5, qualifier: null },
+        ],
+      },
+    ])
+    expect(p.care).toEqual([
+      { code: 'wash_30', category: 'washing', symbol: '1_D_30', name: { en: 'Wash at 30 °C', nl: 'Wassen op 30 °C', de: 'Waschen bei 30 °C', fr: 'Lavage à 30 °C' }, text: null },
+      { code: 'steam_only', category: null, symbol: null, name: null, text: null },
+    ])
   })
 })
 
@@ -108,11 +168,11 @@ describe('article data cells (import-format.md §1.6)', () => {
 describe('label completeness warnings (import-format.md rule 10)', () => {
   it('gives the warnings of the spec test file', () => {
     expect(labelWarnings({ item_type: 't_shirt', materials: null, contains_animal_origin: false }).map((w) => w.code)).toEqual(['fibre_composition_missing'])
-    expect(labelWarnings({ item_type: 'scarf', materials: [{ part: 'main', fibers: [{ fiber: 'wool', percentage: 100 }] }] }).map((w) => w.code)).toEqual(['animal_origin_unknown'])
-    expect(labelWarnings({ item_type: 'sneakers', materials: [{ part: 'upper', fibers: [{ fiber: 'polyester', percentage: 100 }] }] }).map((w) => w.code)).toEqual(['footwear_materials_missing'])
-    expect(labelWarnings({ item_type: 'shirt', materials: [{ part: 'main', fibers: [{ fiber: 'cotton', percentage: 60 }, { fiber: 'polyester', percentage: 30 }] }], contains_animal_origin: false })).toEqual([{ code: 'fibre_percentages_not_100', column: 'materials', part: 'main' }])
+    expect(labelWarnings({ item_type: 'scarf', materials: [{ part: m('main'), fibers: [fibre('wool', 100)] }] }).map((w) => w.code)).toEqual(['animal_origin_unknown'])
+    expect(labelWarnings({ item_type: 'sneakers', materials: [{ part: m('upper'), fibers: [fibre('polyester', 100)] }] }).map((w) => w.code)).toEqual(['footwear_materials_missing'])
+    expect(labelWarnings({ item_type: 'shirt', materials: [{ part: m('main'), fibers: [fibre('cotton', 60), fibre('polyester', 30)] }], contains_animal_origin: false })).toEqual([{ code: 'fibre_percentages_not_100', column: 'materials', part: 'main' }])
     expect(labelWarnings({ item_type: 'sandals', footwear_materials: { upper: 'leather', lining_and_sock: 'leather', outer_sole: null } }).map((w) => w.code)).toEqual(['footwear_materials_missing'])
-    expect(labelWarnings({ item_type: 't_shirt', materials: [{ part: 'main', fibers: [{ fiber: 'cotton', percentage: 100 }] }], contains_animal_origin: false })).toEqual([])
+    expect(labelWarnings({ item_type: 't_shirt', materials: [{ part: m('main'), fibers: [fibre('cotton', 100)] }], contains_animal_origin: false })).toEqual([])
   })
   it('gives no label warnings for other item types', () => expect(labelWarnings({ item_type: 'jewelry', materials: null })).toEqual([]))
 })

@@ -1988,25 +1988,42 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** @description A stable code with its name per language. On write paths `name` may be omitted; responses always include it (null when unknown). */
+        term: {
+            code: string;
+            name?: components["schemas"]["LocalizedText"] | null;
+        } & {
+            [key: string]: unknown;
+        };
         /**
          * Materials
-         * @description Fibre composition per part (textile labelling regulation / DPP ready).
+         * @description Fibre composition per part (textile labelling regulation / DPP ready). Parts, materials and qualifiers are terms: a stable `code` and its `name` per language. For a code in the vocabulary of the specification (vocabularies/*.json) a node returns the vocabulary's name; for another code the name it was given, or null. A language without a name is omitted, never an empty string.
          */
         Materials: ({
             /**
-             * @description Part of the article. Recommended keys: main, outer, lining, filling, padding, trim, pocket_lining, shell (luggage), handle, strap, and for footwear upper, sole, insole. 'main' when the product has one composition. Unknown keys are allowed.
-             * @example main
+             * @description Part of the article. Codes in vocabularies/parts.json: main, outer, lining, filling, padding, trim, pocket_lining, shell (luggage), handle, strap, and for footwear upper, sole, insole. 'main' when the product has one composition; its name is null. Unknown codes are allowed.
+             * @example {
+             *       "code": "main",
+             *       "name": null
+             *     }
+             * @example {
+             *       "code": "lining",
+             *       "name": {
+             *         "en": "Lining",
+             *         "nl": "Voering",
+             *         "de": "Futter",
+             *         "fr": "Doublure"
+             *       }
+             *     }
              */
-            part: string;
+            part: components["schemas"]["term"];
             /** @description Percentages of one part SHOULD sum to 100. */
             fibers: ({
-                /** @description Fibre key: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; recommended list in docs/import-format.md#fibres. Recycled or organic content is a flag, not a fibre: the 0.1 keys `recycled_*` and `organic_*` (e.g. recycled_polyester, organic_cotton) are accepted on input and normalised to the fibre with recycled or organic set. */
-                fiber: string;
+                /** @description Material code: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; the list with names is vocabularies/materials.json. Recycled or organic content is a qualifier, not a material. */
+                material: components["schemas"]["term"];
                 percentage: number;
-                /** @description The fibre is recycled. Present only when true. */
-                recycled?: boolean;
-                /** @description The fibre is organically grown. Present only when true. */
-                organic?: boolean;
+                /** @description What the fibre is, apart from which fibre: organic, recycled, regenerative (vocabularies/qualifiers.json; unknown codes are allowed). null = none. */
+                qualifier?: components["schemas"]["term"] | null;
             } & {
                 [key: string]: unknown;
             })[];
@@ -2026,11 +2043,18 @@ export interface components {
         };
         /**
          * Care
-         * @description Ordered care instructions.
+         * @description Ordered care instructions (label order: washing, bleaching, drying, ironing, professional_care). For a code in vocabularies/care.json a node returns the vocabulary's category, symbol and name; for another code what it was given, or null.
          */
         Care: ({
-            /** @description Care instruction key, ISO 3758 aligned (recommended list in docs/import-format.md#care-codes), e.g. wash_30, do_not_bleach, tumble_dry_low, iron_low, dry_clean_p, do_not_dry_clean. */
+            /** @description Care instruction code, ISO 3758 aligned (vocabularies/care.json), e.g. wash_30, do_not_bleach, tumble_dry_low, iron_low, dry_clean_p, do_not_dry_clean. */
             code: string;
+            /** @description The ISO 3758 symbol group. null = unknown (a code outside the vocabulary). */
+            category?: ("washing" | "bleaching" | "drying" | "ironing" | "professional_care") | null;
+            /** @description The symbol code in GINETEX notation as fashion data pools exchange it (group digit, symbol, temperature: 1_C_40, 2_X, 3_C, 4_B, 5_P), so a consumer can reuse an existing pictogram mapping. null when there is none. */
+            symbol?: string | null;
+            /** @description The name of the instruction per language, e.g. {"en": "Wash at 30 °C", "nl": "Wassen op 30 °C"}. */
+            name?: components["schemas"]["LocalizedText"] | null;
+            /** @description Extra text of the brand for this instruction, e.g. "Wash inside out". */
             text?: components["schemas"]["LocalizedText"] | null;
         } & {
             [key: string]: unknown;
@@ -2866,6 +2890,7 @@ export type IngestResult = components['schemas']['IngestResult'];
 export type Cursor = components['schemas']['Cursor'];
 export type Sha256 = components['schemas']['Sha256'];
 export type Rendition = components['schemas']['Rendition'];
+export type Term = components['schemas']['term'];
 export type Materials = components['schemas']['Materials'];
 export type FootwearMaterials = components['schemas']['FootwearMaterials'];
 export type Care = components['schemas']['Care'];
