@@ -297,9 +297,17 @@
     "styleHint": "A sua própria referência do artigo. Identifica o artigo e não pode ser alterada depois.",
     "styleLocked": "A referência identifica este artigo e não pode ser alterada.",
     "seasonHint": "Como a usa, por exemplo AW26 ou NOS.",
-    "materialsHint": "Como na etiqueta: «outer: 65% cotton, 35% polyamide; lining: 100% polyester».",
-    "materialsInvalid": "Não conseguimos ler «{{part}}». Use uma percentagem e um material, como 100% cotton.",
     "materialsNot100": "As percentagens de {{parts}} não somam 100%.",
+    "materialsEditorHint": "Por parte, como na etiqueta: a percentagem, o material e, quando aplicável, se a fibra é biológica, reciclada ou regenerativa.",
+    "materialPart": "Parte",
+    "materialPercentage": "Percentagem",
+    "materialName": "Material",
+    "materialQualifier": "Sustentabilidade",
+    "addFibre": "Adicionar material",
+    "addPart": "Adicionar parte",
+    "removeFibre": "Remover material",
+    "removePart": "Remover parte",
+    "materialsRowInvalid": "Indique uma percentagem entre 0 e 100 e um material em cada linha que utilizar.",
     "careHint": "Escolha os símbolos da etiqueta de cuidados, pela ordem da etiqueta.",
     "careGroup": {
       "washing": "Lavagem",
@@ -376,7 +384,6 @@
     "delete": "Eliminar artigo",
     "deleteTitle": "Eliminar {{style}}?",
     "deleteBody": "O artigo, os tamanhos e as imagens serão removidos. O software dos revendedores será informado de que já não existe. Não é possível anular.",
-    "materialsFlags": "Acrescente (recycled) ou (organic) depois de uma fibra, quando se aplica: «100% polyester (recycled)».",
     "animalOriginHint": "Por exemplo, um emblema de pele, um debrum de pelo ou botões de chifre. Se existirem, a etiqueta tem de o indicar.",
     "footwearHint": "Obrigatório na etiqueta do calçado: o material que constitui a maior parte de cada parte (pelo menos 80%).",
     "certificationsHint": "Opcional. Esquema e número de licença, como «gots:CU 123456»; acrescente (material) quando só um material é certificado.",
@@ -1259,8 +1266,6 @@
     },
     "fibre": {
       "cotton": "algodão",
-      "organic_cotton": "algodão biológico",
-      "recycled_cotton": "algodão reciclado",
       "linen": "linho",
       "hemp": "cânhamo",
       "silk": "seda",
@@ -1276,9 +1281,7 @@
       "cupro": "cupro",
       "acetate": "acetato",
       "polyester": "poliéster",
-      "recycled_polyester": "poliéster reciclado",
       "polyamide": "poliamida",
-      "recycled_polyamide": "poliamida reciclada",
       "elastane": "elastano",
       "acrylic": "acrílico",
       "polypropylene": "polipropileno",
@@ -1290,6 +1293,11 @@
       "rubber": "borracha",
       "metal": "metal",
       "other": "outras fibras"
+    },
+    "qualifier": {
+      "organic": "biológico",
+      "recycled": "reciclado",
+      "regenerative": "regenerativo"
     },
     "care": {
       "wash_95": "Lavar a 95 °C",
@@ -1526,8 +1534,6 @@
   "article": {
     "label": "Informação da etiqueta",
     "composition": "Composição",
-    "recycled": "reciclado",
-    "organic": "biológico",
     "animalOrigin": "Contém partes não têxteis de origem animal",
     "footwear": "Materiais do calçado",
     "footwearPart": {

@@ -1,6 +1,6 @@
 {
   "$comment": "Project glossary (source: admin-ui). Every UI, e-mail and website text uses these words. Never show protocol terms (tombstone, cursor, grant, node, ingest) to users. The portal is called '<Brand name> · <portal word>'; a brand can override the word in Settings. Nodes and the website read this file.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "terms": {
     "portal": {
       "bg": "Портал за търговци",

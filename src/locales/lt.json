@@ -300,9 +300,17 @@
     "styleHint": "Jūsų prekės numeris. Jis identifikuoja prekę ir vėliau jo pakeisti negalima.",
     "styleLocked": "Prekės numeris identifikuoja šią prekę ir jo pakeisti negalima.",
     "seasonHint": "Taip, kaip naudojate, pvz., AW26 arba NOS.",
-    "materialsHint": "Kaip etiketėje: „outer: 65% cotton, 35% polyamide; lining: 100% polyester“.",
-    "materialsInvalid": "Nepavyko perskaityti „{{part}}“. Nurodykite procentą ir medžiagą, pvz., 100% cotton.",
     "materialsNot100": "Procentai daliai {{parts}} nesudaro 100 %.",
+    "materialsEditorHint": "Kiekvienai daliai kaip etiketėje: procentas, medžiaga ir, jei taikoma, ar pluoštas ekologiškas, perdirbtas ar regeneratyvus.",
+    "materialPart": "Dalis",
+    "materialPercentage": "Procentas",
+    "materialName": "Medžiaga",
+    "materialQualifier": "Tvarumas",
+    "addFibre": "Pridėti medžiagą",
+    "addPart": "Pridėti dalį",
+    "removeFibre": "Pašalinti medžiagą",
+    "removePart": "Pašalinti dalį",
+    "materialsRowInvalid": "Kiekvienoje naudojamoje eilutėje įveskite procentą nuo 0 iki 100 ir medžiagą.",
     "careHint": "Pasirinkite priežiūros etiketės simbolius etiketės tvarka.",
     "careGroup": {
       "washing": "Skalbimas",
@@ -379,7 +387,6 @@
     "delete": "Ištrinti prekę",
     "deleteTitle": "Ištrinti {{style}}?",
     "deleteBody": "Prekė, jos dydžiai ir nuotraukos bus pašalinti. Prekybininkų sistemos sužinos, kad ji dingo. To atšaukti negalima.",
-    "materialsFlags": "Jei taikoma, po pluošto pridėkite (recycled) arba (organic): „100% polyester (recycled)“.",
     "animalOriginHint": "Pavyzdžiui, odinis antsiuvas, kailio apvadas ar raginės sagos. Jei tokių yra, tai turi būti nurodyta etiketėje.",
     "footwearHint": "Privaloma avalynės etiketėse: kiekvienos dalies pagrindinė medžiaga (ne mažiau kaip 80 %).",
     "certificationsHint": "Neprivaloma. Schema ir licencijos numeris, pvz., „gots:CU 123456“; pridėkite (material), jei sertifikuota tik medžiaga.",
@@ -1289,8 +1296,6 @@
     },
     "fibre": {
       "cotton": "medvilnė",
-      "organic_cotton": "ekologiška medvilnė",
-      "recycled_cotton": "perdirbta medvilnė",
       "linen": "linas",
       "hemp": "kanapės",
       "silk": "šilkas",
@@ -1306,9 +1311,7 @@
       "cupro": "kupro",
       "acetate": "acetatas",
       "polyester": "poliesteris",
-      "recycled_polyester": "perdirbtas poliesteris",
       "polyamide": "poliamidas",
-      "recycled_polyamide": "perdirbtas poliamidas",
       "elastane": "elastanas",
       "acrylic": "akrilas",
       "polypropylene": "polipropilenas",
@@ -1320,6 +1323,11 @@
       "rubber": "guma",
       "metal": "metalas",
       "other": "kiti pluoštai"
+    },
+    "qualifier": {
+      "organic": "ekologiška",
+      "recycled": "perdirbta",
+      "regenerative": "regeneratyvi"
     },
     "care": {
       "wash_95": "Skalbti 95 °C",
@@ -1556,8 +1564,6 @@
   "article": {
     "label": "Etiketės informacija",
     "composition": "Sudėtis",
-    "recycled": "perdirbta",
-    "organic": "ekologiška",
     "animalOrigin": "Sudėtyje yra netekstilinių gyvūninės kilmės dalių",
     "footwear": "Avalynės medžiagos",
     "footwearPart": {

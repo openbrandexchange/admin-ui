@@ -6,7 +6,7 @@ import type { ProductInput } from '../../../api/types'
 import { COUNTRIES } from '../../../lib/countries'
 import { countryName } from '../../../lib/format'
 import { cleanLocalized } from '../../../lib/localized'
-import { formatMaterials, parseMaterials, unbalancedParts } from '../../../lib/materials'
+import { careInLabelOrder } from '../../../lib/materials'
 import { humanize } from '../../../lib/prefs'
 import { urlProblem } from '../../../lib/validate'
 import { formatCertifications, parseCertifications, type FootwearMaterials } from '../../../lib/article'
@@ -15,6 +15,7 @@ import { brandsQuery } from '../../../queries/admin'
 import { Button, Saved, SelectField, TextField } from '../../../ui/controls'
 import { ErrorNote } from '../../../ui/feedback'
 import { LocalizedInput } from './LocalizedInput'
+import { MaterialsEditor, materialsFrom, rowsFrom } from './MaterialsEditor'
 
 type Props = {
   initial?: ProductInput
@@ -42,13 +43,14 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
   const [targetGroup, setTargetGroup] = useState(initial?.target_group ?? '')
   const [season, setSeason] = useState(initial?.season ?? '')
   const [collection, setCollection] = useState(initial?.collection ?? '')
-  const [materials, setMaterials] = useState(formatMaterials(initial?.materials))
+  const [materials, setMaterials] = useState(() => rowsFrom(initial?.materials))
   const [care, setCare] = useState<string[]>(initial?.care?.map((c) => c.code) ?? [])
+  const careText = Object.fromEntries((initial?.care ?? []).filter((c) => c.text).map((c) => [c.code, c.text]))
   const [origin, setOrigin] = useState(initial?.country_of_origin ?? '')
   const [dpp, setDpp] = useState(initial?.dpp_url ?? '')
   const [touched, setTouched] = useState(false)
 
-  const parsed = parseMaterials(materials)
+  const parsed = materialsFrom(materials)
   const parsedCerts = parseCertifications(certs)
   const subtypes: readonly string[] = (ITEM_SUBTYPES as Record<string, readonly string[]>)[itemType] ?? []
   const showFootwear = (FOOTWEAR_ITEM_TYPES as readonly string[]).includes(itemType) || FOOTWEAR_PARTS.some((k) => footwear[k])
@@ -57,7 +59,7 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
   const errs = {
     style: touched && !style.trim() ? t('validate.required') : server['/style_number'],
     name: touched && !nameValue ? t('validate.required') : server['/name'],
-    materials: !parsed.ok ? t('product.materialsInvalid', { part: parsed.error }) : server['/materials'],
+    materials: server['/materials'],
     certs: !parsedCerts.ok ? t('product.certificationsInvalid', { entry: parsedCerts.error }) : server['/certifications'],
     dpp: touched && dpp.trim() && urlProblem(dpp) ? t('validate.url') : server['/dpp_url'],
     brand: server['/brand_external_id'],
@@ -90,7 +92,8 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
           materials: parsed.value,
           contains_animal_origin: animal ? animal === 'yes' : null,
           footwear_materials: fm,
-          care: care.length ? care.map((code) => ({ code })) : null,
+          // Codes only (the node adds names, categories and symbols), in label order; the brand's own text stays.
+          care: care.length ? careInLabelOrder(care).map((code) => ({ code, ...(careText[code] && { text: careText[code] }) })) : null,
           country_of_origin: origin || null,
           certifications: parsedCerts.ok ? parsedCerts.value : null,
           dpp_url: dpp.trim() || null,
@@ -148,19 +151,7 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
         <TextField label={t('fields.season')} hint={t('product.seasonHint')} value={season} onChange={(e) => setSeason(e.target.value)} />
         <TextField label={t('fields.collection')} value={collection} onChange={(e) => setCollection(e.target.value)} />
       </div>
-      <TextField
-        label={t('fields.materials')}
-        hint={
-          parsed.ok && parsed.value && unbalancedParts(parsed.value).length
-            ? t('product.materialsNot100', { parts: unbalancedParts(parsed.value).join(', ') })
-            : `${t('product.materialsHint')} ${t('product.materialsFlags')}`
-        }
-        value={materials}
-        onChange={(e) => setMaterials(e.target.value)}
-        error={errs.materials}
-        placeholder="outer: 65% cotton, 35% polyamide; lining: 100% polyester (recycled)"
-        className="[&_input]:font-mono"
-      />
+      <MaterialsEditor rows={materials} onChange={setMaterials} showErrors={touched} error={errs.materials} />
       <SelectField label={t('fields.animalOrigin')} hint={t('product.animalOriginHint')} value={animal} onChange={(e) => setAnimal(e.target.value)}>
         <option value="">{t('article.notStated')}</option>
         <option value="yes">{t('article.yes')}</option>

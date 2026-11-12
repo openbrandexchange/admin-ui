@@ -294,9 +294,17 @@
     "styleHint": "Jeres eget varenummer. Det identificerer varen og kan ikke ændres senere.",
     "styleLocked": "Varenummeret identificerer varen og kan ikke ændres.",
     "seasonHint": "Som I bruger det, for eksempel AW26 eller NOS.",
-    "materialsHint": "Som på mærket: “outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "Vi kunne ikke læse “{{part}}”. Brug en procentsats og et materiale, fx 100% cotton.",
     "materialsNot100": "Procentsatserne for {{parts}} giver ikke 100 %.",
+    "materialsEditorHint": "Pr. del, som på mærket: procentdelen, materialet og, hvor det gælder, om fiberen er økologisk, genanvendt eller regenerativ.",
+    "materialPart": "Del",
+    "materialPercentage": "Procent",
+    "materialName": "Materiale",
+    "materialQualifier": "Bæredygtighed",
+    "addFibre": "Tilføj materiale",
+    "addPart": "Tilføj del",
+    "removeFibre": "Fjern materiale",
+    "removePart": "Fjern del",
+    "materialsRowInvalid": "Udfyld en procentdel mellem 0 og 100 og et materiale på hver linje, I bruger.",
     "careHint": "Vælg symbolerne fra vaskemærket i mærkets rækkefølge.",
     "careGroup": {
       "washing": "Vask",
@@ -373,7 +381,6 @@
     "delete": "Slet vare",
     "deleteTitle": "Slet {{style}}?",
     "deleteBody": "Varen, dens størrelser og billeder fjernes. Forhandlernes software får besked om, at den er væk. Det kan ikke fortrydes.",
-    "materialsFlags": "Tilføj (recycled) eller (organic) efter en fiber, hvor det passer: “100% polyester (recycled)”.",
     "animalOriginHint": "For eksempel et lædermærke, en pelskant eller hornknapper. Hvis der er nogen, skal det stå på etiketten.",
     "footwearHint": "Skal stå på skoens etiket: det materiale, som udgør størstedelen af hver del (mindst 80 %).",
     "certificationsHint": "Valgfrit. Ordning og licensnummer, fx “gots:CU 123456”; tilføj (material), når kun et materiale er certificeret.",
@@ -1229,8 +1236,6 @@
     },
     "fibre": {
       "cotton": "bomuld",
-      "organic_cotton": "økologisk bomuld",
-      "recycled_cotton": "genanvendt bomuld",
       "linen": "hør",
       "hemp": "hamp",
       "silk": "silke",
@@ -1246,9 +1251,7 @@
       "cupro": "cupro",
       "acetate": "acetat",
       "polyester": "polyester",
-      "recycled_polyester": "genanvendt polyester",
       "polyamide": "polyamid",
-      "recycled_polyamide": "genanvendt polyamid",
       "elastane": "elastan",
       "acrylic": "akryl",
       "polypropylene": "polypropylen",
@@ -1260,6 +1263,11 @@
       "rubber": "gummi",
       "metal": "metal",
       "other": "andre fibre"
+    },
+    "qualifier": {
+      "organic": "økologisk",
+      "recycled": "genanvendt",
+      "regenerative": "regenerativ"
     },
     "care": {
       "wash_95": "Vask ved 95 °C",
@@ -1496,8 +1504,6 @@
   "article": {
     "label": "Etiketoplysninger",
     "composition": "Sammensætning",
-    "recycled": "genanvendt",
-    "organic": "økologisk",
     "animalOrigin": "Indeholder ikke-tekstildele af animalsk oprindelse",
     "footwear": "Materialer i fodtøj",
     "footwearPart": {

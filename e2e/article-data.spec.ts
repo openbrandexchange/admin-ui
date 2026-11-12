@@ -17,7 +17,7 @@ test('a retailer reads the label, measurements and features of a suitcase, a bag
 
   await openArticle(page, 'KO-1008')
   const label = page.getByRole('region', { name: 'Label information' })
-  await expect(label).toContainText('100% polyester (recycled)')
+  await expect(label).toContainText('100% Polyester (Recycled)')
   await expect(label).toContainText('Do not wash')
   const measures = page.getByRole('region', { name: 'Measurements', exact: true })
   await expect(measures).toContainText('55 × 40 × 20 cm')

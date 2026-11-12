@@ -224,8 +224,8 @@ describe('retailer portal', () => {
     await screen.findByRole('list', { name: /articles/i })
     await r.user.click(screen.getAllByRole('link', { name: /KO-1008/ })[0])
     const label = await screen.findByRole('region', { name: /label information/i })
-    expect(within(label).getByText(/100% polypropylene/)).toBeInTheDocument()
-    expect(within(label).getByText(/100% polyester \(recycled\)/)).toBeInTheDocument()
+    expect(within(label).getByText(/100% Polypropylene/)).toBeInTheDocument()
+    expect(within(label).getByText(/100% Polyester \(Recycled\)/)).toBeInTheDocument()
     expect(within(label).getByText('Do not wash')).toBeInTheDocument()
     expect(within(label).getByText('China')).toBeInTheDocument()
     expect(within(label).queryByText(/animal origin/i)).toBeNull()
@@ -445,6 +445,43 @@ describe('brand admin', () => {
     expect(p.data.certifications).toEqual([{ scheme: 'grs', licence_number: 'CU 200901', scope: 'material' }])
     expect(p.data.contains_animal_origin).toBe(false)
     expect(p.data.item_subtype).toBe('laptop_bag')
+  })
+
+  it('edits the composition with codes from the vocabularies and saves codes only', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1009' } })
+    const outer = await screen.findByRole('group', { name: 'Outer' })
+    expect(within(outer).getByLabelText('Material')).toHaveValue('polyester')
+    expect(within(outer).getByLabelText('Sustainability')).toHaveValue('recycled')
+    await r.user.selectOptions(within(outer).getByLabelText('Sustainability'), 'regenerative')
+    await r.user.click(within(outer).getByRole('button', { name: 'Add material' }))
+    const pct = within(outer).getAllByLabelText('Percentage')
+    await r.user.type(pct[1], '5')
+    await r.user.click(screen.getByRole('button', { name: /^save$/i }))
+    expect(await screen.findByText(/fill in a percentage between 0 and 100 and a material/i)).toBeInTheDocument()
+    await r.user.selectOptions(within(outer).getAllByLabelText('Material')[1], 'elastane')
+    await r.user.clear(pct[0])
+    await r.user.type(pct[0], '95')
+    await r.user.click(screen.getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
+    const p = db().products.find((x) => x.external_id === 'KO-1009')!
+    expect(p.data.materials).toEqual([
+      { part: { code: 'outer' }, fibers: [{ material: { code: 'polyester' }, percentage: 95, qualifier: { code: 'regenerative' } }, { material: { code: 'elastane' }, percentage: 5, qualifier: null }] },
+      { part: { code: 'lining' }, fibers: [{ material: { code: 'polyamide' }, percentage: 100, qualifier: null }] },
+    ])
+    expect(p.data.care).toEqual(['hand_wash', 'do_not_bleach', 'do_not_tumble_dry', 'do_not_iron', 'do_not_dry_clean'].map((code) => ({ code })))
+  })
+
+  it('shows names in the reader\'s language, the qualifier next to the material and care by category', async () => {
+    const r = await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    await r.user.click(screen.getAllByRole('link', { name: /KO-1009/ })[0])
+    const label = await screen.findByRole('region', { name: /label information/i })
+    expect(within(label).getByText(/100% Polyester \(Recycled\)/)).toBeInTheDocument()
+    expect(within(label).getByText('Outer fabric:')).toBeInTheDocument()
+    expect(within(label).getByText('Washing')).toBeInTheDocument()
+    expect(within(label).getByText('Hand wash')).toBeInTheDocument()
   })
 
   it('edits the measurements of a size', async () => {

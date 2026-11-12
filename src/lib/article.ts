@@ -30,7 +30,7 @@ export function labelWarnings(p: LabelFields): LabelWarning[] {
   const materials = normaliseMaterials(p.materials)
   if ((TEXTILE_ITEM_TYPES as readonly string[]).includes(type)) {
     if (!materials) out.push({ code: 'fibre_composition_missing', column: 'materials' })
-    else if (p.contains_animal_origin == null && materials.some((m) => m.fibers.some((f) => ANIMAL.test(f.fiber)))) out.push({ code: 'animal_origin_unknown', column: 'contains_animal_origin' })
+    else if (p.contains_animal_origin == null && materials.some((m) => m.fibers.some((f) => ANIMAL.test(f.material.code)))) out.push({ code: 'animal_origin_unknown', column: 'contains_animal_origin' })
   }
   if ((FOOTWEAR_ITEM_TYPES as readonly string[]).includes(type)) {
     const fm = p.footwear_materials

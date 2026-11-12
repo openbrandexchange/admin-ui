@@ -294,9 +294,17 @@
     "styleHint": "Teie enda tootekood. See tuvastab toote ja seda ei saa hiljem muuta.",
     "styleLocked": "Tootekood tuvastab selle toote ja seda ei saa muuta.",
     "seasonHint": "Nagu teie seda kasutate, näiteks AW26 või NOS.",
-    "materialsHint": "Nagu sildil: „outer: 65% cotton, 35% polyamide; lining: 100% polyester“.",
-    "materialsInvalid": "Me ei suutnud lugeda „{{part}}“. Kasutage protsenti ja materjali, näiteks 100% cotton.",
     "materialsNot100": "Osa {{parts}} protsendid ei anna kokku 100%.",
+    "materialsEditorHint": "Iga osa kohta nagu sildil: protsent, materjal ja vajaduse korral, kas kiud on mahe, taaskasutatud või regeneratiivne.",
+    "materialPart": "Osa",
+    "materialPercentage": "Protsent",
+    "materialName": "Materjal",
+    "materialQualifier": "Jätkusuutlikkus",
+    "addFibre": "Lisa materjal",
+    "addPart": "Lisa osa",
+    "removeFibre": "Eemalda materjal",
+    "removePart": "Eemalda osa",
+    "materialsRowInvalid": "Sisestage igale kasutatavale reale protsent vahemikus 0–100 ja materjal.",
     "careHint": "Valige hooldussildi sümbolid sildi järjekorras.",
     "careGroup": {
       "washing": "Pesemine",
@@ -373,7 +381,6 @@
     "delete": "Kustuta toode",
     "deleteTitle": "Kas kustutada {{style}}?",
     "deleteBody": "Toode, selle suurused ja pildid eemaldatakse. Edasimüüjate süsteemid saavad teada, et see on kadunud. Seda ei saa tagasi võtta.",
-    "materialsFlags": "Lisage kiu järele (recycled) või (organic), kui see kehtib: „100% polyester (recycled)“.",
     "animalOriginHint": "Näiteks nahast embleem, karusnahast ääris või sarvest nööbid. Kui need on olemas, peab see olema sildil märgitud.",
     "footwearHint": "Jalatsite sildil kohustuslik: materjal, millest on valmistatud suurem osa igast osast (vähemalt 80%).",
     "certificationsHint": "Valikuline. Sertifitseerimisskeem ja litsentsi number, näiteks „gots:CU 123456“; lisage (material), kui sertifitseeritud on ainult materjal.",
@@ -1229,8 +1236,6 @@
     },
     "fibre": {
       "cotton": "puuvill",
-      "organic_cotton": "mahepuuvill",
-      "recycled_cotton": "taaskasutatud puuvill",
       "linen": "lina",
       "hemp": "kanep",
       "silk": "siid",
@@ -1246,9 +1251,7 @@
       "cupro": "kupro",
       "acetate": "atsetaat",
       "polyester": "polüester",
-      "recycled_polyester": "taaskasutatud polüester",
       "polyamide": "polüamiid",
-      "recycled_polyamide": "taaskasutatud polüamiid",
       "elastane": "elastaan",
       "acrylic": "akrüül",
       "polypropylene": "polüpropüleen",
@@ -1260,6 +1263,11 @@
       "rubber": "kumm",
       "metal": "metall",
       "other": "muud kiud"
+    },
+    "qualifier": {
+      "organic": "mahe",
+      "recycled": "taaskasutatud",
+      "regenerative": "regeneratiivne"
     },
     "care": {
       "wash_95": "Pesta 95 °C juures",
@@ -1496,8 +1504,6 @@
   "article": {
     "label": "Sildi teave",
     "composition": "Koostis",
-    "recycled": "taaskasutatud",
-    "organic": "mahe",
     "animalOrigin": "Sisaldab loomset päritolu mittetekstiilosi",
     "footwear": "Jalatsi materjalid",
     "footwearPart": {

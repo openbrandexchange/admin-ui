@@ -68,7 +68,7 @@ export interface MockDb {
   selections: Record<string, string[]>
 }
 
-const STORAGE = 'obx.mock.v2'
+const STORAGE = 'obx.mock.v3'
 const now = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const daysAgo = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString().replace(/\.\d{3}Z$/, 'Z')
 
@@ -98,7 +98,7 @@ function baseSettings(): MockDb['settings'] {
       public_url: origin,
       discovery_url: `${origin}/.well-known/obx`,
       software: 'mock node (admin-ui)',
-      version: '0.2.0',
+      version: '0.3.0',
       email_configured: false,
       renditions_server_generated: true,
       max_upload_bytes: 200 * 1024 * 1024,

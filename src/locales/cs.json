@@ -300,9 +300,17 @@
     "styleHint": "Vaše vlastní číslo artiklu. Identifikuje artikl a později ho nelze změnit.",
     "styleLocked": "Číslo artiklu identifikuje tento artikl a nelze ho změnit.",
     "seasonHint": "Tak, jak ji používáte, například AW26 nebo NOS.",
-    "materialsHint": "Jako na štítku: „outer: 65% cotton, 35% polyamide; lining: 100% polyester“.",
-    "materialsInvalid": "„{{part}}“ se nepodařilo přečíst. Uveďte procenta a materiál, např. 100% cotton.",
     "materialsNot100": "Procenta u {{parts}} nedávají dohromady 100 %.",
+    "materialsEditorHint": "Pro každou část jako na štítku: procento, materiál a případně, zda je vlákno bio, recyklované nebo regenerativní.",
+    "materialPart": "Část",
+    "materialPercentage": "Procento",
+    "materialName": "Materiál",
+    "materialQualifier": "Udržitelnost",
+    "addFibre": "Přidat materiál",
+    "addPart": "Přidat část",
+    "removeFibre": "Odebrat materiál",
+    "removePart": "Odebrat část",
+    "materialsRowInvalid": "Na každém použitém řádku vyplňte procento mezi 0 a 100 a materiál.",
     "careHint": "Vyberte symboly z ošetřovacího štítku v pořadí na štítku.",
     "careGroup": {
       "washing": "Praní",
@@ -379,7 +387,6 @@
     "delete": "Smazat artikl",
     "deleteTitle": "Smazat {{style}}?",
     "deleteBody": "Artikl, jeho velikosti a fotografie budou odstraněny. Systémy prodejců se dozví, že zmizel. Tuto akci nelze vrátit.",
-    "materialsFlags": "Za vlákno doplňte (recycled) nebo (organic), pokud to platí: „100% polyester (recycled)“.",
     "animalOriginHint": "Například kožená nášivka, kožešinový lem nebo knoflíky z rohoviny. Pokud nějaké jsou, musí to být uvedeno na štítku.",
     "footwearHint": "Povinné na štítku obuvi: materiál, ze kterého je každá část převážně vyrobena (alespoň 80 %).",
     "certificationsHint": "Nepovinné. Systém a číslo licence, např. „gots:CU 123456“; doplňte (material), pokud je certifikován jen materiál.",
@@ -1289,8 +1296,6 @@
     },
     "fibre": {
       "cotton": "bavlna",
-      "organic_cotton": "biobavlna",
-      "recycled_cotton": "recyklovaná bavlna",
       "linen": "len",
       "hemp": "konopí",
       "silk": "hedvábí",
@@ -1306,9 +1311,7 @@
       "cupro": "cupro",
       "acetate": "acetát",
       "polyester": "polyester",
-      "recycled_polyester": "recyklovaný polyester",
       "polyamide": "polyamid",
-      "recycled_polyamide": "recyklovaný polyamid",
       "elastane": "elastan",
       "acrylic": "akryl",
       "polypropylene": "polypropylen",
@@ -1320,6 +1323,11 @@
       "rubber": "pryž",
       "metal": "kov",
       "other": "ostatní vlákna"
+    },
+    "qualifier": {
+      "organic": "bio",
+      "recycled": "recyklované",
+      "regenerative": "regenerativní"
     },
     "care": {
       "wash_95": "Prát na 95 °C",
@@ -1556,8 +1564,6 @@
   "article": {
     "label": "Údaje na štítku",
     "composition": "Složení",
-    "recycled": "recyklované",
-    "organic": "bio",
     "animalOrigin": "Obsahuje netextilní části živočišného původu",
     "footwear": "Materiály obuvi",
     "footwearPart": {

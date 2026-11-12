@@ -4,11 +4,27 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
-## [Unreleased]
+## [0.3.0] - 2026-11-12
+
+Materials and care as terms with names, following spec 0.3.0 ([proposal 0004](https://github.com/openbrandexchange/spec/blob/main/docs/proposals/0004-terms-with-names.md)). **Breaking for nodes**: the article form writes the 0.3 shapes, so a node has to accept them (a 0.2 node's answers are still read).
+
+### Changed
+
+- **Composition and care show the names the brand's node returns** in the reader's language: "95% Katoen (Biologisch)", the part name ("Voering: 100% Polyester (Gerecycled)") and the care instruction ("Wassen op 30 °C"). Where the node has no name in that language, the UI uses its own translation of the code, then the node's name in another language, then the code. The brand's own care text ("Wash inside out") is shown after the instruction.
+- **Care instructions are grouped by category** in label order: washing, bleaching, drying, ironing, professional cleaning. Codes the vocabulary does not know come last.
+- **The article form's composition is picked, not typed**: per part, a percentage, a material and an optional qualifier (organic, recycled, regenerative), from the spec's vocabularies, with "Add material" and "Add part". One qualifier per fibre replaces the separate recycled and organic marks. Codes outside the vocabularies that an article already has stay selectable. The form sends codes only; the node fills in the names. Care is saved in label order, and the brand's own care text is kept.
+- The API types are generated from spec 0.3.0 (`materials` terms with `material` and `qualifier`, care with `category`, `symbol` and `name`). Answers in the 0.2 shape (`fiber` with `recycled`/`organic`) and the 0.1 keys `recycled_*`/`organic_*` are read as the material with that qualifier.
+- Glossary version 0.3.0, in step with the spec's glossary.
+- Mock mode: the mock node stores codes and answers with the names, categories and symbols of the spec's vocabularies (copied by `npm run sync-fixtures`, which now also copies `vocabularies/`). The demo data is stored under a new key.
 
 ### Added
 
 - **Demo mode** for nodes that run a public demo (`x-obx-demo` in the public branding, see docs/node-integration.md §4): the banner "Demo, fictional data" on every page, one-click "View as retailer" / "View as brand" instead of the login form (with Cloudflare Turnstile when the node gives a site key), the public read-only API key, and "This is not possible in the demo." for refused actions. In the 25 languages.
+- The qualifier "regenerative", the editor's words and its error message in all 25 languages.
+
+### Removed
+
+- The materials notation in the article form ("outer: 65% cotton, …") and its hints. The import file keeps the notation (`100% cotton (regenerative)` is new in spec 0.3).
 
 ## [0.2.1] - 2026-11-12
 

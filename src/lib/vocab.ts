@@ -18,14 +18,23 @@ export const CHANNELS = ['webshop', 'marketplace', 'social', 'print'] as const
 
 export const PARTS = ['main', 'outer', 'lining', 'filling', 'padding', 'trim', 'pocket_lining', 'shell', 'handle', 'strap', 'upper', 'sole', 'insole'] as const
 
-/** Fibre keys (Annex I of Reg. (EU) No 1007/2011 where one exists). The 0.1 keys recycled_* and
- *  organic_* stay here for labels only; new data has the fibre with a flag (lib/materials.ts). */
-export const FIBRES = [
-  'cotton', 'organic_cotton', 'recycled_cotton', 'linen', 'hemp', 'silk', 'wool', 'merino_wool', 'lambswool', 'cashmere', 'alpaca', 'mohair',
-  'viscose', 'lyocell', 'modal', 'cupro', 'acetate', 'polyester', 'recycled_polyester', 'polyamide', 'recycled_polyamide', 'elastane',
+/** Material codes of `materials` (spec vocabularies/materials.json): the fibres of Annex I of
+ *  Reg. (EU) No 1007/2011 where one exists. Recycled or organic is a qualifier, not a material. */
+export const MATERIALS = [
+  'cotton', 'linen', 'hemp', 'silk', 'wool', 'merino_wool', 'lambswool', 'cashmere', 'alpaca', 'mohair',
+  'viscose', 'lyocell', 'modal', 'cupro', 'acetate', 'polyester', 'polyamide', 'elastane',
   'acrylic', 'polypropylene', 'polyurethane', 'leather', 'suede', 'down', 'feather', 'rubber', 'metal', 'other',
 ] as const
 
+/** Qualifier codes of a fibre (spec vocabularies/qualifiers.json): one per fibre. */
+export const QUALIFIERS = ['organic', 'recycled', 'regenerative'] as const
+
+/** ISO 3758 care categories in label order (spec Care.json). */
+export const CARE_CATEGORIES = ['washing', 'bleaching', 'drying', 'ironing', 'professional_care'] as const
+export type CareCategory = (typeof CARE_CATEGORIES)[number]
+
+/** Care codes (spec vocabularies/care.json) as the form groups them: tumble drying and other
+ *  drying are both the category `drying`. */
 export const CARE_GROUPS = {
   washing: ['wash_95', 'wash_70', 'wash_60', 'wash_60_mild', 'wash_50', 'wash_50_mild', 'wash_40', 'wash_40_mild', 'wash_40_very_mild', 'wash_30', 'wash_30_mild', 'wash_30_very_mild', 'hand_wash', 'do_not_wash'],
   bleaching: ['bleach_any', 'bleach_oxygen_only', 'do_not_bleach'],
@@ -35,7 +44,15 @@ export const CARE_GROUPS = {
   professional: ['dry_clean_p', 'dry_clean_p_mild', 'dry_clean_p_very_mild', 'dry_clean_f', 'dry_clean_f_mild', 'dry_clean_f_very_mild', 'do_not_dry_clean', 'wet_clean_w', 'wet_clean_w_mild', 'wet_clean_w_very_mild', 'do_not_wet_clean'],
 } as const
 
+const GROUP_CATEGORY: Record<keyof typeof CARE_GROUPS, CareCategory> = { washing: 'washing', bleaching: 'bleaching', tumble: 'drying', drying: 'drying', ironing: 'ironing', professional: 'professional_care' }
+
 export const CARE_CODES = Object.values(CARE_GROUPS).flat()
+
+/** The category of a care code in the vocabulary, or null for another code. */
+export function careCategoryOf(code: string): CareCategory | null {
+  for (const [group, codes] of Object.entries(CARE_GROUPS)) if ((codes as readonly string[]).includes(code)) return GROUP_CATEGORY[group as keyof typeof CARE_GROUPS]
+  return null
+}
 
 // ---------------------------------------------------------------- article data (spec 0.2, protocol.md §5.9)
 

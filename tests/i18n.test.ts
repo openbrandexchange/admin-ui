@@ -2,7 +2,7 @@
 // language needs), the same {{placeholders}}, and the glossary words the whole project uses.
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '../src/i18n/languages'
-import { ALL_ITEM_SUBTYPES, CARE_CODES, CHANNELS, COLOUR_FAMILIES, FEATURES, FIBRES, FOOTWEAR_MATERIALS, FOOTWEAR_PARTS, ITEM_TYPES, MEASUREMENTS, PARTS, ROLES, TARGET_GROUPS, VIEWS, WARNING_CODES } from '../src/lib/vocab'
+import { ALL_ITEM_SUBTYPES, CARE_CODES, CHANNELS, COLOUR_FAMILIES, FEATURES, FOOTWEAR_MATERIALS, FOOTWEAR_PARTS, ITEM_TYPES, MATERIALS, MEASUREMENTS, PARTS, QUALIFIERS, ROLES, TARGET_GROUPS, VIEWS, WARNING_CODES } from '../src/lib/vocab'
 import glossary from '../src/i18n/glossary.json'
 
 const files = import.meta.glob<Record<string, unknown>>('../src/locales/*.json', { eager: true, import: 'default' })
@@ -79,7 +79,8 @@ describe('labels for every stable key', () => {
     ['enum.targetGroup', TARGET_GROUPS],
     ['enum.itemType', ITEM_TYPES],
     ['enum.part', PARTS],
-    ['enum.fibre', FIBRES],
+    ['enum.fibre', MATERIALS],
+    ['enum.qualifier', QUALIFIERS],
     ['enum.care', CARE_CODES],
     ['enum.itemSubtype', ALL_ITEM_SUBTYPES],
     ['enum.footwearMaterial', FOOTWEAR_MATERIALS],

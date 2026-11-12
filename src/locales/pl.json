@@ -300,9 +300,17 @@
     "styleHint": "Twój własny numer artykułu. Identyfikuje artykuł i nie można go później zmienić.",
     "styleLocked": "Numer artykułu identyfikuje ten artykuł i nie można go zmienić.",
     "seasonHint": "Tak jak go używasz, np. AW26 lub NOS.",
-    "materialsHint": "Jak na metce: „outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "Nie udało się odczytać „{{part}}”. Podaj procent i materiał, np. 100% cotton.",
     "materialsNot100": "Procenty dla {{parts}} nie sumują się do 100%.",
+    "materialsEditorHint": "Dla każdej części, jak na metce: procent, materiał i w razie potrzeby, czy włókno jest organiczne, z recyklingu czy regeneratywne.",
+    "materialPart": "Część",
+    "materialPercentage": "Procent",
+    "materialName": "Materiał",
+    "materialQualifier": "Zrównoważony rozwój",
+    "addFibre": "Dodaj materiał",
+    "addPart": "Dodaj część",
+    "removeFibre": "Usuń materiał",
+    "removePart": "Usuń część",
+    "materialsRowInvalid": "W każdym używanym wierszu podaj procent od 0 do 100 i materiał.",
     "careHint": "Wybierz symbole z metki w kolejności z metki.",
     "careGroup": {
       "washing": "Pranie",
@@ -379,7 +387,6 @@
     "delete": "Usuń artykuł",
     "deleteTitle": "Usunąć {{style}}?",
     "deleteBody": "Artykuł, jego rozmiary i zdjęcia zostaną usunięte. Systemy sprzedawców otrzymają informację o usunięciu. Tego nie da się cofnąć.",
-    "materialsFlags": "Dopisz (recycled) lub (organic) po włóknie, jeśli dotyczy: „100% polyester (recycled)”.",
     "animalOriginHint": "Na przykład skórzana naszywka, futrzane wykończenie lub guziki z rogu. Jeśli takie są, metka musi o tym informować.",
     "footwearHint": "Wymagane na metce obuwia: materiał, z którego składa się większość każdej części (co najmniej 80%).",
     "certificationsHint": "Opcjonalnie. System i numer licencji, np. „gots:CU 123456”; dopisz (material), gdy certyfikowany jest tylko materiał.",
@@ -1289,8 +1296,6 @@
     },
     "fibre": {
       "cotton": "bawełna",
-      "organic_cotton": "bawełna organiczna",
-      "recycled_cotton": "bawełna z recyklingu",
       "linen": "len",
       "hemp": "konopie",
       "silk": "jedwab",
@@ -1306,9 +1311,7 @@
       "cupro": "cupro",
       "acetate": "octan",
       "polyester": "poliester",
-      "recycled_polyester": "poliester z recyklingu",
       "polyamide": "poliamid",
-      "recycled_polyamide": "poliamid z recyklingu",
       "elastane": "elastan",
       "acrylic": "akryl",
       "polypropylene": "polipropylen",
@@ -1320,6 +1323,11 @@
       "rubber": "guma",
       "metal": "metal",
       "other": "inne włókna"
+    },
+    "qualifier": {
+      "organic": "organiczne",
+      "recycled": "z recyklingu",
+      "regenerative": "regeneratywne"
     },
     "care": {
       "wash_95": "Prać w 95 °C",
@@ -1556,8 +1564,6 @@
   "article": {
     "label": "Informacje z metki",
     "composition": "Skład",
-    "recycled": "z recyklingu",
-    "organic": "organiczne",
     "animalOrigin": "Zawiera nietekstylne części pochodzenia zwierzęcego",
     "footwear": "Materiały obuwia",
     "footwearPart": {

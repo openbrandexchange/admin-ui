@@ -303,9 +303,17 @@
     "styleHint": "D’uimhir earra féin. Aithníonn sí an t-earra agus ní féidir í a athrú ar ball.",
     "styleLocked": "Aithníonn an uimhir earra an t-earra seo agus ní féidir í a athrú.",
     "seasonHint": "Mar a úsáideann tú é, mar shampla AW26 nó NOS.",
-    "materialsHint": "Mar atá ar an lipéad: “outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "Níorbh fhéidir “{{part}}” a léamh. Tabhair céatadán agus ábhar, m.sh. 100% cotton.",
     "materialsNot100": "Ní ionann na céatadáin do {{parts}} agus 100%.",
+    "materialsEditorHint": "In aghaidh na coda, mar atá ar an lipéad: an céatadán, an t-ábhar agus, más ábhartha, an snáithín orgánach, athchúrsáilte nó athghiniúnach.",
+    "materialPart": "Cuid",
+    "materialPercentage": "Céatadán",
+    "materialName": "Ábhar",
+    "materialQualifier": "Inbhuanaitheacht",
+    "addFibre": "Cuir ábhar leis",
+    "addPart": "Cuir cuid leis",
+    "removeFibre": "Bain an t-ábhar",
+    "removePart": "Bain an chuid",
+    "materialsRowInvalid": "Cuir isteach céatadán idir 0 agus 100 agus ábhar ar gach líne a úsáideann tú.",
     "careHint": "Roghnaigh na siombailí ón lipéad cúraim san ord atá ar an lipéad.",
     "careGroup": {
       "washing": "Níochán",
@@ -382,7 +390,6 @@
     "delete": "Scrios an t-earra",
     "deleteTitle": "{{style}} a scriosadh?",
     "deleteBody": "Bainfear an t-earra, a mhéideanna agus a ghrianghraif. Cuirfear in iúl do chórais na miondíoltóirí go bhfuil sé imithe. Ní féidir é seo a chealú.",
-    "materialsFlags": "Cuir (recycled) nó (organic) i ndiaidh snáithín nuair is cuí: “100% polyester (recycled)”.",
     "animalOriginHint": "Mar shampla paiste leathair, imeall fionnaidh nó cnaipí adhairce. Má tá a leithéid ann, caithfidh an lipéad é sin a lua.",
     "footwearHint": "Riachtanach ar lipéid coisbhirt: an t-ábhar as a ndéantar an chuid is mó de gach cuid (80% ar a laghad).",
     "certificationsHint": "Roghnach. Scéim agus uimhir cheadúnais, mar shampla “gots:CU 123456”; cuir (material) leis nuair nach bhfuil ach ábhar amháin deimhnithe.",
@@ -1319,8 +1326,6 @@
     },
     "fibre": {
       "cotton": "cadás",
-      "organic_cotton": "cadás orgánach",
-      "recycled_cotton": "cadás athchúrsáilte",
       "linen": "líon",
       "hemp": "cnáib",
       "silk": "síoda",
@@ -1336,9 +1341,7 @@
       "cupro": "cupro",
       "acetate": "aicéatáit",
       "polyester": "poileistear",
-      "recycled_polyester": "poileistear athchúrsáilte",
       "polyamide": "polaimíd",
-      "recycled_polyamide": "polaimíd athchúrsáilte",
       "elastane": "leaisteán",
       "acrylic": "aicrileach",
       "polypropylene": "polapróipiléin",
@@ -1350,6 +1353,11 @@
       "rubber": "rubar",
       "metal": "miotal",
       "other": "snáithíní eile"
+    },
+    "qualifier": {
+      "organic": "orgánach",
+      "recycled": "athchúrsáilte",
+      "regenerative": "athghiniúnach"
     },
     "care": {
       "wash_95": "Nigh ag 95 °C",
@@ -1586,8 +1594,6 @@
   "article": {
     "label": "Faisnéis lipéid",
     "composition": "Comhdhéanamh",
-    "recycled": "athchúrsáilte",
-    "organic": "orgánach",
     "animalOrigin": "Tá codanna neamhtheicstíle de bhunadh ainmhíoch ann",
     "footwear": "Ábhair an choisbhirt",
     "footwearPart": {

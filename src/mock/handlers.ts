@@ -19,6 +19,7 @@ import type {
 } from '../api/types'
 import { formatCertifications, formatFeature, formatFootwear, formatMeasurement, labelWarnings } from '../lib/article'
 import { formatMaterials } from '../lib/materials'
+import { withTermNames } from './terms'
 import { gtinValid } from '../lib/validate'
 import { FEATURE_KEYS, MEASUREMENTS } from '../lib/vocab'
 import { applyImport, brandByKey, db, DEMO, newId, record, resetDb, save, slug, touch, type ManifestItem, type MockDb } from './db'
@@ -217,7 +218,7 @@ function productDetail(d: MockDb, p: Rec, u: MockUser): ProductDetail {
     .sort((a, b) => String(a.data.color_code ?? '').localeCompare(String(b.data.color_code ?? '')) || a.data.position - b.data.position)
     .map((a) => assetView(d, a, p, originals))
   const { brand_external_id: _b, status: _s, ...data } = p.data  
-  return { ...(data as object), id: p.id, external_id: p.external_id, brand_id: brand.id, style_number: p.data.style_number, name: p.data.name, updated_at: p.updated_at, created_at: p.created_at, variants, assets } as ProductDetail
+  return { ...withTermNames(data), id: p.id, external_id: p.external_id, brand_id: brand.id, style_number: p.data.style_number, name: p.data.name, updated_at: p.updated_at, created_at: p.created_at, variants, assets } as ProductDetail
 }
 
 function portalSummary(d: MockDb, p: Rec, u: MockUser): PortalProductSummary {
@@ -364,7 +365,7 @@ const summaryOf = (d: MockDb, p: Rec): AdminProductSummary => {
 }
 
 function withVisibility(d: MockDb, r: Rec): Rec {
-  if (r.kind === 'product') return { ...r, visibility: productVisibility(d, r) }
+  if (r.kind === 'product') return { ...r, data: withTermNames(r.data), visibility: productVisibility(d, r) }
   if (r.kind === 'asset') {
     const missing = assetFilesPresent(d, r) ? null : ['original' as const]
     return { ...r, visibility: missing ? 'pending_files' : r.status === 'published' ? 'visible' : 'hidden', missing_files: missing }

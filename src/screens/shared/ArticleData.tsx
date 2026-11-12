@@ -1,4 +1,4 @@
-// The article data of spec 0.2 (protocol.md §5.9) as people read it: the label information in
+// The article data of spec 0.2 and 0.3 (protocol.md §5.9) as people read it: the label information in
 // label order, sizes with their measurements, and the features. Shared by the retailer's
 // article page and the brand's article screen, so both show exactly the same thing.
 import type { ReactNode } from 'react'
@@ -7,9 +7,9 @@ import type { Measurements, ProductInput, VariantInput } from '../../api/types'
 import type { LabelWarning } from '../../lib/article'
 import { countryName } from '../../lib/format'
 import { localized } from '../../lib/localized'
-import { normaliseMaterials } from '../../lib/materials'
+import { careByCategory, nameIn, normaliseMaterials, type Term } from '../../lib/materials'
 import { humanize } from '../../lib/prefs'
-import { certificationName, FEATURE_KEYS, FEATURES, FOOTWEAR_PARTS, type MeasurementKey } from '../../lib/vocab'
+import { certificationName, FEATURE_KEYS, FEATURES, FOOTWEAR_PARTS, type CareCategory, type MeasurementKey } from '../../lib/vocab'
 
 /** The fields both a protocol Product and a stored ProductInput have. */
 export type ArticleFields = Pick<ProductInput, 'materials' | 'contains_animal_origin' | 'footwear_materials' | 'care' | 'country_of_origin' | 'certifications' | 'features' | 'dpp_url'>
@@ -24,13 +24,35 @@ function Item({ label, children }: { label: ReactNode; children: ReactNode }) {
   )
 }
 
+export type TermFamily = 'part' | 'fibre' | 'qualifier' | 'care'
+
+/**
+ * The name of a part, material, qualifier or care term for the reader: the node's name in
+ * the reader's language, else this UI's own translation of the code, else the node's name in
+ * another language, else the code.
+ */
+export function useTermLabel() {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language
+  return (family: TermFamily, term: Term | null | undefined): string => {
+    if (!term) return ''
+    const key = `enum.${family}.${term.code}`
+    return nameIn(term.name, lang) || (i18n.exists(key) ? t(key) : '') || localized(term.name, lang) || humanize(term.code)
+  }
+}
+
+/** Heading of a care category (the form's group words; `drying` covers tumble drying). */
+const CARE_HEADING: Record<CareCategory, string> = { washing: 'washing', bleaching: 'bleaching', drying: 'drying', ironing: 'ironing', professional_care: 'professional' }
+
 const hasLabel = (p: ArticleFields) => !!(p.materials?.length || p.contains_animal_origin || p.footwear_materials || p.care?.length || p.country_of_origin || p.certifications?.length)
 
 /** Composition, animal origin, footwear materials, care, origin and certifications, in that order. Only what is present. */
 export function LabelInfo({ product, heading = true }: { product: ArticleFields; heading?: boolean }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
+  const term = useTermLabel()
   const materials = normaliseMaterials(product.materials)
+  const care = careByCategory(product.care)
   const fm = product.footwear_materials
   if (!hasLabel(product) && !product.dpp_url) return null
   return (
@@ -43,15 +65,10 @@ export function LabelInfo({ product, heading = true }: { product: ArticleFields;
       <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
         {(materials || product.contains_animal_origin) && (
           <Item label={t('article.composition')}>
-            {materials?.map((m) => (
-              <p key={m.part}>
-                {(materials.length > 1 || m.part !== 'main') && <span className="text-stone-500">{t(`enum.part.${m.part}`, { defaultValue: humanize(m.part) })}: </span>}
-                {m.fibers
-                  .map((f) => {
-                    const marks = [f.recycled && t('article.recycled'), f.organic && t('article.organic')].filter(Boolean)
-                    return `${new Intl.NumberFormat(lang).format(f.percentage)}% ${t(`enum.fibre.${f.fiber}`, { defaultValue: humanize(f.fiber).toLowerCase() })}${marks.length ? ` (${marks.join(', ')})` : ''}`
-                  })
-                  .join(', ')}
+            {materials?.map((m, i) => (
+              <p key={`${m.part.code}-${i}`}>
+                {(materials.length > 1 || m.part.code !== 'main') && <span className="text-stone-500">{term('part', m.part)}: </span>}
+                {m.fibers.map((f) => `${new Intl.NumberFormat(lang).format(f.percentage)}% ${term('fibre', f.material)}${f.qualifier ? ` (${term('qualifier', f.qualifier)})` : ''}`).join(', ')}
               </p>
             ))}
             {product.contains_animal_origin && <p className="font-medium text-stone-900">{t('article.animalOrigin')}</p>}
@@ -67,13 +84,26 @@ export function LabelInfo({ product, heading = true }: { product: ArticleFields;
             ))}
           </Item>
         )}
-        {product.care?.length ? (
+        {care.length ? (
           <Item label={t('portal.product.care')}>
-            <ol className="list-disc space-y-0.5 pl-4">
-              {product.care.map((c) => (
-                <li key={c.code}>{localized(c.text, lang) || t(`enum.care.${c.code}`, { defaultValue: humanize(c.code) })}</li>
+            <div className="space-y-1.5">
+              {care.map((g) => (
+                <div key={g.category ?? 'other'}>
+                  {g.category && <p className="text-xs text-stone-500">{t(`product.careGroup.${CARE_HEADING[g.category]}`)}</p>}
+                  <ul className="list-disc space-y-0.5 pl-4">
+                    {g.entries.map((c, i) => {
+                      const extra = localized(c.text, lang)
+                      return (
+                        <li key={`${c.code}-${i}`}>
+                          {term('care', c)}
+                          {extra && <span className="text-stone-500"> – {extra}</span>}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
               ))}
-            </ol>
+            </div>
           </Item>
         ) : null}
         {product.country_of_origin && <Item label={t('portal.product.origin')}>{countryName(product.country_of_origin, lang)}</Item>}
@@ -344,11 +374,12 @@ export function LabelWarnings({ warnings }: { warnings: LabelWarning[] }) {
 
 export function LabelWarningText({ code, part }: { code: string; part?: string }) {
   const { t } = useTranslation()
+  const term = useTermLabel()
   return (
     <>
       <span className="block font-medium">
         {t(`importErrors.${code}`)}
-        {part && ` (${t(`enum.part.${part}`, { defaultValue: humanize(part) })})`}
+        {part && ` (${term('part', { code: part })})`}
       </span>
       <span className="block">{t(`labelWarning.${code}.why`)}</span>
       <span className="block text-xs opacity-80">{t(`labelWarning.${code}.law`)}</span>

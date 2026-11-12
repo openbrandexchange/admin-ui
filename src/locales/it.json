@@ -297,9 +297,17 @@
     "styleHint": "Il tuo codice articolo. Identifica l'articolo e non potrà essere modificato in seguito.",
     "styleLocked": "Il codice articolo identifica questo articolo e non può essere modificato.",
     "seasonHint": "Come lo usi tu, ad esempio AW26 o NOS.",
-    "materialsHint": "Come sull'etichetta: «outer: 65% cotton, 35% polyamide; lining: 100% polyester».",
-    "materialsInvalid": "Non siamo riusciti a leggere «{{part}}». Usa una percentuale e un materiale, come 100% cotton.",
     "materialsNot100": "Le percentuali di {{parts}} non arrivano a 100%.",
+    "materialsEditorHint": "Per parte, come sull'etichetta: la percentuale, il materiale e, se pertinente, se la fibra è biologica, riciclata o rigenerativa.",
+    "materialPart": "Parte",
+    "materialPercentage": "Percentuale",
+    "materialName": "Materiale",
+    "materialQualifier": "Sostenibilità",
+    "addFibre": "Aggiungi materiale",
+    "addPart": "Aggiungi parte",
+    "removeFibre": "Rimuovi materiale",
+    "removePart": "Rimuovi parte",
+    "materialsRowInvalid": "Indica una percentuale tra 0 e 100 e un materiale in ogni riga utilizzata.",
     "careHint": "Scegli i simboli dell'etichetta di manutenzione, nell'ordine dell'etichetta.",
     "careGroup": {
       "washing": "Lavaggio",
@@ -376,7 +384,6 @@
     "delete": "Elimina articolo",
     "deleteTitle": "Eliminare {{style}}?",
     "deleteBody": "L'articolo, le sue taglie e le sue immagini verranno rimossi. Il software dei rivenditori saprà che non c'è più. L'operazione non si può annullare.",
-    "materialsFlags": "Aggiungi (recycled) o (organic) dopo una fibra quando serve: «100% polyester (recycled)».",
     "animalOriginHint": "Ad esempio una toppa in pelle, un bordo in pelliccia o bottoni in corno. Se ci sono, l'etichetta deve indicarlo.",
     "footwearHint": "Obbligatorio sull'etichetta delle calzature: il materiale prevalente di ciascuna parte (almeno l'80%).",
     "certificationsHint": "Facoltativo. Schema e numero di licenza, come «gots:CU 123456»; aggiungi (material) se è certificato solo un materiale.",
@@ -1259,8 +1266,6 @@
     },
     "fibre": {
       "cotton": "cotone",
-      "organic_cotton": "cotone biologico",
-      "recycled_cotton": "cotone riciclato",
       "linen": "lino",
       "hemp": "canapa",
       "silk": "seta",
@@ -1276,9 +1281,7 @@
       "cupro": "cupro",
       "acetate": "acetato",
       "polyester": "poliestere",
-      "recycled_polyester": "poliestere riciclato",
       "polyamide": "poliammide",
-      "recycled_polyamide": "poliammide riciclata",
       "elastane": "elastan",
       "acrylic": "acrilico",
       "polypropylene": "polipropilene",
@@ -1290,6 +1293,11 @@
       "rubber": "gomma",
       "metal": "metallo",
       "other": "altre fibre"
+    },
+    "qualifier": {
+      "organic": "biologico",
+      "recycled": "riciclato",
+      "regenerative": "rigenerativo"
     },
     "care": {
       "wash_95": "Lavaggio a 95 °C",
@@ -1526,8 +1534,6 @@
   "article": {
     "label": "Informazioni in etichetta",
     "composition": "Composizione",
-    "recycled": "riciclato",
-    "organic": "biologico",
     "animalOrigin": "Contiene parti non tessili di origine animale",
     "footwear": "Materiali della calzatura",
     "footwearPart": {
