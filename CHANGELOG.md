@@ -4,6 +4,12 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
+## [Unreleased]
+
+### Added
+
+- **Demo mode** for nodes that run a public demo (`x-obx-demo` in the public branding, see docs/node-integration.md §4): the banner "Demo, fictional data" on every page, one-click "View as retailer" / "View as brand" instead of the login form (with Cloudflare Turnstile when the node gives a site key), the public read-only API key, and "This is not possible in the demo." for refused actions. In the 25 languages.
+
 ## [0.2.1] - 2026-11-12
 
 Excel next to CSV ([spec import-format.md §5](https://github.com/openbrandexchange/spec/blob/main/docs/import-format.md#excel)). The node converts a workbook itself; against a node without the Excel import an upload of a `.xlsx` is refused by the node as before.

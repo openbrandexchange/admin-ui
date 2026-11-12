@@ -9,6 +9,8 @@ import { usePortalTitle } from '../../lib/branding'
 import { Button, TextField } from '../../ui/controls'
 import { ErrorNote, Notice } from '../../ui/feedback'
 import { PublicCard } from './PublicCard'
+import { DemoSignIn } from './DemoSignIn'
+import { demoOf } from '../../lib/demo'
 
 export function LoginScreen() {
   const { t, i18n } = useTranslation()
@@ -26,6 +28,9 @@ export function LoginScreen() {
   }
 
   const welcome = localized(branding.data?.welcome_text, i18n.language)
+  const demo = demoOf(branding.data)
+  // A demo portal has no accounts with passwords: only the one-click sign-in.
+  if (demo) return <DemoSignIn demo={demo} />
 
   return (
     <>

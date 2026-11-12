@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode 
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ApiError } from '../api/client'
+import { isDemoRefusal } from '../lib/demo'
 import { Button, Spinner, cx } from './controls'
 
 export { EmptyState } from './controls'
@@ -9,6 +10,7 @@ import { IconX } from './icons'
 
 /** Human message for any error: our translation of the obx_error, else the node's detail. */
 export function errorMessage(t: TFunction, e: unknown): string {
+  if (isDemoRefusal(e)) return t('demo.refused')
   if (e instanceof ApiError) {
     const key = `errors.${e.code}`
     const translated = t(key, { defaultValue: '' })

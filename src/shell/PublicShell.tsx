@@ -3,6 +3,7 @@ import { useBranding } from '../queries/session'
 import { useApplyBranding, usePortalTitle } from '../lib/branding'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
 import { InMainContext } from './Fallbacks'
+import { DemoBanner } from './DemoBanner'
 
 /** Login, invite, reset, request access and setup: a calm centred page in the brand's colours. */
 export function PublicShell() {
@@ -12,6 +13,7 @@ export function PublicShell() {
   return (
     <div className="flex min-h-dvh flex-col">
       <SkipLink />
+      <DemoBanner />
       <header className="flex items-center justify-between gap-4 px-4 py-4 sm:px-8">
         <div className="flex items-center gap-3 min-w-0">
           {branding.data && !branding.data.setup_required && <BrandMark name={branding.data.name} logo={branding.data.logo_url} />}

@@ -9,6 +9,7 @@ import { buttonClass, cx } from '../ui/controls'
 import { IconBolt, IconBox, IconChart, IconCog, IconEye, IconHome, IconInbox, IconLogout, IconMenu, IconUpload, IconUsers, IconX } from '../ui/icons'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
 import { InMainContext } from './Fallbacks'
+import { DemoBanner } from './DemoBanner'
 
 const linkCls = 'flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900'
 const activeCls = 'bg-white text-stone-900 shadow-xs ring-1 ring-stone-200 hover:bg-white'
@@ -71,6 +72,8 @@ export function AdminShell() {
   )
 
   return (
+    <>
+    <DemoBanner />
     <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
       <SkipLink />
       <aside className="hidden border-r border-stone-200 bg-stone-100/60 lg:flex lg:flex-col lg:gap-6 lg:px-3 lg:py-5 lg:sticky lg:top-0 lg:h-dvh">
@@ -111,5 +114,6 @@ export function AdminShell() {
         </footer>
       </div>
     </div>
+    </>
   )
 }

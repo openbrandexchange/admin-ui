@@ -10,6 +10,7 @@ import { ErrorNote } from '../ui/feedback'
 import { IconBarcode, IconDownload, IconGrid, IconList, IconLogout, IconMenu, IconUser, IconX } from '../ui/icons'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
 import { InMainContext } from './Fallbacks'
+import { DemoBanner } from './DemoBanner'
 
 const navCls = 'inline-flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900'
 const activeCls = 'bg-accent-soft text-accent-strong hover:bg-accent-soft hover:text-accent-strong'
@@ -41,6 +42,7 @@ export function PortalShell() {
   return (
     <div className="flex min-h-dvh flex-col">
       <SkipLink />
+      <DemoBanner />
       {viewer.data.preview && (
         <div className="bg-stone-900 px-4 py-2 text-center text-sm text-white" role="status">
           {t('portal.preview.banner')}{' '}
