@@ -126,3 +126,5 @@ export const FOOTWEAR_ITEM_TYPES = ['shoes', 'sneakers', 'boots', 'sandals'] as 
 /** Label completeness warning codes (Common.json WarningCode). */
 export const WARNING_CODES = ['fibre_composition_missing', 'animal_origin_unknown', 'footwear_materials_missing', 'fibre_percentages_not_100'] as const
 export type WarningCodeKey = (typeof WARNING_CODES)[number]
+/** Every stable warning code (Common.json WarningCode): the label warnings, material_unknown and qualifier_deprecated. */
+export const STABLE_WARNING_CODES = [...WARNING_CODES, 'material_unknown', 'qualifier_deprecated'] as const

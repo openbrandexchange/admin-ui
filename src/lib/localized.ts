@@ -37,3 +37,13 @@ export function localizedPatch(before: LocalizedText | null | undefined, edited:
   for (const k of Object.keys(before ?? {})) if (!(k in clean)) out[k] = null
   return out
 }
+
+/**
+ * The extension members of an object (`x-<vendor>-…`, spec protocol.md §2): nodes store and
+ * return them, and a PUT replaces the object, so forms write them back unchanged.
+ */
+export function extensionsOf(o: unknown): Record<string, unknown> | undefined {
+  if (!o || typeof o !== 'object') return undefined
+  const ext = Object.fromEntries(Object.entries(o).filter(([k]) => /^x-[a-z0-9]+-[a-z0-9_-]+$/.test(k)))
+  return Object.keys(ext).length ? ext : undefined
+}

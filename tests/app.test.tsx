@@ -503,7 +503,7 @@ describe('brand admin', () => {
     const pct = within(outer).getAllByLabelText('Percentage')
     await r.user.type(pct[1], '5')
     await r.user.click(screen.getByRole('button', { name: /^save$/i }))
-    expect(await screen.findByText(/fill in a percentage between 0 and 100 and a material/i)).toBeInTheDocument()
+    expect(await screen.findByText(/choose a material on every line you use/i)).toBeInTheDocument()
     await r.user.selectOptions(within(outer).getAllByLabelText('Material')[1], 'elastane')
     await r.user.clear(pct[0])
     await r.user.type(pct[0], '95')
@@ -545,6 +545,62 @@ describe('brand admin', () => {
     expect(within(label).getByText('Outer fabric:')).toBeInTheDocument()
     expect(within(label).getByText('Washing')).toBeInTheDocument()
     expect(within(label).getByText('Hand wash')).toBeInTheDocument()
+  })
+
+  it('saves a material without a percentage and keeps extension members (x-…) when saving', async () => {
+    const p = db().products.find((x) => x.external_id === 'KO-1005')!
+    p.data['x-acme-erp'] = { id: 4711 }
+    p.data.materials[0]['x-acme-part'] = 'P1'
+    p.data.materials[0].fibers[0]['x-acme-lot'] = 'L9'
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1005' } })
+    const outer = await screen.findByRole('group', { name: 'Outer' })
+    expect(within(outer).getByLabelText('Percentage')).toHaveValue('')
+    expect(within(outer).getByLabelText('Material')).toHaveValue('leather')
+    await r.user.click(screen.getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
+    const saved = db().products.find((x) => x.external_id === 'KO-1005')!.data
+    expect(saved['x-acme-erp']).toEqual({ id: 4711 })
+    expect(saved.materials[0]).toEqual({ 'x-acme-part': 'P1', part: { code: 'outer' }, fibers: [{ 'x-acme-lot': 'L9', material: { code: 'leather' }, percentage: null, qualifiers: [] }] })
+    expect(saved.materials[1].fibers[0]).toMatchObject({ material: { code: 'cotton' }, percentage: 100 })
+  })
+
+  it('proposes the variant ID from article number, colour and size, never the EAN', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1001' } })
+    const sizes = await screen.findByRole('region', { name: /colours and sizes/i })
+    expect(sizes).toBeInTheDocument()
+    await r.user.click(screen.getByRole('button', { name: /add size/i }))
+    const dialog = await screen.findByRole('dialog')
+    await r.user.type(within(dialog).getByLabelText(/^EAN$/), '2000100109991')
+    await r.user.type(within(dialog).getByLabelText(/^colour code$/i), 'RED')
+    await r.user.type(within(dialog).getByLabelText(/^size$/i), 'XL')
+    const id = within(dialog).getByLabelText(/^variant ID$/i)
+    expect(id).toHaveAttribute('placeholder', 'KO-1001-RED-XL')
+    expect(within(dialog).getByText(/leave empty to use KO-1001-RED-XL/i)).toBeInTheDocument()
+    await r.user.click(within(dialog).getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(db().variants.find((v) => v.external_id === 'KO-1001-RED-XL')?.data.gtin).toBe('2000100109991'))
+    // The Kestrel sizes have their default ids too.
+    expect(db().variants.some((v) => v.external_id === 'KO-1001-NVY-M')).toBe(true)
+  })
+
+  it('adds a content language with script or numeric region in canonical case', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/settings', search: { tab: 'portal' } })
+    const field = await screen.findByLabelText(/^other language$/i)
+    await r.user.type(field, 'english{Enter}')
+    expect(await screen.findByText(/not a language code/i)).toBeInTheDocument()
+    await r.user.clear(field)
+    await r.user.type(field, 'ZH_hant{Enter}')
+    expect(await screen.findByRole('checkbox', { name: /zh-Hant/ })).toBeChecked()
+    await r.user.type(field, 'es-419{Enter}')
+    expect(await screen.findByRole('checkbox', { name: /es-419/ })).toBeChecked()
+    const section = field.closest('section')!
+    await r.user.click(within(section).getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(db().settings.portal?.languages).toEqual(expect.arrayContaining(['zh-Hant', 'es-419'])))
   })
 
   it('edits the measurements of a size', async () => {

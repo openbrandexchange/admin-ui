@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { localized, cleanLocalized, localizedPatch } from '../src/lib/localized'
+import { localized, cleanLocalized, extensionsOf, localizedPatch } from '../src/lib/localized'
 import { mergePatch } from '../src/mock/mergePatch'
 import { csvDelimiter, pickLanguage } from '../src/i18n/languages'
 import type { Materials } from '../src/api/types'
-import { careByCategory, careInLabelOrder, formatMaterials, nameIn, normaliseMaterials, parseMaterials, qualifierCodes, unbalancedParts } from '../src/lib/materials'
+import { careByCategory, careInLabelOrder, formatMaterials, nameIn, normaliseMaterials, parseMaterials, qualifierCodes, unbalancedParts, unknownMaterials } from '../src/lib/materials'
 import { CARE_CODES, careCategoryOf, MATERIALS, PARTS, QUALIFIERS } from '../src/lib/vocab'
 import { withTermNames } from '../src/mock/terms'
 import careVocab from '../src/mock/fixtures/vocabularies/care.json'
@@ -11,7 +11,7 @@ import materialsVocab from '../src/mock/fixtures/vocabularies/materials.json'
 import partsVocab from '../src/mock/fixtures/vocabularies/parts.json'
 import qualifiersVocab from '../src/mock/fixtures/vocabularies/qualifiers.json'
 import { formatCertifications, formatFeature, formatFootwear, labelWarnings, measurementsFrom, parseCertifications, parseFeature, parseFootwear } from '../src/lib/article'
-import { gtinValid, splitCodes, passwordProblem, slugify, urlProblem, withScheme } from '../src/lib/validate'
+import { canonicalLanguageTag, defaultVariantId, gtinValid, splitCodes, passwordProblem, slugify, urlProblem, withScheme } from '../src/lib/validate'
 import { accentVars, contrast, parseHex } from '../src/lib/accent'
 import { countryLanguage } from '../src/lib/countries'
 import { fit, planRenditions } from '../src/lib/renditions'
@@ -107,7 +107,34 @@ describe('materials grammar', () => {
     const repeated = [{ part: m('main'), fibers: [{ material: m('polyester'), percentage: 100, qualifiers: [m('recycled'), { code: 'recycled', name: { en: 'Again' } }, m('post_consumer')] }] }] as unknown as Materials
     expect(normaliseMaterials(repeated)![0].fibers[0].qualifiers).toEqual([m('recycled'), m('post_consumer')])
   })
-  it('reports what it cannot read', () => expect(parseMaterials('cotton')).toEqual({ ok: false, error: 'cotton' }))
+  it('reports what it cannot read', () => {
+    expect(parseMaterials('150% cotton')).toEqual({ ok: false, error: '150% cotton' })
+    expect(parseMaterials('100% cot)ton')).toEqual({ ok: false, error: '100% cot)ton' })
+  })
+  it('reads a material without a percentage as percentage null, and writes it back without one', () => {
+    const r = parseMaterials('outer: leather; lining: 60% cotton, polyester (recycled)')
+    expect(r.ok && r.value).toEqual([
+      { part: m('outer'), fibers: [{ material: m('leather'), percentage: null, qualifiers: [] }] },
+      { part: m('lining'), fibers: [fibre('cotton', 60), { material: m('polyester'), percentage: null, qualifiers: [m('recycled')] }] },
+    ])
+    expect(r.ok && formatMaterials(r.value)).toBe('outer: leather; lining: 60% cotton, polyester (recycled)')
+    // A fibre written without the property reads as null too.
+    expect(normaliseMaterials([{ part: m('main'), fibers: [{ material: m('leather') }] }] as unknown as Materials)![0].fibers[0].percentage).toBeNull()
+  })
+  it('refuses a decimal comma and accepts a decimal point', () => {
+    expect(parseMaterials('95,5% cotton, 4,5% elastane')).toEqual({ ok: false, error: '95', decimalComma: true })
+    expect(parseMaterials('95.5% cotton, 4.5% elastane').ok).toBe(true)
+  })
+  it('checks the sum only when every fibre has a percentage, or when the stated ones exceed 100', () => {
+    const parts = (text: string) => unbalancedParts((parseMaterials(text) as { value: Materials }).value)
+    expect(parts('outer: leather; lining: 100% cotton')).toEqual([])
+    expect(parts('60% cotton, polyester')).toEqual([])
+    expect(parts('80% cotton, 30% polyester, elastane')).toEqual(['main'])
+    expect(parts('80% cotton, 10% polyester')).toEqual(['main'])
+  })
+  it('names the material codes outside the vocabulary once each', () => {
+    expect(unknownMaterials((parseMaterials('outer: 50% katoen, 50% cotton; lining: 100% katoen, co') as { value: Materials }).value)).toEqual(['katoen', 'co'])
+  })
   it('warns when a part does not add up to 100', () => {
     const r = parseMaterials('90% wool')
     expect(r.ok && unbalancedParts(r.value)).toEqual(['main'])
@@ -306,4 +333,27 @@ describe('LocalizedText in a merge patch', () => {
   it('sends null for a language that was cleared', () => expect(localizedPatch({ en: 'a', nl: 'b' }, { en: '', nl: 'c' })).toEqual({ en: null, nl: 'c' }))
   it('sends null for the whole text when everything was cleared', () => expect(localizedPatch({ en: 'a' }, { en: ' ' })).toBeNull())
   it('sends just the texts when nothing was there before', () => expect(localizedPatch(null, { de: 'x' })).toEqual({ de: 'x' }))
+})
+
+describe('variant ids and language tags (spec 0.3)', () => {
+  it('proposes style-colour-size[-length], never the EAN', () => {
+    expect(defaultVariantId('KO-1001', 'NVY', 'M')).toBe('KO-1001-NVY-M')
+    expect(defaultVariantId('KO-1004', 'IND', '30', '32')).toBe('KO-1004-IND-30-32')
+    expect(defaultVariantId('KO-1004', 'IND', '32/34')).toBe('KO-1004-IND-32_34')
+    expect(defaultVariantId('KO-1005', 'COG', 'ONE SIZE', '')).toBe('KO-1005-COG-ONE SIZE')
+    expect(defaultVariantId('KO-1005', 'COG', '', '')).toBe('KO-1005-COG')
+    expect(defaultVariantId('KO-1', 'A\tB', 'S')).toBe('KO-1-A_B-S')
+  })
+  it('writes language tags with script and numeric region in canonical case', () => {
+    expect(canonicalLanguageTag('ZH_hant')).toBe('zh-Hant')
+    expect(canonicalLanguageTag('es-419')).toBe('es-419')
+    expect(canonicalLanguageTag('sr-latn-rs')).toBe('sr-Latn-RS')
+    expect(canonicalLanguageTag('de-ch')).toBe('de-CH')
+    expect(canonicalLanguageTag('en-GB-oxendict')).toBeNull()
+    expect(canonicalLanguageTag('english')).toBeNull()
+  })
+  it('keeps only extension members', () => {
+    expect(extensionsOf({ name: 'x', 'x-acme-erp': { id: 7 }, 'x-bad': 1 })).toEqual({ 'x-acme-erp': { id: 7 } })
+    expect(extensionsOf({ name: 'x' })).toBeUndefined()
+  })
 })

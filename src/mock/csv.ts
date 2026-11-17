@@ -1,7 +1,6 @@
 // A small implementation of the canonical import format (spec docs/import-format.md) for the
 // in-browser mock node. Real nodes are the parser in production; this only has to be faithful
 // enough for demos and UI tests.
-import { parseMaterials } from '../lib/materials'
 import { gtinValid } from '../lib/validate'
 
 export function parseCsv(text: string): string[][] {
@@ -81,11 +80,6 @@ export function checkGtin(value: string): string | null {
   if (/e\+/i.test(value)) return 'Excel turned this code into a number; format the column as text.'
   if (!gtinValid(digits)) return 'Not a valid EAN/GTIN (8, 12, 13 or 14 digits with a correct check digit).'
   return null
-}
-
-export function materialsFrom(v: string) {
-  const r = parseMaterials(v)
-  return r.ok ? r.value : undefined
 }
 
 const ROLES = new Set(['packshot', 'model', 'detail', 'ghost', 'flatlay', 'scene', 'swatch', 'size_chart', 'other'])

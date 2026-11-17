@@ -315,7 +315,8 @@ export interface paths {
          * Start a bulk export
          * @description Capability `exports`. Asynchronous; poll GET /exports/{id} (RECOMMENDED every 10 s) or
          *     subscribe to `export.completed`. Nodes MAY limit concurrent exports per client (409
-         *     `conflict` with the running export id in `detail`).
+         *     `conflict` with the running export id in `detail`). With an `Idempotency-Key` a retry
+         *     returns the same export instead.
          */
         post: operations["createExport"];
         delete?: never;
@@ -515,7 +516,7 @@ export interface components {
         Email: string;
         /**
          * LocalizedText
-         * @description Free text per language, keyed by BCP 47 tag. At least one language. Example: {"nl": "Trui", "en": "Sweater"}.
+         * @description Free text per language, keyed by BCP 47 tag in its canonical form: language, optional script, optional region (`nl`, `de-CH`, `zh-Hant`, `sr-Latn-RS`, `es-419`). At least one language. Example: {"nl": "Trui", "en": "Sweater"}.
          */
         LocalizedText: {
             [key: string]: string;
@@ -526,7 +527,7 @@ export interface components {
          */
         Scope: "catalog:read" | "media:read" | "media:original" | "usage:write";
         /**
-         * @description BCP 47 language tag, restricted to language or language-REGION.
+         * @description BCP 47 language tag in canonical case: language, optional script, optional region (ISO 3166-1 alpha-2 or UN M.49): nl, de-CH, zh-Hant, sr-Latn-RS, es-419. No variants, extensions or private use.
          * @example nl
          * @example en
          * @example de-CH
@@ -599,7 +600,7 @@ export interface components {
          * @description Machine-readable OBX error code (see docs/protocol.md#errors). Clients MUST treat unknown codes by HTTP status.
          * @enum {string}
          */
-        ErrorCode: "invalid_request" | "validation_failed" | "unauthorized" | "invalid_token" | "access_revoked" | "insufficient_scope" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "precondition_failed" | "payload_too_large" | "unsupported_media_type" | "rate_limited" | "limit_exceeded" | "cursor_invalid" | "cursor_expired" | "export_expired" | "original_not_allowed" | "invalid_gtin" | "gtin_conflict" | "position_conflict" | "checksum_mismatch" | "blob_missing" | "upload_incomplete" | "unknown_parent" | "files_missing" | "import_invalid" | "mass_unpublish_refused" | "workbook_invalid" | "workbook_unsafe" | "workbook_sheet_missing" | "workbook_too_large" | "unsafe_url" | "csrf_failed" | "invalid_credentials" | "account_blocked" | "setup_required" | "setup_completed" | "invite_invalid" | "not_implemented" | "internal_error" | "service_unavailable";
+        ErrorCode: "invalid_request" | "validation_failed" | "unauthorized" | "invalid_token" | "access_revoked" | "insufficient_scope" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "precondition_failed" | "payload_too_large" | "unsupported_media_type" | "rate_limited" | "limit_exceeded" | "cursor_invalid" | "cursor_expired" | "export_expired" | "original_not_allowed" | "invalid_gtin" | "gtin_conflict" | "position_conflict" | "checksum_mismatch" | "blob_missing" | "upload_incomplete" | "unknown_parent" | "files_missing" | "import_invalid" | "mass_unpublish_refused" | "workbook_invalid" | "workbook_unsafe" | "workbook_sheet_missing" | "workbook_too_large" | "unsafe_url" | "idempotency_key_reused" | "csrf_failed" | "invalid_credentials" | "account_blocked" | "setup_required" | "setup_completed" | "invite_invalid" | "not_implemented" | "internal_error" | "service_unavailable";
         /**
          * Problem
          * @description application/problem+json (RFC 9457) error body. Exception: the OAuth2 token endpoint uses RFC 6749 error JSON.
@@ -791,11 +792,17 @@ export interface components {
              *     }
              */
             part: components["schemas"]["term"];
-            /** @description Percentages of one part SHOULD sum to 100. */
+            /** @description The percentages of one part SHOULD sum to 100 when every fibre states one; a fibre without a percentage has `percentage` null. */
             fibers: ({
                 /** @description Material code: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; the list with names is vocabularies/materials.json. Recycled or organic content is a qualifier, not a material. */
                 material: components["schemas"]["term"];
-                percentage: number;
+                /** @description Share of the part in percent, or null when the brand does not state one (leather on a bag, a trim, a composition without percentages). Responses always include the property; on write it may be left out (= null). */
+                percentage?: number | null;
+                /**
+                 * @deprecated
+                 * @description Deprecated, write paths only: the single qualifier of drafts of 0.3. A node reads it as `qualifiers: [it]` when `qualifiers` is absent (null = none; when both are present `qualifiers` wins) and warns `qualifier_deprecated`. A response never contains it.
+                 */
+                qualifier?: components["schemas"]["term"] | null;
                 /** @description What the fibre is, apart from which fibre, in the order the brand states it: organic, in_conversion, recycled, pre_consumer, post_consumer, regenerative (vocabularies/qualifiers.json; unknown codes are allowed, a code appears at most once). Empty = none. A node returns [] when the fibre has none; on write the property may be left out (= none). */
                 qualifiers?: components["schemas"]["term"][];
             } & {
@@ -1458,7 +1465,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description `insufficient_scope`, `forbidden` or `access_revoked`. */
+        /** @description `insufficient_scope`, `forbidden` (also: a signed URL that expired or does not match its signature) or `original_not_allowed`. */
         Forbidden: {
             headers: {
                 [name: string]: unknown;
@@ -1476,7 +1483,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description `conflict`. */
+        /** @description `conflict`, or `idempotency_key_reused` when the request carries an `Idempotency-Key` that was used with a different body. */
         Conflict: {
             headers: {
                 [name: string]: unknown;
@@ -1539,7 +1546,7 @@ export interface components {
         IdPath: components["schemas"]["Id"];
         /** @description The `next_cursor` of the previous page; omit for the first page. Opaque. */
         Cursor: components["schemas"]["Cursor"];
-        /** @description Repeating a request with the same key within 24 h returns the original response. */
+        /** @description Repeating a request with the same key and the same body within 24 h returns the original response (for an export: the same export, also while it runs). The same key with a different body is 409 `idempotency_key_reused`. Supported by every node that offers the endpoint. */
         IdempotencyKey: string;
     };
     requestBodies: never;
@@ -1797,7 +1804,7 @@ export interface operations {
             query?: {
                 /** @description The `next_cursor` of the previous page; omit to start a snapshot. Opaque. */
                 cursor?: components["schemas"]["Cursor"];
-                /** @description Page size, 1-500 (default 100; the node's maximum is `limits.changes_page_max` in discovery). Nodes MAY return fewer. */
+                /** @description Page size, default 100. The node's maximum is `limits.changes_page_max` in discovery (at most 500); a larger value is not an error, the node answers with its maximum (it clamps). Not an integer or below 1 is 400 `invalid_request`. Nodes MAY return fewer. */
                 limit?: number;
             };
             header?: never;
@@ -1884,7 +1891,7 @@ export interface operations {
                 updated_since?: components["schemas"]["DateTime"];
                 /** @description The `next_cursor` of the previous page; omit for the first page. Opaque. */
                 cursor?: components["parameters"]["Cursor"];
-                /** @description Page size, 1-100 (default 25; the node's maximum is `limits.products_page_max` in discovery). Nodes MAY return fewer. */
+                /** @description Page size, default 25. The node's maximum is `limits.products_page_max` in discovery (at most 100); a larger value is not an error, the node answers with its maximum (it clamps). Not an integer or below 1 is 400 `invalid_request`. Nodes MAY return fewer. */
                 limit?: number;
             };
             header?: never;
@@ -2101,7 +2108,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Repeating a request with the same key within 24 h returns the original response. */
+                /** @description Repeating a request with the same key and the same body within 24 h returns the original response (for an export: the same export, also while it runs). The same key with a different body is 409 `idempotency_key_reused`. Supported by every node that offers the endpoint. */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
             path?: never;

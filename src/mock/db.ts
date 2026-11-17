@@ -22,7 +22,9 @@ import type {
   WebhookDelivery,
   WebhookSubscription,
 } from '../api/types'
-import { checkGtin, localizedFrom, materialsFrom, parseImageName, rowsOf, truthy, type RowError } from './csv'
+import { checkGtin, localizedFrom, parseImageName, rowsOf, truthy, type RowError } from './csv'
+import { parseMaterials, unknownMaterials } from '../lib/materials'
+import { defaultVariantId } from '../lib/validate'
 import { labelWarnings, measurementsFrom, parseCertifications, parseFeature, parseFootwear, type FeatureValue } from '../lib/article'
 import { COLOUR_FAMILIES, MEASUREMENTS } from '../lib/vocab'
 
@@ -197,6 +199,7 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
   }
   const target = input.dryRun ? (JSON.parse(JSON.stringify(db)) as MockDb) : db
   const seen = new Set<string>()
+  const seenVariants = new Set<string>()
   const upsert = (list: Rec[], kind: Rec['kind'], id: string, data: Record<string, unknown>, status?: 'published' | 'unpublished') => {
     const existing = list.find((r) => r.external_id === id)
     if (!existing) {
@@ -234,8 +237,12 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
       const productId = row.product_id || row.style_number
       if (!seen.has(productId)) {
         seen.add(productId)
-        const materials = row.materials ? materialsFrom(row.materials) : null
-        if (row.materials && materials === undefined) err({ file: 'products.csv', row: n, column: 'materials', obx_error: 'validation_failed', detail: 'Could not read the materials.', value: row.materials }, 'warning')
+        const parsedMaterials = row.materials ? parseMaterials(row.materials) : null
+        // A decimal comma ("95,5% cotton") is an error for the row (import-format.md §1.4); another unreadable cell a warning.
+        if (parsedMaterials && !parsedMaterials.ok && parsedMaterials.decimalComma)
+          return err({ file: 'products.csv', row: n, column: 'materials', obx_error: 'validation_failed', detail: 'materials: decimal comma; write 95.5% with a point.', value: row.materials })
+        const materials = parsedMaterials?.ok ? parsedMaterials.value : null
+        if (parsedMaterials && !parsedMaterials.ok) err({ file: 'products.csv', row: n, column: 'materials', obx_error: 'validation_failed', detail: 'Could not read the materials.', value: row.materials }, 'warning')
         const footwear = parseFootwear(row.footwear_materials ?? '')
         if (!footwear.ok) return err({ file: 'products.csv', row: n, column: 'footwear_materials', obx_error: 'validation_failed', detail: 'Use upper, lining_and_sock and outer_sole with leather, coated_leather, textile or other.', value: row.footwear_materials })
         const certifications = parseCertifications(row.certifications ?? '')
@@ -276,6 +283,8 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
         )
         // Rule 10: label completeness warnings, at most once per code (per part) and product.
         for (const w of labelWarnings(product)) err({ file: 'products.csv', row: n, column: w.column, obx_error: w.code, detail: LABEL_DETAIL[w.code] + (w.part ? ` (${w.part})` : ''), value: null }, 'warning')
+        // Then one material_unknown per material code outside the vocabulary (kept as written).
+        for (const code of unknownMaterials(product.materials)) err({ file: 'products.csv', row: n, column: 'materials', obx_error: 'material_unknown', detail: `The material ${code} is not in the vocabulary; it is kept as written.`, value: code }, 'warning')
       }
       const hasVariant = row.gtin || row.variant_id || row.sku || row.color_code || row.size
       if (!hasVariant) return
@@ -283,13 +292,20 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
       if (gtinProblem) return err({ file: 'products.csv', row: n, column: 'gtin', obx_error: 'invalid_gtin', detail: gtinProblem, value: row.gtin })
       if (!row.color_code) return err({ file: 'products.csv', row: n, column: 'color_code', obx_error: 'validation_failed', detail: 'Colour code is required for a size row.', value: null })
       const gtin = row.gtin?.replace(/\s/g, '') || null
-      const vid = row.variant_id || gtin || [row.style_number, row.color_code, row.size].filter(Boolean).join('-')
+      // Which variant this row is (import-format.md §1.2.1): variant_id; else the variant of this
+      // product with this GTIN (as GTIN-14); else style-colour-size[-length]. Never the GTIN itself.
+      const g14 = (g: unknown) => String(g ?? '').padStart(14, '0')
+      const byGtin = !row.variant_id && gtin ? target.variants.find((v) => v.data.product_external_id === productId && v.data.gtin && g14(v.data.gtin) === g14(gtin)) : undefined
+      const vid = row.variant_id || byGtin?.external_id || defaultVariantId(row.style_number, row.color_code, row.size, row.size_length)
+      if (vid.length > 200) return err({ file: 'products.csv', row: n, column: 'variant_id', obx_error: 'validation_failed', detail: 'The variant ID would be longer than 200 characters; give a variant_id.', value: vid })
+      if (seenVariants.has(vid)) return err({ file: 'products.csv', row: n, column: 'variant_id', obx_error: 'validation_failed', detail: 'An earlier row of this file is the same variant.', value: vid })
+      seenVariants.add(vid)
       const family = (row.color_family ?? '').trim().toLowerCase().replace(/^gray$/, 'grey').replace(/^multicolor$/, 'multicolour')
       if (family && !(COLOUR_FAMILIES as readonly string[]).includes(family)) return err({ file: 'products.csv', row: n, column: 'color_family', obx_error: 'validation_failed', detail: 'Not a colour family.', value: row.color_family })
       const measurements = measurementsFrom(row)
       if (!measurements.ok) return err({ file: 'products.csv', row: n, column: measurements.key, obx_error: 'validation_failed', detail: 'Use a number without unit, like 2.6.', value: row[measurements.key] })
-      const clash = gtin && target.variants.find((v) => v.data.gtin === gtin && v.external_id !== vid)
-      if (clash) return err({ file: 'products.csv', row: n, column: 'gtin', obx_error: 'gtin_conflict', detail: `This EAN already belongs to ${clash.data.product_external_id}.`, value: gtin })
+      const clash = gtin && target.variants.find((v) => v.data.gtin && g14(v.data.gtin) === g14(gtin) && v.external_id !== vid)
+      if (clash) return err({ file: 'products.csv', row: n, column: 'gtin', obx_error: 'gtin_conflict', detail: `This EAN already belongs to ${clash.data.product_external_id} (${clash.external_id}).`, value: gtin })
       upsert(target.variants, 'variant', vid, {
         product_external_id: productId,
         gtin,

@@ -5,7 +5,7 @@ import { ApiError } from '../../../api/client'
 import type { ProductInput } from '../../../api/types'
 import { COUNTRIES } from '../../../lib/countries'
 import { countryName } from '../../../lib/format'
-import { cleanLocalized } from '../../../lib/localized'
+import { cleanLocalized, extensionsOf } from '../../../lib/localized'
 import { careInLabelOrder } from '../../../lib/materials'
 import { humanize } from '../../../lib/prefs'
 import { urlProblem } from '../../../lib/validate'
@@ -85,7 +85,10 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
         if (!style.trim() || !nameValue || !parsed.ok || !parsedCerts.ok || (dpp.trim() && urlProblem(dpp))) return
         const fm = FOOTWEAR_PARTS.some((k) => footwear[k]) ? (Object.fromEntries(FOOTWEAR_PARTS.map((k) => [k, footwear[k] || null])) as FootwearMaterials) : null
         const cleanDescription = cleanLocalized(description)
+        // A PUT replaces the article: extension members (x-<vendor>-…) the node returned go back as they were.
+        const careExt = new Map((initial?.care ?? []).map((c) => [c.code, extensionsOf(c)]))
         onSubmit({
+          ...extensionsOf(initial),
           ...(brand && { brand_external_id: brand }),
           style_number: style.trim(),
           name: nameValue,
@@ -99,7 +102,7 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
           contains_animal_origin: animal ? animal === 'yes' : null,
           footwear_materials: fm,
           // Codes only (the node adds names, categories and symbols), in label order; the brand's own text stays.
-          care: care.length ? careInLabelOrder(care).map((code) => ({ code, ...(careText[code] && { text: careText[code] }) })) : null,
+          care: care.length ? careInLabelOrder(care).map((code) => ({ ...careExt.get(code), code, ...(careText[code] && { text: careText[code] }) })) : null,
           country_of_origin: origin || null,
           certifications: parsedCerts.ok ? parsedCerts.value : null,
           dpp_url: dpp.trim() || null,

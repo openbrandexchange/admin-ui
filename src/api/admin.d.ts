@@ -1777,13 +1777,13 @@ export interface components {
         };
         /**
          * LocalizedText
-         * @description Free text per language, keyed by BCP 47 tag. At least one language. Example: {"nl": "Trui", "en": "Sweater"}.
+         * @description Free text per language, keyed by BCP 47 tag in its canonical form: language, optional script, optional region (`nl`, `de-CH`, `zh-Hant`, `sr-Latn-RS`, `es-419`). At least one language. Example: {"nl": "Trui", "en": "Sweater"}.
          */
         LocalizedText: {
             [key: string]: string;
         };
         /**
-         * @description BCP 47 language tag, restricted to language or language-REGION.
+         * @description BCP 47 language tag in canonical case: language, optional script, optional region (ISO 3166-1 alpha-2 or UN M.49): nl, de-CH, zh-Hant, sr-Latn-RS, es-419. No variants, extensions or private use.
          * @example nl
          * @example en
          * @example de-CH
@@ -1793,7 +1793,7 @@ export interface components {
          * @description Machine-readable OBX error code (see docs/protocol.md#errors). Clients MUST treat unknown codes by HTTP status.
          * @enum {string}
          */
-        ErrorCode: "invalid_request" | "validation_failed" | "unauthorized" | "invalid_token" | "access_revoked" | "insufficient_scope" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "precondition_failed" | "payload_too_large" | "unsupported_media_type" | "rate_limited" | "limit_exceeded" | "cursor_invalid" | "cursor_expired" | "export_expired" | "original_not_allowed" | "invalid_gtin" | "gtin_conflict" | "position_conflict" | "checksum_mismatch" | "blob_missing" | "upload_incomplete" | "unknown_parent" | "files_missing" | "import_invalid" | "mass_unpublish_refused" | "workbook_invalid" | "workbook_unsafe" | "workbook_sheet_missing" | "workbook_too_large" | "unsafe_url" | "csrf_failed" | "invalid_credentials" | "account_blocked" | "setup_required" | "setup_completed" | "invite_invalid" | "not_implemented" | "internal_error" | "service_unavailable";
+        ErrorCode: "invalid_request" | "validation_failed" | "unauthorized" | "invalid_token" | "access_revoked" | "insufficient_scope" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "precondition_failed" | "payload_too_large" | "unsupported_media_type" | "rate_limited" | "limit_exceeded" | "cursor_invalid" | "cursor_expired" | "export_expired" | "original_not_allowed" | "invalid_gtin" | "gtin_conflict" | "position_conflict" | "checksum_mismatch" | "blob_missing" | "upload_incomplete" | "unknown_parent" | "files_missing" | "import_invalid" | "mass_unpublish_refused" | "workbook_invalid" | "workbook_unsafe" | "workbook_sheet_missing" | "workbook_too_large" | "unsafe_url" | "idempotency_key_reused" | "csrf_failed" | "invalid_credentials" | "account_blocked" | "setup_required" | "setup_completed" | "invite_invalid" | "not_implemented" | "internal_error" | "service_unavailable";
         /**
          * Problem
          * @description application/problem+json (RFC 9457) error body. Exception: the OAuth2 token endpoint uses RFC 6749 error JSON.
@@ -1927,10 +1927,10 @@ export interface components {
             [key: string]: unknown;
         };
         /**
-         * @description Label completeness warning (see docs/import-format.md#label-completeness). Never blocks a write or publishing. Clients MUST ignore unknown codes.
+         * @description Warning with a stable code: the label completeness warnings, material_unknown (a material code outside vocabularies/materials.json) and qualifier_deprecated (a fibre written with the draft single `qualifier`); see docs/import-format.md#label-completeness. Never blocks a write or publishing. Clients MUST ignore unknown codes.
          * @enum {string}
          */
-        WarningCode: "fibre_composition_missing" | "animal_origin_unknown" | "footwear_materials_missing" | "fibre_percentages_not_100";
+        WarningCode: "fibre_composition_missing" | "animal_origin_unknown" | "footwear_materials_missing" | "fibre_percentages_not_100" | "material_unknown" | "qualifier_deprecated";
         /** IngestResult */
         IngestResult: {
             /** @description 0-based position in the batch (batch only). */
@@ -2020,11 +2020,17 @@ export interface components {
              *     }
              */
             part: components["schemas"]["term"];
-            /** @description Percentages of one part SHOULD sum to 100. */
+            /** @description The percentages of one part SHOULD sum to 100 when every fibre states one; a fibre without a percentage has `percentage` null. */
             fibers: ({
                 /** @description Material code: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; the list with names is vocabularies/materials.json. Recycled or organic content is a qualifier, not a material. */
                 material: components["schemas"]["term"];
-                percentage: number;
+                /** @description Share of the part in percent, or null when the brand does not state one (leather on a bag, a trim, a composition without percentages). Responses always include the property; on write it may be left out (= null). */
+                percentage?: number | null;
+                /**
+                 * @deprecated
+                 * @description Deprecated, write paths only: the single qualifier of drafts of 0.3. A node reads it as `qualifiers: [it]` when `qualifiers` is absent (null = none; when both are present `qualifiers` wins) and warns `qualifier_deprecated`. A response never contains it.
+                 */
+                qualifier?: components["schemas"]["term"] | null;
                 /** @description What the fibre is, apart from which fibre, in the order the brand states it: organic, in_conversion, recycled, pre_consumer, post_consumer, regenerative (vocabularies/qualifiers.json; unknown codes are allowed, a code appears at most once). Empty = none. A node returns [] when the fibre has none; on write the property may be left out (= none). */
                 qualifiers?: components["schemas"]["term"][];
             } & {

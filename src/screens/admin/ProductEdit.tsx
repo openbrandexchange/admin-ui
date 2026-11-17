@@ -79,7 +79,7 @@ export function ProductEditScreen() {
         <ProductForm key={record.etag} initial={data} lockStyle submitLabel={t('common.save')} pending={m.put.isPending} error={m.put.error} saved={m.put.isSuccess} onSubmit={(body) => m.put.mutate(body)} />
       </Section>
 
-      <VariantsSection productExternalId={externalId} variants={variants} mutations={m} />
+      <VariantsSection productExternalId={externalId} styleNumber={data.style_number} variants={variants} mutations={m} />
       <ImagesSection productExternalId={externalId} styleNumber={data.style_number} variants={variants} assets={assets} mutations={m} />
 
       <Section title={t('product.dangerZone')}>

@@ -6,13 +6,15 @@
 import { useEffect, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Materials } from '../../../api/types'
+import { extensionsOf } from '../../../lib/localized'
 import { normaliseMaterials, unbalancedParts } from '../../../lib/materials'
 import { MATERIALS, PARTS, QUALIFIERS } from '../../../lib/vocab'
 import { Button, cx } from '../../../ui/controls'
 import { useTermLabel, type TermFamily } from '../../shared/ArticleData'
 
-export type FibreRow = { material: string; percentage: string; qualifiers: string[] }
-export type PartRow = { part: string; fibres: FibreRow[] }
+/** `ext`: the extension members (`x-<vendor>-…`) the node returned, written back unchanged. */
+export type FibreRow = { material: string; percentage: string; qualifiers: string[]; ext?: Record<string, unknown> }
+export type PartRow = { part: string; fibres: FibreRow[]; ext?: Record<string, unknown> }
 
 const emptyFibre = (): FibreRow => ({ material: '', percentage: '', qualifiers: [] })
 
@@ -22,16 +24,16 @@ export function rowsFrom(m: Materials | null | undefined): PartRow[] {
   if (!list) return [{ part: 'main', fibres: [emptyFibre()] }]
   return list.map((p) => ({
     part: p.part.code,
-    fibres: p.fibers.map((f) => ({ material: f.material.code, percentage: String(f.percentage), qualifiers: (f.qualifiers ?? []).map((q) => q.code) })),
+    ext: extensionsOf(p),
+    fibres: p.fibers.map((f) => ({ material: f.material.code, percentage: f.percentage == null ? '' : String(f.percentage), qualifiers: (f.qualifiers ?? []).map((q) => q.code), ext: extensionsOf(f) })),
   }))
 }
 
 const isEmpty = (f: FibreRow) => !f.material && !f.percentage.trim() && !f.qualifiers.length
 const pctOf = (s: string) => (/^\s*\d+(?:[.,]\d+)?\s*%?\s*$/.test(s) ? Number(s.replace('%', '').replace(',', '.').trim()) : NaN)
-const fibreOk = (f: FibreRow) => {
-  const n = pctOf(f.percentage)
-  return !!f.material && n > 0 && n <= 100
-}
+/** A percentage is optional (leather on a bag has none); when given it is in (0, 100]. */
+const pctOk = (s: string) => !s.trim() || (pctOf(s) > 0 && pctOf(s) <= 100)
+const fibreOk = (f: FibreRow) => !!f.material && pctOk(f.percentage)
 
 /** Materials (codes only) from the rows, or not ok when a filled-in row is incomplete. Empty rows are ignored. */
 export function materialsFrom(rows: PartRow[]): { ok: true; value: Materials | null } | { ok: false } {
@@ -40,7 +42,11 @@ export function materialsFrom(rows: PartRow[]): { ok: true; value: Materials | n
     const fibres = p.fibres.filter((f) => !isEmpty(f))
     if (fibres.some((f) => !fibreOk(f))) return { ok: false }
     if (!fibres.length) continue
-    out.push({ part: { code: p.part }, fibers: fibres.map((f) => ({ material: { code: f.material }, percentage: pctOf(f.percentage), qualifiers: [...new Set(f.qualifiers)].map((code) => ({ code })) })) })
+    out.push({
+      ...p.ext,
+      part: { code: p.part },
+      fibers: fibres.map((f) => ({ ...f.ext, material: { code: f.material }, percentage: f.percentage.trim() ? pctOf(f.percentage) : null, qualifiers: [...new Set(f.qualifiers)].map((code) => ({ code })) })),
+    })
   }
   return { ok: true, value: out.length ? out : null }
 }
@@ -130,7 +136,7 @@ export function MaterialsEditor({ rows, onChange, showErrors, error }: Props) {
                       inputMode="decimal"
                       value={f.percentage}
                       onChange={(e) => setFibre(pi, fi, { percentage: e.target.value })}
-                      aria-invalid={bad && !(pctOf(f.percentage) > 0 && pctOf(f.percentage) <= 100) ? true : undefined}
+                      aria-invalid={bad && !pctOk(f.percentage) ? true : undefined}
                       aria-describedby={bad ? errId : undefined}
                     />
                   </div>

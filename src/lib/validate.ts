@@ -63,3 +63,31 @@ export function gtinValid(code: string): boolean {
   digits.reverse().forEach((d, i) => (sum += d * (i % 2 === 0 ? 3 : 1)))
   return (10 - (sum % 10)) % 10 === check
 }
+
+/**
+ * The default external id of a variant (spec import-format.md §1.2.1):
+ * `<style_number>-<color_code>-<size>[-<size_length>]`, empty size and size_length left out,
+ * control characters and `/` replaced by `_`, nothing else changed (spaces stay). Never the GTIN.
+ */
+export function defaultVariantId(style: string, colour: string, size?: string | null, sizeLength?: string | null): string {
+  // eslint-disable-next-line no-control-regex
+  return [style, colour, size, sizeLength].map((x) => (x ?? '').trim()).filter((x, i) => i < 2 || x).join('-').replace(/[\u0000-\u001f\u007f/]/g, '_')
+}
+
+/**
+ * A language tag in canonical case (LanguageTag in the spec: language, optional script,
+ * optional region as two letters or three digits: nl, de-CH, zh-Hant, sr-Latn-RS, es-419),
+ * or null when it is not of that form. `_` is read as `-`.
+ */
+export function canonicalLanguageTag(input: string): string | null {
+  const parts = input.trim().replace(/_/g, '-').split('-')
+  const [lang, ...rest] = parts
+  if (!/^[a-z]{2,3}$/i.test(lang ?? '')) return null
+  const out = [lang.toLowerCase()]
+  let i = 0
+  if (rest[i] && /^[a-z]{4}$/i.test(rest[i])) out.push(rest[i][0].toUpperCase() + rest[i++].slice(1).toLowerCase())
+  if (rest[i] && /^([a-z]{2}|[0-9]{3})$/i.test(rest[i])) out.push(rest[i++].toUpperCase())
+  if (i !== rest.length) return null
+  const tag = out.join('-')
+  return /^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$/.test(tag) ? tag : null
+}

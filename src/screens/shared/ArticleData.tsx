@@ -41,6 +41,9 @@ export function useTermLabel() {
   }
 }
 
+/** A fibre without a percentage starts its line ("Leather"), so its name is capitalised there. */
+const capitalised = (s: string, lang: string, first: boolean) => (first ? s.charAt(0).toLocaleUpperCase(lang) + s.slice(1) : s)
+
 /** Heading of a care category (the form's group words; `drying` covers tumble drying). */
 const CARE_HEADING: Record<CareCategory, string> = { washing: 'washing', bleaching: 'bleaching', drying: 'drying', ironing: 'ironing', professional_care: 'professional' }
 
@@ -68,7 +71,7 @@ export function LabelInfo({ product, heading = true }: { product: ArticleFields;
             {materials?.map((m, i) => (
               <p key={`${m.part.code}-${i}`}>
                 {(materials.length > 1 || m.part.code !== 'main') && <span className="text-stone-500">{term('part', m.part)}: </span>}
-                {m.fibers.map((f) => `${new Intl.NumberFormat(lang).format(f.percentage)}% ${term('fibre', f.material)}${f.qualifiers?.length ? ` (${f.qualifiers.map((q) => term('qualifier', q)).join(', ')})` : ''}`).join(', ')}
+                {m.fibers.map((f, fi) => `${f.percentage == null ? '' : `${new Intl.NumberFormat(lang).format(f.percentage)}% `}${capitalised(term('fibre', f.material), lang, fi === 0 && f.percentage == null)}${f.qualifiers?.length ? ` (${f.qualifiers.map((q) => term('qualifier', q)).join(', ')})` : ''}`).join(', ')}
               </p>
             ))}
             {product.contains_animal_origin && <p className="font-medium text-stone-900">{t('article.animalOrigin')}</p>}

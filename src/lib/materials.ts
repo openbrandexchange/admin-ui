@@ -5,7 +5,7 @@
 // The canonical materials grammar (spec docs/import-format.md §1.4) is kept for the mock
 // node's import and CSV: "outer: 65% cotton, 35% polyamide; lining: 100% polyester (recycled) (post_consumer)".
 import type { Care, LocalizedText, Materials } from '../api/types'
-import { careCategoryOf, CARE_CATEGORIES, type CareCategory } from './vocab'
+import { careCategoryOf, CARE_CATEGORIES, MATERIALS, type CareCategory } from './vocab'
 
 const KEY = /^[a-z][a-z0-9_]{0,63}$/
 
@@ -45,7 +45,8 @@ export function normaliseFibre(raw: Fibre): Fibre {
     qualifiers = [{ code: legacy[1] }, ...qualifiers]
   }
   const { fiber: _f, recycled: _r, organic: _o, qualifier: _q, ...rest } = old
-  return { ...rest, material, qualifiers: uniqueTerms(qualifiers) }
+  // A fibre without a percentage (leather on a bag) has `percentage` null (spec 0.3).
+  return { ...rest, material, percentage: typeof old.percentage === 'number' ? old.percentage : null, qualifiers: uniqueTerms(qualifiers) }
 }
 
 export function normaliseMaterials(m: Materials | null | undefined): Materials | null {
@@ -76,7 +77,8 @@ export function careInLabelOrder(codes: string[]): string[] {
   return codes.map((code, i) => ({ code, i })).sort((a, b) => rank(a.code) - rank(b.code) || a.i - b.i).map((x) => x.code)
 }
 
-export type MaterialsParse = { ok: true; value: Materials | null } | { ok: false; error: string }
+/** `decimalComma`: "95,5% cotton" split into a fibre of digits only (import-format.md §1.4). */
+export type MaterialsParse = { ok: true; value: Materials | null } | { ok: false; error: string; decimalComma?: boolean }
 
 export function parseMaterials(text: string): MaterialsParse {
   const src = text.trim()
@@ -94,16 +96,19 @@ export function parseMaterials(text: string): MaterialsParse {
     if (!KEY.test(partCode)) return { ok: false, error: rawPart.trim() }
     const list: Fibre[] = []
     for (const rawFibre of fibres.split(',')) {
-      const m = /^\s*(\d+(?:[.,]\d+)?)\s*%\s*(.+?)\s*$/.exec(rawFibre)
+      // The comma separates fibres, so "95,5% cotton" leaves a fibre "95": a decimal comma.
+      if (/^\s*\d+\s*$/.test(rawFibre)) return { ok: false, error: rawFibre.trim(), decimalComma: true }
+      // fiber := [number "%"] material_code qualifier*   ("leather" has no percentage)
+      const m = /^\s*(?:(\d+(?:\.\d+)?)\s*%\s*)?(.+?)\s*$/.exec(rawFibre)
       if (!m) return { ok: false, error: rawFibre.trim() }
-      const pct = Number(m[1].replace(',', '.'))
+      const pct = m[1] === undefined ? null : Number(m[1])
       // "polyester (recycled) (post_consumer)": one code per bracket, any number of brackets.
       const q = /^(.*?)((?:\s*\([^()]*\))*)\s*$/.exec(m[2])!
       const name = q[1]
       const qualifiers = [...q[2].matchAll(/\(([^()]*)\)/g)].map((x) => normKey(x[1]))
       const material = normKey(name)
       if (/[()]/.test(name) || qualifiers.some((c) => !KEY.test(c))) return { ok: false, error: rawFibre.trim() }
-      if (!(pct > 0 && pct <= 100) || !KEY.test(material)) return { ok: false, error: rawFibre.trim() }
+      if ((pct !== null && !(pct > 0 && pct <= 100)) || !KEY.test(material)) return { ok: false, error: rawFibre.trim() }
       list.push(normaliseFibre({ material: { code: material }, percentage: pct, qualifiers: qualifiers.map((code) => ({ code })) }))
     }
     parts.push({ part: { code: partCode }, fibers: list })
@@ -114,7 +119,7 @@ export function parseMaterials(text: string): MaterialsParse {
 export function formatMaterials(m: Materials | null | undefined): string {
   const list = normaliseMaterials(m)
   if (!list) return ''
-  return list.map((p) => `${p.part.code}: ${p.fibers.map((f) => `${f.percentage}% ${f.material.code}${(f.qualifiers ?? []).map((q) => ` (${q.code})`).join('')}`).join(', ')}`).join('; ')
+  return list.map((p) => `${p.part.code}: ${p.fibers.map((f) => `${f.percentage == null ? '' : `${f.percentage}% `}${f.material.code}${(f.qualifiers ?? []).map((q) => ` (${q.code})`).join('')}`).join(', ')}`).join('; ')
 }
 
 /** Every qualifier code any fibre of any part has (for the portal's filter and facet). */
@@ -122,9 +127,24 @@ export function qualifierCodes(m: Materials | null | undefined): string[] {
   return [...new Set((normaliseMaterials(m) ?? []).flatMap((p) => p.fibers.flatMap((f) => (f.qualifiers ?? []).map((q) => q.code))))]
 }
 
-/** Part codes whose percentages do not add up to 100 (a warning, not an error). */
+/**
+ * Part codes whose percentages do not add up to 100 (a warning, not an error): every fibre
+ * states one and they do not sum to 100, or the stated ones exceed 100 (import-format.md rule 10).
+ */
 export function unbalancedParts(m: Materials | null): string[] {
-  return (normaliseMaterials(m) ?? []).filter((p) => Math.abs(p.fibers.reduce((s, f) => s + f.percentage, 0) - 100) > 0.01).map((p) => p.part.code)
+  return (normaliseMaterials(m) ?? [])
+    .filter((p) => {
+      const stated = p.fibers.filter((f) => f.percentage != null)
+      const sum = stated.reduce((s, f) => s + (f.percentage ?? 0), 0)
+      return sum > 100.01 || (stated.length === p.fibers.length && Math.abs(sum - 100) > 0.01)
+    })
+    .map((p) => p.part.code)
+}
+
+/** Material codes outside the vocabulary, each once, in order of appearance (warning `material_unknown`). */
+export function unknownMaterials(m: Materials | null | undefined): string[] {
+  const known = new Set<string>(MATERIALS)
+  return [...new Set((normaliseMaterials(m) ?? []).flatMap((p) => p.fibers.map((f) => f.material.code)))].filter((c) => !known.has(c))
 }
 
 /**

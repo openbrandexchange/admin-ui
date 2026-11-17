@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../../api/client'
 import type { IngestRecord, VariantData } from '../../../api/types'
-import { cleanLocalized, localized } from '../../../lib/localized'
-import { gtinValid } from '../../../lib/validate'
+import { cleanLocalized, extensionsOf, localized } from '../../../lib/localized'
+import { defaultVariantId, gtinValid } from '../../../lib/validate'
 import type { useProductMutations } from '../../../queries/admin'
 import { Badge, Button, Checkbox, Section, SelectField, TextField } from '../../../ui/controls'
 import { ConfirmButton, Dialog, EmptyState, ErrorNote } from '../../../ui/feedback'
@@ -16,7 +16,7 @@ import { LocalizedInput } from './LocalizedInput'
 
 type M = ReturnType<typeof useProductMutations>
 
-export function VariantsSection({ productExternalId, variants, mutations }: { productExternalId: string; variants: IngestRecord[]; mutations: M }) {
+export function VariantsSection({ productExternalId, styleNumber, variants, mutations }: { productExternalId: string; styleNumber: string; variants: IngestRecord[]; mutations: M }) {
   const { t, i18n } = useTranslation()
   const [editing, setEditing] = useState<IngestRecord | 'new' | null>(null)
   const sorted = [...variants].sort((a, b) => {
@@ -61,12 +61,12 @@ export function VariantsSection({ productExternalId, variants, mutations }: { pr
           }}
         />
       )}
-      {editing && <VariantDialog productExternalId={productExternalId} record={editing === 'new' ? null : editing} mutations={mutations} onClose={() => setEditing(null)} />}
+      {editing && <VariantDialog productExternalId={productExternalId} styleNumber={styleNumber} record={editing === 'new' ? null : editing} mutations={mutations} onClose={() => setEditing(null)} />}
     </Section>
   )
 }
 
-function VariantDialog({ productExternalId, record, mutations, onClose }: { productExternalId: string; record: IngestRecord | null; mutations: M; onClose: () => void }) {
+function VariantDialog({ productExternalId, styleNumber, record, mutations, onClose }: { productExternalId: string; styleNumber: string; record: IngestRecord | null; mutations: M; onClose: () => void }) {
   const { t } = useTranslation()
   const d = (record?.data ?? {}) as Partial<VariantData>
   const [gtin, setGtin] = useState(d.gtin ?? '')
@@ -88,8 +88,12 @@ function VariantDialog({ productExternalId, record, mutations, onClose }: { prod
   const gtinErr = touched && digits && !gtinValid(digits) ? t('product.gtinInvalid') : (server['/gtin'] ?? (put.error instanceof ApiError && put.error.code === 'gtin_conflict' ? t('errors.gtin_conflict') : undefined))
   const codeErr = touched && !code.trim() ? t('validate.required') : null
   const measureErr = (k: MeasurementKey) => (!parsedMeasures.ok && parsedMeasures.key === k ? (k === 'strap_length_cm' ? t('product.strapInvalid') : t('product.numberInvalid')) : (server[`/measurements/${k}`] ?? null))
-  // Key convention: the GTIN as supplied, else style-colour-size.
-  const externalId = record?.external_id ?? (digits || [productExternalId, code.trim(), size.trim()].filter(Boolean).join('-'))
+  // The variant's key for life (spec import-format.md §1.2.1): proposed as style-colour-size[-length],
+  // never the EAN (which may arrive or change later). The brand may type its own for a new size.
+  const [ownId, setOwnId] = useState('')
+  const proposedId = defaultVariantId(styleNumber, code, size, sizeLength)
+  const externalId = record?.external_id ?? (ownId.trim() || proposedId)
+  const idErr = touched && !record && externalId.length > 200 ? t('product.variantIdTooLong') : (server['/variant_id'] ?? null)
 
   return (
     <Dialog
@@ -118,19 +122,21 @@ function VariantDialog({ productExternalId, record, mutations, onClose }: { prod
             loading={put.isPending}
             onClick={() => {
               setTouched(true)
-              if (!code.trim() || (digits && !gtinValid(digits)) || !parsedMeasures.ok) return
+              if (!code.trim() || (digits && !gtinValid(digits)) || !parsedMeasures.ok || (!record && externalId.length > 200)) return
               put.mutate(
                 {
                   id: externalId,
                   body: {
+                    // A PUT replaces the size: extension members (x-<vendor>-…) go back as they were.
+                    ...extensionsOf(d),
                     product_external_id: productExternalId,
                     gtin: digits || null,
                     sku: sku.trim() || null,
-                    color: { code: code.trim(), name: cleanLocalized(colourName), supplier_color: supplierColour.trim() || null, family: (family || null) as VariantData['color']['family'] },
+                    color: { ...extensionsOf(d.color), code: code.trim(), name: cleanLocalized(colourName), supplier_color: supplierColour.trim() || null, family: (family || null) as VariantData['color']['family'] },
                     size: size.trim() || null,
                     size_length: sizeLength.trim() || null,
                     size_system: sizeSystem.trim() || null,
-                    measurements: parsedMeasures.ok ? parsedMeasures.value : null,
+                    measurements: parsedMeasures.ok ? (parsedMeasures.value || extensionsOf(d.measurements) ? { ...extensionsOf(d.measurements), ...parsedMeasures.value } : null) : null,
                     status: published ? 'published' : 'unpublished',
                   },
                 },
@@ -144,7 +150,7 @@ function VariantDialog({ productExternalId, record, mutations, onClose }: { prod
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField label={t('glossary.ean')} hint={t('product.gtinHint')} inputMode="numeric" value={gtin} onChange={(e) => setGtin(e.target.value)} error={gtinErr} className="[&_input]:font-mono" disabled={!!record && !!d.gtin && record.external_id === d.gtin} />
+        <TextField label={t('glossary.ean')} hint={t('product.gtinHint')} inputMode="numeric" value={gtin} onChange={(e) => setGtin(e.target.value)} error={gtinErr} className="[&_input]:font-mono" />
         <TextField label={t('fields.sku')} value={sku} onChange={(e) => setSku(e.target.value)} />
         <TextField label={t('fields.colourCode')} hint={t('product.colourCodeHint')} value={code} onChange={(e) => setCode(e.target.value)} error={codeErr} />
         <TextField label={t('fields.supplierColour')} value={supplierColour} onChange={(e) => setSupplierColour(e.target.value)} />
@@ -160,6 +166,19 @@ function VariantDialog({ productExternalId, record, mutations, onClose }: { prod
           ))}
         </SelectField>
       </div>
+      {record ? (
+        <TextField label={t('fields.variantId')} hint={t('product.variantIdFixed')} value={record.external_id} readOnly className="[&_input]:font-mono [&_input]:bg-stone-50" />
+      ) : (
+        <TextField
+          label={t('fields.variantId')}
+          hint={t('product.variantIdHint', { id: proposedId })}
+          value={ownId}
+          onChange={(e) => setOwnId(e.target.value)}
+          placeholder={proposedId}
+          error={idErr}
+          className="[&_input]:font-mono"
+        />
+      )}
       <LocalizedInput label={t('fields.colourName')} value={colourName} onChange={setColourName} />
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('article.measurements')}</legend>

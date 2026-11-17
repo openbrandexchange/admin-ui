@@ -2,7 +2,7 @@
 // language needs), the same {{placeholders}}, and the glossary words the whole project uses.
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '../src/i18n/languages'
-import { ALL_ITEM_SUBTYPES, CARE_CODES, CHANNELS, COLOUR_FAMILIES, FEATURES, FOOTWEAR_MATERIALS, FOOTWEAR_PARTS, ITEM_TYPES, MATERIALS, MEASUREMENTS, PARTS, QUALIFIERS, ROLES, TARGET_GROUPS, VIEWS, WARNING_CODES } from '../src/lib/vocab'
+import { ALL_ITEM_SUBTYPES, CARE_CODES, CHANNELS, COLOUR_FAMILIES, FEATURES, FOOTWEAR_MATERIALS, FOOTWEAR_PARTS, ITEM_TYPES, MATERIALS, MEASUREMENTS, PARTS, QUALIFIERS, ROLES, STABLE_WARNING_CODES, TARGET_GROUPS, VIEWS, WARNING_CODES } from '../src/lib/vocab'
 import glossary from '../src/i18n/glossary.json'
 
 const files = import.meta.glob<Record<string, unknown>>('../src/locales/*.json', { eager: true, import: 'default' })
@@ -88,7 +88,7 @@ describe('labels for every stable key', () => {
     ['article.footwearPart', FOOTWEAR_PARTS],
     ['article.feature', Object.keys(FEATURES)],
     ['product.measure', MEASUREMENTS],
-    ['importErrors', WARNING_CODES],
+    ['importErrors', STABLE_WARNING_CODES],
     ['labelWarning', WARNING_CODES.flatMap((c) => [`${c}.why`, `${c}.law`])],
     ...Object.entries(FEATURES)
       .filter(([, def]) => def.type === 'enum' || def.type === 'list')
@@ -99,7 +99,7 @@ describe('labels for every stable key', () => {
   })
 
   it('has a message for every OBX error code', () => {
-    const codes = ['invalid_request', 'validation_failed', 'unauthorized', 'invalid_token', 'access_revoked', 'insufficient_scope', 'forbidden', 'not_found', 'method_not_allowed', 'conflict', 'precondition_failed', 'payload_too_large', 'unsupported_media_type', 'rate_limited', 'limit_exceeded', 'cursor_invalid', 'cursor_expired', 'export_expired', 'original_not_allowed', 'invalid_gtin', 'gtin_conflict', 'position_conflict', 'checksum_mismatch', 'blob_missing', 'upload_incomplete', 'unknown_parent', 'files_missing', 'import_invalid', 'mass_unpublish_refused', 'workbook_invalid', 'workbook_unsafe', 'workbook_sheet_missing', 'workbook_too_large', 'unsafe_url', 'csrf_failed', 'invalid_credentials', 'account_blocked', 'setup_required', 'setup_completed', 'invite_invalid', 'not_implemented', 'internal_error', 'service_unavailable']
+    const codes = ['invalid_request', 'validation_failed', 'unauthorized', 'invalid_token', 'access_revoked', 'insufficient_scope', 'forbidden', 'not_found', 'method_not_allowed', 'conflict', 'precondition_failed', 'payload_too_large', 'unsupported_media_type', 'rate_limited', 'limit_exceeded', 'cursor_invalid', 'cursor_expired', 'export_expired', 'original_not_allowed', 'invalid_gtin', 'gtin_conflict', 'position_conflict', 'checksum_mismatch', 'blob_missing', 'upload_incomplete', 'unknown_parent', 'files_missing', 'import_invalid', 'mass_unpublish_refused', 'workbook_invalid', 'workbook_unsafe', 'workbook_sheet_missing', 'workbook_too_large', 'unsafe_url', 'idempotency_key_reused', 'csrf_failed', 'invalid_credentials', 'account_blocked', 'setup_required', 'setup_completed', 'invite_invalid', 'not_implemented', 'internal_error', 'service_unavailable']
     expect(codes.filter((c) => !en[`errors.${c}`])).toEqual([])
   })
 
