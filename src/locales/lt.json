@@ -306,6 +306,7 @@
     "materialPercentage": "Procentas",
     "materialName": "Medžiaga",
     "materialQualifier": "Tvarumas",
+    "materialQualifierHint": "pažymėkite visus tinkamus",
     "addFibre": "Pridėti medžiagą",
     "addPart": "Pridėti dalį",
     "removeFibre": "Pašalinti medžiagą",
@@ -1033,6 +1034,7 @@
     "filters": {
       "title": "Filtrai",
       "clear": "Išvalyti filtrus",
+      "showResults": "Rodyti rezultatus",
       "new": "Nauja arba pakeista",
       "anytime": "Bet kada",
       "lastDays_one": "Paskutinė diena",
@@ -1044,7 +1046,8 @@
       "target_group": "Kam",
       "color": "Spalva",
       "season": "Sezonas",
-      "collection": "Kolekcija"
+      "collection": "Kolekcija",
+      "qualifier": "Tvarumas"
     },
     "tile": {
       "colours_one": "{{count}} spalva",
@@ -1326,7 +1329,10 @@
     },
     "qualifier": {
       "organic": "ekologiška",
+      "in_conversion": "pereinamojo laikotarpio",
       "recycled": "perdirbta",
+      "pre_consumer": "iki vartojimo",
+      "post_consumer": "po vartojimo",
       "regenerative": "regeneratyvi"
     },
     "care": {

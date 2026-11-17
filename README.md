@@ -10,18 +10,24 @@ Every portal implementation (the Cloudflare, Google Cloud & Docker and web-hosti
 
 Stack: React 19, TypeScript, Vite, TanStack Query (all server state: caching, optimistic updates, infinite lists) and TanStack Router, a typed REST client generated from the OpenAPI files (`openapi-typescript` + `openapi-fetch`), Tailwind CSS v4, i18next. No UI kit, ES2023, one ~150 kB (gzip) main bundle plus one chunk per language.
 
-## Try it in 60 seconds
+## Run it locally
 
-Needs Node.js 20.19 or newer.
+Needs Node.js 20.19 or newer. No Docker, no database.
 
 ```sh
-git clone https://github.com/openbrandexchange/admin-ui.git
-cd admin-ui
-npm install
-npm run mock
+npm install && npm run mock        # the whole portal in your browser, with demo data
 ```
 
-Open the printed URL. The whole portal API runs in your browser (a service worker seeded with the spec's fictional *Kestrel Outfitters* fixtures), so nothing else is needed.
+Open the printed URL (http://localhost:5173). The portal API runs in your browser (a service worker seeded with the spec's fictional *Kestrel Outfitters* fixtures), so nothing else is needed. Changes to the code reload at once.
+
+Against a real node on your computer (node-go, node-ts or node-php, which all listen on http://localhost:8080):
+
+```sh
+npm install && npm run dev         # proxies /admin/api, /obx and /.well-known to http://localhost:8080
+OBX_NODE_URL=http://localhost:8787 npm run dev   # a node on another address (e.g. wrangler dev)
+```
+
+The first time, the node asks for its setup code (printed in the node's terminal) on the setup page.
 
 | Who | Email | Password |
 |---|---|---|
@@ -56,10 +62,11 @@ The full guide is [docs/node-integration.md](docs/node-integration.md): routes a
 ## Development
 
 ```sh
-npm run dev                                   # against a real node: OBX_NODE_URL=http://localhost:8080 npm run dev
+npm run dev                                   # against a node on http://localhost:8080 (OBX_NODE_URL=… for another)
 npm run mock                                  # against the in-browser mock node
 npm test                                      # unit, component (React Testing Library) and language tests
-npm run e2e                                   # Playwright on the mock build: both roles' flows, axe, keyboard, desktop + phone
+npm run e2e                                   # Playwright on the mock build: both roles' flows, axe, keyboard, UX hunt, desktop + phone
+npm run e2e:hunt                              # only the UX hunt (every screen, both roles, desktop + phone)
 npm run check                                 # lint + typecheck + tests + production build + bundle budget
 npm run licenses                              # licences of all dependencies
 npm run gen:api -- ../spec                    # regenerate src/api/*.d.ts from the OpenAPI files

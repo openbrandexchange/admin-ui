@@ -309,6 +309,7 @@
     "materialPercentage": "Perċentwal",
     "materialName": "Materjal",
     "materialQualifier": "Sostenibbiltà",
+    "materialQualifierHint": "immarka dak kollu li japplika",
     "addFibre": "Żid materjal",
     "addPart": "Żid parti",
     "removeFibre": "Neħħi l-materjal",
@@ -1051,6 +1052,7 @@
     "filters": {
       "title": "Filtri",
       "clear": "Neħħi l-filtri",
+      "showResults": "Uri r-riżultati",
       "new": "Ġdid jew mibdul",
       "anytime": "Kull meta",
       "lastDays_one": "L-aħħar jum",
@@ -1063,7 +1065,8 @@
       "target_group": "Għal min",
       "color": "Kulur",
       "season": "Staġun",
-      "collection": "Kollezzjoni"
+      "collection": "Kollezzjoni",
+      "qualifier": "Sostenibbiltà"
     },
     "tile": {
       "colours_one": "Kuluri: {{count}}",
@@ -1356,7 +1359,10 @@
     },
     "qualifier": {
       "organic": "organiku",
+      "in_conversion": "f'konverżjoni",
       "recycled": "riċiklat",
+      "pre_consumer": "qabel il-konsum",
+      "post_consumer": "wara l-konsum",
       "regenerative": "riġenerattiv"
     },
     "care": {

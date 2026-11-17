@@ -303,6 +303,7 @@
     "materialPercentage": "Postotak",
     "materialName": "Materijal",
     "materialQualifier": "Održivost",
+    "materialQualifierHint": "označite sve što vrijedi",
     "addFibre": "Dodaj materijal",
     "addPart": "Dodaj dio",
     "removeFibre": "Ukloni materijal",
@@ -1015,6 +1016,7 @@
     "filters": {
       "title": "Filtri",
       "clear": "Očisti filtre",
+      "showResults": "Prikaži rezultate",
       "new": "Novo ili promijenjeno",
       "anytime": "Bilo kada",
       "lastDays_one": "Posljednji dan",
@@ -1025,7 +1027,8 @@
       "target_group": "Za koga",
       "color": "Boja",
       "season": "Sezona",
-      "collection": "Kolekcija"
+      "collection": "Kolekcija",
+      "qualifier": "Održivost"
     },
     "tile": {
       "colours_one": "{{count}} boja",
@@ -1296,7 +1299,10 @@
     },
     "qualifier": {
       "organic": "organsko",
+      "in_conversion": "u prijelaznom razdoblju",
       "recycled": "reciklirano",
+      "pre_consumer": "predpotrošačko",
+      "post_consumer": "postpotrošačko",
       "regenerative": "regenerativno"
     },
     "care": {

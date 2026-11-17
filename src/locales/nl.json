@@ -300,6 +300,7 @@
     "materialPercentage": "Percentage",
     "materialName": "Materiaal",
     "materialQualifier": "Duurzaamheid",
+    "materialQualifierHint": "vink alles aan wat geldt",
     "addFibre": "Materiaal toevoegen",
     "addPart": "Onderdeel toevoegen",
     "removeFibre": "Materiaal verwijderen",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Filters",
       "clear": "Filters wissen",
+      "showResults": "Toon resultaten",
       "new": "Nieuw of gewijzigd",
       "anytime": "Altijd",
       "lastDays_one": "Afgelopen {{count}} dag",
@@ -1006,7 +1008,8 @@
       "target_group": "Voor",
       "color": "Kleur",
       "season": "Seizoen",
-      "collection": "Collectie"
+      "collection": "Collectie",
+      "qualifier": "Duurzaamheid"
     },
     "tile": {
       "colours_one": "{{count}} kleur",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "biologisch",
+      "in_conversion": "in omschakeling",
       "recycled": "gerecycled",
+      "pre_consumer": "pre-consumer",
+      "post_consumer": "post-consumer",
       "regenerative": "regeneratief"
     },
     "care": {

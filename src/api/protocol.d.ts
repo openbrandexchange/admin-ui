@@ -132,9 +132,15 @@ export interface paths {
          *     the CURRENT representation. Deletes are tombstones for anything no longer visible to
          *     the caller. Tombstones are kept at least 90 days; an older cursor yields 410
          *     `cursor_expired` (restart without cursor). A `grant` entry with `resync: true` means
-         *     restart without a cursor. `next_cursor` is always returned; poll again later
-         *     (RECOMMENDED: not more often than every 60 s when `has_more` is false, or on a
-         *     `changes.available` webhook).
+         *     restart without a cursor.
+         *
+         *     **Pagination.** One response is one page. `next_cursor` is always returned. While
+         *     `has_more` is `true`, call again immediately with `cursor=<next_cursor>`; when it is
+         *     `false` you are up to date: store `next_cursor` and poll again later with it
+         *     (RECOMMENDED: not more often than every 60 s, or right after a `changes.available`
+         *     webhook). A page MAY hold fewer entries than `limit` (even none) and still have
+         *     `has_more: true`. Loop examples: [protocol.md §2.1](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#pagination);
+         *     webhooks instead of polling: [§2.2](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#notifications).
          */
         get: operations["listChanges"];
         put?: never;
@@ -188,9 +194,15 @@ export interface paths {
         };
         /**
          * Products with variants and assets
-         * @description Keyset-paginated, ordered by `id` ascending. For synchronisation use `/changes`;
-         *     this endpoint is for browsing and targeted reads. Objects outside the caller's grant
-         *     are never returned (unknown ids in `ids` are silently omitted).
+         * @description **Paginated.** One response is one page of at most `limit` products, ordered by `id`
+         *     ascending (keyset pagination). Repeat the request with `cursor=<next_cursor>` and the
+         *     same other parameters until `next_cursor` is `null`; do not stop on a short page.
+         *     Every product that exists during the whole walk appears exactly once. Loop examples
+         *     in curl, JavaScript and Go: [protocol.md §2.1](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#pagination).
+         *
+         *     For synchronisation use `/changes` (it also delivers deletes); this endpoint is for
+         *     browsing and targeted reads. Objects outside the caller's grant are never returned
+         *     (unknown ids in `ids` are silently omitted).
          */
         get: operations["listProducts"];
         put?: never;
@@ -396,7 +408,9 @@ export interface paths {
         /**
          * Subscribe
          * @description Capability `webhooks`. Events for consumers: `changes.available`, `grant.updated`,
-         *     `export.completed`. The URL MUST be https and MUST NOT resolve to a private, loopback or
+         *     `export.completed`. Subscribe to `changes.available` instead of polling `/changes`
+         *     every minute: on each event, read `/changes` from your stored cursor until `has_more`
+         *     is `false` ([protocol.md §2.2](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#notifications)). The URL MUST be https and MUST NOT resolve to a private, loopback or
          *     link-local address (422 `unsafe_url`). Max 5 subscriptions per client.
          */
         post: operations["createWebhook"];
@@ -457,8 +471,12 @@ export interface webhooks {
          *     `OBX-Webhook-Timestamp` (unix seconds), `OBX-Webhook-Signature: v1=<hex>` where
          *     hex = HMAC-SHA256(secret, `<timestamp>.<raw body>`). Receivers MUST verify in constant
          *     time and reject timestamps more than 300 s away. Respond 2xx within 10 s; otherwise the
-         *     node retries with exponential backoff for up to 24 h. Webhooks are wake-up calls:
-         *     always fetch state via /changes.
+         *     node retries with exponential backoff for up to 24 h. De-duplicate on `OBX-Webhook-Id`.
+         *
+         *     **Webhooks are wake-up calls: always fetch state via /changes.** On
+         *     `changes.available` (`{"latest_seq": 1044}`) read `/changes` from your stored cursor
+         *     until `has_more` is `false`; the event carries no catalog data
+         *     ([protocol.md §2.2](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#notifications)).
          */
         post: operations["receiveObxEvent"];
         delete?: never;
@@ -778,8 +796,8 @@ export interface components {
                 /** @description Material code: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; the list with names is vocabularies/materials.json. Recycled or organic content is a qualifier, not a material. */
                 material: components["schemas"]["term"];
                 percentage: number;
-                /** @description What the fibre is, apart from which fibre: organic, recycled, regenerative (vocabularies/qualifiers.json; unknown codes are allowed). null = none. */
-                qualifier?: components["schemas"]["term"] | null;
+                /** @description What the fibre is, apart from which fibre, in the order the brand states it: organic, in_conversion, recycled, pre_consumer, post_consumer, regenerative (vocabularies/qualifiers.json; unknown codes are allowed, a code appears at most once). Empty = none. A node returns [] when the fibre has none; on write the property may be left out (= none). */
+                qualifiers?: components["schemas"]["term"][];
             } & {
                 [key: string]: unknown;
             })[];
@@ -1191,12 +1209,16 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** ChangesPage */
+        /**
+         * ChangesPage
+         * @description One page of the change feed. Paginated: while has_more is true, request the next page with cursor=next_cursor right away; when it is false, store next_cursor and poll later (or on a changes.available webhook). See docs/protocol.md section 2.1 (Pagination).
+         */
         ChangesPage: {
+            /** @description This page's entries in seq order; possibly fewer than limit, or none, even when has_more is true. */
             changes: components["schemas"]["Change"][];
-            /** @description Always present. Pass it on the next call (immediately when has_more, later otherwise). */
+            /** @description Always present. Pass it as cursor on the next call: immediately when has_more is true, on the next poll otherwise. Never parse it. */
             next_cursor: components["schemas"]["Cursor"];
-            /** @description True when more entries are available right now. */
+            /** @description True when more entries are available right now: keep paging. False: you are up to date. */
             has_more: boolean;
             /**
              * @description snapshot: replaying current state after a cursor-less start; live: incremental changes. The first page with phase=live after a snapshot means the snapshot is complete.
@@ -1515,6 +1537,7 @@ export interface components {
     };
     parameters: {
         IdPath: components["schemas"]["Id"];
+        /** @description The `next_cursor` of the previous page; omit for the first page. Opaque. */
         Cursor: components["schemas"]["Cursor"];
         /** @description Repeating a request with the same key within 24 h returns the original response. */
         IdempotencyKey: string;
@@ -1772,8 +1795,9 @@ export interface operations {
     listChanges: {
         parameters: {
             query?: {
+                /** @description The `next_cursor` of the previous page; omit to start a snapshot. Opaque. */
                 cursor?: components["schemas"]["Cursor"];
-                /** @description Page size, 1-500 (default 100). Nodes MAY return fewer. */
+                /** @description Page size, 1-500 (default 100; the node's maximum is `limits.changes_page_max` in discovery). Nodes MAY return fewer. */
                 limit?: number;
             };
             header?: never;
@@ -1782,7 +1806,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of changes. */
+            /** @description A page of changes. More pages follow while `has_more` is `true` ([pagination](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#pagination)). */
             200: {
                 headers: {
                     "RateLimit-Limit": components["headers"]["RateLimit-Limit"];
@@ -1858,7 +1882,9 @@ export interface operations {
                 brand_id?: components["schemas"]["Id"];
                 /** @description Products whose own data, a variant or an asset changed at or after this time. */
                 updated_since?: components["schemas"]["DateTime"];
+                /** @description The `next_cursor` of the previous page; omit for the first page. Opaque. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Page size, 1-100 (default 25; the node's maximum is `limits.products_page_max` in discovery). Nodes MAY return fewer. */
                 limit?: number;
             };
             header?: never;
@@ -1867,20 +1893,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of products. */
+            /** @description A page of products. More pages follow while `next_cursor` is not `null` ([pagination](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#pagination)). */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
+                        /** @description This page's products (possibly fewer than `limit`, also on pages that are not the last). */
                         items: components["schemas"]["Product"][];
-                        /** @description null on the last page. */
+                        /** @description Pass it as `cursor` to get the next page. `null` on the last page, and only there. */
                         next_cursor: components["schemas"]["Cursor"] | null;
                     };
                 };
             };
-            400: components["responses"]["BadRequest"];
+            400: components["responses"]["CursorInvalid"];
             401: components["responses"]["Unauthorized"];
             429: components["responses"]["TooManyRequests"];
         };

@@ -300,6 +300,7 @@
     "materialPercentage": "Procent",
     "materialName": "Materiale",
     "materialQualifier": "Bæredygtighed",
+    "materialQualifierHint": "sæt kryds ved alt, der passer",
     "addFibre": "Tilføj materiale",
     "addPart": "Tilføj del",
     "removeFibre": "Fjern materiale",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Filtre",
       "clear": "Ryd filtre",
+      "showResults": "Vis resultater",
       "new": "Ny eller ændret",
       "anytime": "Når som helst",
       "lastDays_one": "Seneste {{count}} dag",
@@ -1006,7 +1008,8 @@
       "target_group": "Til",
       "color": "Farve",
       "season": "Sæson",
-      "collection": "Kollektion"
+      "collection": "Kollektion",
+      "qualifier": "Bæredygtighed"
     },
     "tile": {
       "colours_one": "{{count}} farve",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "økologisk",
+      "in_conversion": "under omlægning",
       "recycled": "genanvendt",
+      "pre_consumer": "pre-consumer",
+      "post_consumer": "post-consumer",
       "regenerative": "regenerativ"
     },
     "care": {

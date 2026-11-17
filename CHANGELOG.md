@@ -4,7 +4,7 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
-## [0.3.0] - 2026-11-12
+## [0.3.0] - 2026-11-17
 
 Materials and care as terms with names, following spec 0.3.0 ([proposal 0004](https://github.com/openbrandexchange/spec/blob/main/docs/proposals/0004-terms-with-names.md)). **Breaking for nodes**: the article form writes the 0.3 shapes, so a node has to accept them (a 0.2 node's answers are still read).
 
@@ -12,15 +12,21 @@ Materials and care as terms with names, following spec 0.3.0 ([proposal 0004](ht
 
 - **Composition and care show the names the brand's node returns** in the reader's language: "95% Katoen (Biologisch)", the part name ("Voering: 100% Polyester (Gerecycled)") and the care instruction ("Wassen op 30 °C"). Where the node has no name in that language, the UI uses its own translation of the code, then the node's name in another language, then the code. The brand's own care text ("Wash inside out") is shown after the instruction.
 - **Care instructions are grouped by category** in label order: washing, bleaching, drying, ironing, professional cleaning. Codes the vocabulary does not know come last.
-- **The article form's composition is picked, not typed**: per part, a percentage, a material and an optional qualifier (organic, recycled, regenerative), from the spec's vocabularies, with "Add material" and "Add part". One qualifier per fibre replaces the separate recycled and organic marks. Codes outside the vocabularies that an article already has stay selectable. The form sends codes only; the node fills in the names. Care is saved in label order, and the brand's own care text is kept.
-- The API types are generated from spec 0.3.0 (`materials` terms with `material` and `qualifier`, care with `category`, `symbol` and `name`). Answers in the 0.2 shape (`fiber` with `recycled`/`organic`) and the 0.1 keys `recycled_*`/`organic_*` are read as the material with that qualifier.
+- **The article form's composition is picked, not typed**: per part, a percentage, a material and its sustainability claims, from the spec's vocabularies, with "Add material" and "Add part". **Several claims per fibre**: a row of tick chips under each material ("Sustainability · tick all that apply": organic, in conversion, recycled, pre-consumer, post-consumer, regenerative), keyboard operable, wrapping on a phone; saved as `qualifiers` in the order ticked. They replace the separate recycled and organic marks. Codes outside the vocabularies that an article already has stay selectable. The form sends codes only; the node fills in the names. Care is saved in label order, and the brand's own care text is kept.
+- **Composition reads "Polyester (Recycled, Post-consumer)"**: every claim of a fibre in the reader's language, in the brand's order.
+- The API types are generated from spec 0.3.0 (`materials` terms with `material` and `qualifiers`, care with `category`, `symbol` and `name`; the portal filter `qualifier` and facet `qualifiers`). Answers with the first 0.3 draft's single `qualifier`, in the 0.2 shape (`fiber` with `recycled`/`organic`) and with the 0.1 keys `recycled_*`/`organic_*` are read as the material with those qualifiers.
+- **Focus is kept after actions**: a button that is saving stays focusable (`aria-disabled` instead of `disabled`), saving an article gives focus back to Save, "Add material"/"Add part" move to the new row and removing one to the row before, "Clear filters" keeps focus in the filters, and when a focused control disappears (emptying the selection) focus goes to the start of the content instead of the page.
+- `npm run dev` proxies to a node on http://localhost:8080 without settings (`OBX_NODE_URL` for another address); README "Run it locally" starts with `npm install && npm run mock`.
 - Glossary version 0.3.0, in step with the spec's glossary.
-- Mock mode: the mock node stores codes and answers with the names, categories and symbols of the spec's vocabularies (copied by `npm run sync-fixtures`, which now also copies `vocabularies/`). The demo data is stored under a new key.
+- Mock mode: the mock node filters on `qualifier`, sends the `qualifiers` facet with the vocabulary's names, reads and writes `100% polyester (recycled) (post_consumer)` in imports and the CSV, and stores codes and answers with the names, categories and symbols of the spec's vocabularies (copied by `npm run sync-fixtures`, which now also copies `vocabularies/`). The demo data is stored under a new key (`obx.mock.v4`).
 
 ### Added
 
 - **Demo mode** for nodes that run a public demo (`x-obx-demo` in the public branding, see docs/node-integration.md §4): the banner "Demo, fictional data" on every page, one-click "View as retailer" / "View as brand" instead of the login form (with Cloudflare Turnstile when the node gives a site key), the public read-only API key, and "This is not possible in the demo." for refused actions. In the 25 languages.
-- The qualifier "regenerative", the editor's words and its error message in all 25 languages.
+- **Retailer portal: filter "Sustainability"** on material claims, from the node's `qualifiers` facet (names in the reader's language, in the vocabulary's order; hidden when the node sends no such facet). Several at once, in the address (shareable, survives reload), counted on the phone's "Filters" button and sent with "Download all".
+- On a phone, "Show results" under the filters closes them and jumps to the articles.
+- The claims "in conversion", "pre-consumer" and "post-consumer" and the qualifier "regenerative", the editor's words and its error message in all 25 languages.
+- Tests: unit tests for several qualifiers (parse, format, normalise, repeats); app tests for editing two claims and for the portal filter with two values; Playwright `e2e/qualifiers.spec.ts` (both flows, keyboard, axe) and **`e2e/ux-hunt.spec.ts`**, which walks every screen of both roles at desktop and phone width and fails on sideways scrolling, text cut off on buttons, tap targets under 24 px, controls without a name, console errors, broken images, untranslated keys and lost focus (`npm run e2e:hunt`).
 
 ### Removed
 

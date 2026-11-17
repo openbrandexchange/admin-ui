@@ -306,6 +306,7 @@
     "materialPercentage": "Procento",
     "materialName": "Materiál",
     "materialQualifier": "Udržitelnost",
+    "materialQualifierHint": "zaškrtněte vše, co platí",
     "addFibre": "Přidat materiál",
     "addPart": "Přidat část",
     "removeFibre": "Odebrat materiál",
@@ -1033,6 +1034,7 @@
     "filters": {
       "title": "Filtry",
       "clear": "Vymazat filtry",
+      "showResults": "Zobrazit výsledky",
       "new": "Nové nebo změněné",
       "anytime": "Kdykoli",
       "lastDays_one": "Poslední den",
@@ -1044,7 +1046,8 @@
       "target_group": "Pro koho",
       "color": "Barva",
       "season": "Sezóna",
-      "collection": "Kolekce"
+      "collection": "Kolekce",
+      "qualifier": "Udržitelnost"
     },
     "tile": {
       "colours_one": "{{count}} barva",
@@ -1326,7 +1329,10 @@
     },
     "qualifier": {
       "organic": "bio",
+      "in_conversion": "v přechodném období",
       "recycled": "recyklované",
+      "pre_consumer": "předspotřebitelské",
+      "post_consumer": "pospotřebitelské",
       "regenerative": "regenerativní"
     },
     "care": {

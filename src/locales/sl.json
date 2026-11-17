@@ -306,6 +306,7 @@
     "materialPercentage": "Odstotek",
     "materialName": "Material",
     "materialQualifier": "Trajnost",
+    "materialQualifierHint": "označite vse, kar velja",
     "addFibre": "Dodaj material",
     "addPart": "Dodaj del",
     "removeFibre": "Odstrani material",
@@ -1033,6 +1034,7 @@
     "filters": {
       "title": "Filtri",
       "clear": "Počisti filtre",
+      "showResults": "Prikaži rezultate",
       "new": "Novo ali spremenjeno",
       "anytime": "Kadar koli",
       "lastDays_one": "Zadnji dan",
@@ -1044,7 +1046,8 @@
       "target_group": "Za koga",
       "color": "Barva",
       "season": "Sezona",
-      "collection": "Kolekcija"
+      "collection": "Kolekcija",
+      "qualifier": "Trajnost"
     },
     "tile": {
       "colours_one": "{{count}} barva",
@@ -1326,7 +1329,10 @@
     },
     "qualifier": {
       "organic": "organsko",
+      "in_conversion": "v preusmeritvi",
       "recycled": "reciklirano",
+      "pre_consumer": "predpotrošniško",
+      "post_consumer": "popotrošniško",
       "regenerative": "regenerativno"
     },
     "care": {

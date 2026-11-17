@@ -300,6 +300,7 @@
     "materialPercentage": "Ποσοστό",
     "materialName": "Υλικό",
     "materialQualifier": "Βιωσιμότητα",
+    "materialQualifierHint": "επιλέξτε όλα όσα ισχύουν",
     "addFibre": "Προσθήκη υλικού",
     "addPart": "Προσθήκη μέρους",
     "removeFibre": "Αφαίρεση υλικού",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Φίλτρα",
       "clear": "Καθαρισμός φίλτρων",
+      "showResults": "Εμφάνιση αποτελεσμάτων",
       "new": "Νέα ή αλλαγμένα",
       "anytime": "Οποτεδήποτε",
       "lastDays_one": "Την τελευταία ημέρα",
@@ -1006,7 +1008,8 @@
       "target_group": "Για ποιον",
       "color": "Χρώμα",
       "season": "Σεζόν",
-      "collection": "Συλλογή"
+      "collection": "Συλλογή",
+      "qualifier": "Βιωσιμότητα"
     },
     "tile": {
       "colours_one": "{{count}} χρώμα",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "οργανικό",
+      "in_conversion": "υπό μετατροπή",
       "recycled": "ανακυκλωμένο",
+      "pre_consumer": "προκαταναλωτικό",
+      "post_consumer": "μετακαταναλωτικό",
       "regenerative": "αναγεννητικό"
     },
     "care": {

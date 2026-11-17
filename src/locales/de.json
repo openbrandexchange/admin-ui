@@ -300,6 +300,7 @@
     "materialPercentage": "Prozent",
     "materialName": "Material",
     "materialQualifier": "Nachhaltigkeit",
+    "materialQualifierHint": "alles Zutreffende ankreuzen",
     "addFibre": "Material hinzufügen",
     "addPart": "Teil hinzufügen",
     "removeFibre": "Material entfernen",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Filter",
       "clear": "Filter zurücksetzen",
+      "showResults": "Ergebnisse anzeigen",
       "new": "Neu oder geändert",
       "anytime": "Jederzeit",
       "lastDays_one": "Letzter {{count}} Tag",
@@ -1006,7 +1008,8 @@
       "target_group": "Für",
       "color": "Farbe",
       "season": "Saison",
-      "collection": "Kollektion"
+      "collection": "Kollektion",
+      "qualifier": "Nachhaltigkeit"
     },
     "tile": {
       "colours_one": "{{count}} Farbe",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "bio",
+      "in_conversion": "in Umstellung",
       "recycled": "recycelt",
+      "pre_consumer": "Pre-Consumer",
+      "post_consumer": "Post-Consumer",
       "regenerative": "regenerativ"
     },
     "care": {

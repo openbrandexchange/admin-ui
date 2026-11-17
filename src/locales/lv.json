@@ -303,6 +303,7 @@
     "materialPercentage": "Procenti",
     "materialName": "Materiāls",
     "materialQualifier": "Ilgtspēja",
+    "materialQualifierHint": "atzīmējiet visu atbilstošo",
     "addFibre": "Pievienot materiālu",
     "addPart": "Pievienot daļu",
     "removeFibre": "Noņemt materiālu",
@@ -1015,6 +1016,7 @@
     "filters": {
       "title": "Filtri",
       "clear": "Notīrīt filtrus",
+      "showResults": "Rādīt rezultātus",
       "new": "Jauns vai mainīts",
       "anytime": "Jebkurā laikā",
       "lastDays_zero": "Pēdējās {{count}} dienās",
@@ -1025,7 +1027,8 @@
       "target_group": "Kam",
       "color": "Krāsa",
       "season": "Sezona",
-      "collection": "Kolekcija"
+      "collection": "Kolekcija",
+      "qualifier": "Ilgtspēja"
     },
     "tile": {
       "colours_zero": "{{count}} krāsu",
@@ -1296,7 +1299,10 @@
     },
     "qualifier": {
       "organic": "bioloģisks",
+      "in_conversion": "pārejas periodā",
       "recycled": "pārstrādāts",
+      "pre_consumer": "pirmspatēriņa",
+      "post_consumer": "pēcpatēriņa",
       "regenerative": "reģeneratīvs"
     },
     "care": {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../../api/client'
@@ -30,6 +30,12 @@ type Props = {
 
 export function ProductForm({ initial, lockStyle, submitLabel, pending, error, saved, onSubmit }: Props) {
   const { t, i18n } = useTranslation()
+  const submitId = useId()
+  // The article screen remounts the form with the saved version; give the keyboard back the
+  // Save button instead of leaving focus on the page.
+  useEffect(() => {
+    if (saved && (!document.activeElement || document.activeElement === document.body)) document.getElementById(submitId)?.focus()
+  }, [saved, submitId])
   const brands = useQuery(brandsQuery)
   const [style, setStyle] = useState(initial?.style_number ?? '')
   const [brand, setBrand] = useState(initial?.brand_external_id ?? '')
@@ -217,7 +223,7 @@ export function ProductForm({ initial, lockStyle, submitLabel, pending, error, s
       </div>
       <ErrorNote error={error} />
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" loading={pending}>
+        <Button id={submitId} type="submit" variant="primary" loading={pending}>
           {submitLabel}
         </Button>
         <Saved show={!!saved} />

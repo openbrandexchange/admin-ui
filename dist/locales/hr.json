@@ -297,9 +297,18 @@
     "styleHint": "Vaš vlastiti broj artikla. Identificira artikl i kasnije se ne može promijeniti.",
     "styleLocked": "Broj artikla identificira ovaj artikl i ne može se promijeniti.",
     "seasonHint": "Onako kako je koristite, npr. AW26 ili NOS.",
-    "materialsHint": "Kao na etiketi: „outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "„{{part}}” nije moguće pročitati. Navedite postotak i materijal, npr. 100% cotton.",
     "materialsNot100": "Postoci za {{parts}} ne daju ukupno 100 %.",
+    "materialsEditorHint": "Po dijelu, kao na etiketi: postotak, materijal i, ako je primjenjivo, je li vlakno organsko, reciklirano ili regenerativno.",
+    "materialPart": "Dio",
+    "materialPercentage": "Postotak",
+    "materialName": "Materijal",
+    "materialQualifier": "Održivost",
+    "materialQualifierHint": "označite sve što vrijedi",
+    "addFibre": "Dodaj materijal",
+    "addPart": "Dodaj dio",
+    "removeFibre": "Ukloni materijal",
+    "removePart": "Ukloni dio",
+    "materialsRowInvalid": "U svaki redak koji koristite unesite postotak između 0 i 100 i materijal.",
     "careHint": "Odaberite simbole s etikete za održavanje redoslijedom s etikete.",
     "careGroup": {
       "washing": "Pranje",
@@ -376,7 +385,6 @@
     "delete": "Izbriši artikl",
     "deleteTitle": "Izbrisati {{style}}?",
     "deleteBody": "Artikl, njegove veličine i fotografije bit će uklonjeni. Sustavi trgovaca saznat će da je nestao. To se ne može poništiti.",
-    "materialsFlags": "Dodajte (recycled) ili (organic) iza vlakna kad je to slučaj: „100% polyester (recycled)”.",
     "animalOriginHint": "Na primjer kožna zakrpa, obrub od krzna ili gumbi od roga. Ako ih ima, to mora pisati na etiketi.",
     "footwearHint": "Obavezno na etiketi obuće: materijal od kojeg je izrađen veći dio svakog dijela (najmanje 80 %).",
     "certificationsHint": "Neobavezno. Shema i broj licence, npr. „gots:CU 123456”; dodajte (material) ako je certificiran samo materijal.",
@@ -1008,6 +1016,7 @@
     "filters": {
       "title": "Filtri",
       "clear": "Očisti filtre",
+      "showResults": "Prikaži rezultate",
       "new": "Novo ili promijenjeno",
       "anytime": "Bilo kada",
       "lastDays_one": "Posljednji dan",
@@ -1018,7 +1027,8 @@
       "target_group": "Za koga",
       "color": "Boja",
       "season": "Sezona",
-      "collection": "Kolekcija"
+      "collection": "Kolekcija",
+      "qualifier": "Održivost"
     },
     "tile": {
       "colours_one": "{{count}} boja",
@@ -1259,8 +1269,6 @@
     },
     "fibre": {
       "cotton": "pamuk",
-      "organic_cotton": "organski pamuk",
-      "recycled_cotton": "reciklirani pamuk",
       "linen": "lan",
       "hemp": "konoplja",
       "silk": "svila",
@@ -1276,9 +1284,7 @@
       "cupro": "kupro",
       "acetate": "acetat",
       "polyester": "poliester",
-      "recycled_polyester": "reciklirani poliester",
       "polyamide": "poliamid",
-      "recycled_polyamide": "reciklirani poliamid",
       "elastane": "elastan",
       "acrylic": "akril",
       "polypropylene": "polipropilen",
@@ -1290,6 +1296,14 @@
       "rubber": "guma",
       "metal": "metal",
       "other": "ostala vlakna"
+    },
+    "qualifier": {
+      "organic": "organsko",
+      "in_conversion": "u prijelaznom razdoblju",
+      "recycled": "reciklirano",
+      "pre_consumer": "predpotrošačko",
+      "post_consumer": "postpotrošačko",
+      "regenerative": "regenerativno"
     },
     "care": {
       "wash_95": "Pranje na 95 °C",
@@ -1526,8 +1540,6 @@
   "article": {
     "label": "Podaci za etiketu",
     "composition": "Sastav",
-    "recycled": "reciklirano",
-    "organic": "organsko",
     "animalOrigin": "Sadrži netekstilne dijelove životinjskog podrijetla",
     "footwear": "Materijali obuće",
     "footwearPart": {

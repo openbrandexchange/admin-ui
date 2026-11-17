@@ -3,7 +3,7 @@
 // names, care categories and symbols from the spec's vocabularies).
 //
 // The canonical materials grammar (spec docs/import-format.md §1.4) is kept for the mock
-// node's import and CSV: "outer: 65% cotton, 35% polyamide; lining: 100% polyester (recycled)".
+// node's import and CSV: "outer: 65% cotton, 35% polyamide; lining: 100% polyester (recycled) (post_consumer)".
 import type { Care, LocalizedText, Materials } from '../api/types'
 import { careCategoryOf, CARE_CATEGORIES, type CareCategory } from './vocab'
 
@@ -19,22 +19,33 @@ export type CareEntry = Care[number]
 /** A term from a 0.3 node, or a bare 0.2 key. */
 const termOf = (v: unknown): Term => (typeof v === 'string' ? { code: v } : (v as Term))
 
+/** Qualifier terms with each code once, the first kept (protocol.md §5.9.1). */
+export function uniqueTerms(list: Term[]): Term[] {
+  const seen = new Set<string>()
+  return list.filter((t) => !!t?.code && !seen.has(t.code) && !!seen.add(t.code))
+}
+
 /**
- * One fibre in the 0.3 shape. Also reads the 0.2 shape (`fiber` with the flags `recycled` /
+ * One fibre in the 0.3 shape, with `qualifiers` always a list (`[]` when none). Also reads the
+ * first 0.3 draft (one `qualifier` or null), the 0.2 shape (`fiber` with the flags `recycled` /
  * `organic`) and the 0.1 keys `recycled_<fibre>` / `organic_<fibre>` (the material with that
- * qualifier), so data from an older node or an old demo tab still reads right.
+ * qualifier, first in the list), so data from an older node or an old demo tab still reads right.
  */
 export function normaliseFibre(raw: Fibre): Fibre {
-  const old = raw as Fibre & { fiber?: string; recycled?: boolean; organic?: boolean }
+  const old = raw as Fibre & { fiber?: string; recycled?: boolean; organic?: boolean; qualifier?: Term | string | null }
   let material = termOf(old.material ?? old.fiber)
-  let qualifier: Term | null = old.qualifier ? termOf(old.qualifier) : old.recycled ? { code: 'recycled' } : old.organic ? { code: 'organic' } : null
+  let qualifiers: Term[] = Array.isArray(old.qualifiers)
+    ? old.qualifiers.map(termOf)
+    : old.qualifier
+      ? [termOf(old.qualifier)]
+      : [...(old.organic ? [{ code: 'organic' }] : []), ...(old.recycled ? [{ code: 'recycled' }] : [])]
   const legacy = /^(recycled|organic)_([a-z][a-z0-9_]*)$/.exec(material.code)
   if (legacy) {
     material = { code: legacy[2] }
-    qualifier ??= { code: legacy[1] }
+    qualifiers = [{ code: legacy[1] }, ...qualifiers]
   }
-  const { fiber: _f, recycled: _r, organic: _o, ...rest } = old
-  return { ...rest, material, qualifier }
+  const { fiber: _f, recycled: _r, organic: _o, qualifier: _q, ...rest } = old
+  return { ...rest, material, qualifiers: uniqueTerms(qualifiers) }
 }
 
 export function normaliseMaterials(m: Materials | null | undefined): Materials | null {
@@ -86,18 +97,14 @@ export function parseMaterials(text: string): MaterialsParse {
       const m = /^\s*(\d+(?:[.,]\d+)?)\s*%\s*(.+?)\s*$/.exec(rawFibre)
       if (!m) return { ok: false, error: rawFibre.trim() }
       const pct = Number(m[1].replace(',', '.'))
-      let name = m[2]
-      let qualifier: string | null = null
-      const q = /\s*\(([^()]+)\)\s*$/.exec(name)
-      if (q) {
-        qualifier = normKey(q[1])
-        name = name.slice(0, q.index)
-        // One qualifier per fibre (import-format.md §1.4).
-        if (!KEY.test(qualifier) || /\(/.test(name)) return { ok: false, error: rawFibre.trim() }
-      }
+      // "polyester (recycled) (post_consumer)": one code per bracket, any number of brackets.
+      const q = /^(.*?)((?:\s*\([^()]*\))*)\s*$/.exec(m[2])!
+      const name = q[1]
+      const qualifiers = [...q[2].matchAll(/\(([^()]*)\)/g)].map((x) => normKey(x[1]))
       const material = normKey(name)
+      if (/[()]/.test(name) || qualifiers.some((c) => !KEY.test(c))) return { ok: false, error: rawFibre.trim() }
       if (!(pct > 0 && pct <= 100) || !KEY.test(material)) return { ok: false, error: rawFibre.trim() }
-      list.push(normaliseFibre({ material: { code: material }, percentage: pct, qualifier: qualifier ? { code: qualifier } : null }))
+      list.push(normaliseFibre({ material: { code: material }, percentage: pct, qualifiers: qualifiers.map((code) => ({ code })) }))
     }
     parts.push({ part: { code: partCode }, fibers: list })
   }
@@ -107,7 +114,12 @@ export function parseMaterials(text: string): MaterialsParse {
 export function formatMaterials(m: Materials | null | undefined): string {
   const list = normaliseMaterials(m)
   if (!list) return ''
-  return list.map((p) => `${p.part.code}: ${p.fibers.map((f) => `${f.percentage}% ${f.material.code}${f.qualifier ? ` (${f.qualifier.code})` : ''}`).join(', ')}`).join('; ')
+  return list.map((p) => `${p.part.code}: ${p.fibers.map((f) => `${f.percentage}% ${f.material.code}${(f.qualifiers ?? []).map((q) => ` (${q.code})`).join('')}`).join(', ')}`).join('; ')
+}
+
+/** Every qualifier code any fibre of any part has (for the portal's filter and facet). */
+export function qualifierCodes(m: Materials | null | undefined): string[] {
+  return [...new Set((normaliseMaterials(m) ?? []).flatMap((p) => p.fibers.flatMap((f) => (f.qualifiers ?? []).map((q) => q.code))))]
 }
 
 /** Part codes whose percentages do not add up to 100 (a warning, not an error). */

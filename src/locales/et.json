@@ -300,6 +300,7 @@
     "materialPercentage": "Protsent",
     "materialName": "Materjal",
     "materialQualifier": "Jätkusuutlikkus",
+    "materialQualifierHint": "märkige kõik sobivad",
     "addFibre": "Lisa materjal",
     "addPart": "Lisa osa",
     "removeFibre": "Eemalda materjal",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Filtrid",
       "clear": "Tühjenda filtrid",
+      "showResults": "Näita tulemusi",
       "new": "Uus või muudetud",
       "anytime": "Igal ajal",
       "lastDays_one": "Viimane {{count}} päev",
@@ -1006,7 +1008,8 @@
       "target_group": "Kellele",
       "color": "Värv",
       "season": "Hooaeg",
-      "collection": "Kollektsioon"
+      "collection": "Kollektsioon",
+      "qualifier": "Jätkusuutlikkus"
     },
     "tile": {
       "colours_one": "{{count}} värv",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "mahe",
+      "in_conversion": "üleminekuperioodil",
       "recycled": "taaskasutatud",
+      "pre_consumer": "tarbimiseelne",
+      "post_consumer": "tarbimisjärgne",
       "regenerative": "regeneratiivne"
     },
     "care": {

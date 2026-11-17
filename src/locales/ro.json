@@ -303,6 +303,7 @@
     "materialPercentage": "Procent",
     "materialName": "Material",
     "materialQualifier": "Sustenabilitate",
+    "materialQualifierHint": "bifați tot ce se aplică",
     "addFibre": "Adaugă material",
     "addPart": "Adaugă parte",
     "removeFibre": "Elimină materialul",
@@ -1015,6 +1016,7 @@
     "filters": {
       "title": "Filtre",
       "clear": "Șterge filtrele",
+      "showResults": "Afișează rezultatele",
       "new": "Nou sau modificat",
       "anytime": "Oricând",
       "lastDays_one": "Ultima zi",
@@ -1025,7 +1027,8 @@
       "target_group": "Pentru cine",
       "color": "Culoare",
       "season": "Sezon",
-      "collection": "Colecție"
+      "collection": "Colecție",
+      "qualifier": "Sustenabilitate"
     },
     "tile": {
       "colours_one": "{{count}} culoare",
@@ -1296,7 +1299,10 @@
     },
     "qualifier": {
       "organic": "organic",
+      "in_conversion": "în conversie",
       "recycled": "reciclat",
+      "pre_consumer": "pre-consum",
+      "post_consumer": "post-consum",
       "regenerative": "regenerativ"
     },
     "care": {

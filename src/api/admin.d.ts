@@ -1717,6 +1717,8 @@ export interface components {
             seasons: components["schemas"]["FacetValue"][];
             collections: components["schemas"]["FacetValue"][];
             target_groups: components["schemas"]["FacetValue"][];
+            /** @description Material qualifiers in the products (`value` the code, `label` the name per language from the vocabulary, `count` the products with that qualifier on any fibre). Optional: a UI hides the filter when a node does not send it. */
+            qualifiers?: components["schemas"]["FacetValue"][];
         };
         Selection: {
             product_ids: components["schemas"]["Id"][];
@@ -1739,6 +1741,7 @@ export interface components {
                 season?: string[];
                 collection?: string[];
                 target_group?: string[];
+                qualifier?: string[];
                 /** Format: date-time */
                 updated_since?: string;
             };
@@ -2022,8 +2025,8 @@ export interface components {
                 /** @description Material code: the English textile fibre name of Annex I of Reg. (EU) 1007/2011 in lowercase with _ (linen for flax), e.g. cotton, wool, polyester, polyamide, elastane, viscose, lyocell; the list with names is vocabularies/materials.json. Recycled or organic content is a qualifier, not a material. */
                 material: components["schemas"]["term"];
                 percentage: number;
-                /** @description What the fibre is, apart from which fibre: organic, recycled, regenerative (vocabularies/qualifiers.json; unknown codes are allowed). null = none. */
-                qualifier?: components["schemas"]["term"] | null;
+                /** @description What the fibre is, apart from which fibre, in the order the brand states it: organic, in_conversion, recycled, pre_consumer, post_consumer, regenerative (vocabularies/qualifiers.json; unknown codes are allowed, a code appears at most once). Empty = none. A node returns [] when the fibre has none; on write the property may be left out (= none). */
+                qualifiers?: components["schemas"]["term"][];
             } & {
                 [key: string]: unknown;
             })[];
@@ -5056,6 +5059,8 @@ export interface operations {
                 season?: string[];
                 collection?: string[];
                 target_group?: string[];
+                /** @description Material qualifier code (`organic`, `recycled`, ...; vocabularies/qualifiers.json). A product matches when any fibre of any part of its `materials` has any of the given codes. Like the other filters, values of one parameter are OR-ed and different parameters AND-ed. */
+                qualifier?: string[];
                 /** @description "New since": products that got new/changed data or images since this time. */
                 updated_since?: string;
             };
@@ -5094,6 +5099,8 @@ export interface operations {
                 season?: string[];
                 collection?: string[];
                 target_group?: string[];
+                /** @description Material qualifier code (`organic`, `recycled`, ...; vocabularies/qualifiers.json). A product matches when any fibre of any part of its `materials` has any of the given codes. Like the other filters, values of one parameter are OR-ed and different parameters AND-ed. */
+                qualifier?: string[];
                 /** @description "New since": products that got new/changed data or images since this time. */
                 updated_since?: string;
             };

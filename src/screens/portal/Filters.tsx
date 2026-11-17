@@ -2,23 +2,39 @@ import { useTranslation } from 'react-i18next'
 import type { FacetValue, Facets } from '../../api/types'
 import { localized } from '../../lib/localized'
 import { humanize } from '../../lib/prefs'
+import { QUALIFIERS } from '../../lib/vocab'
 import type { CatalogSearch } from '../../router'
 import { cx } from '../../ui/controls'
+import { useTermLabel, type TermFamily } from '../shared/ArticleData'
 
-type ArrayKey = 'brand_id' | 'item_type' | 'color' | 'season' | 'collection' | 'target_group'
+type ArrayKey = 'brand_id' | 'item_type' | 'color' | 'season' | 'collection' | 'target_group' | 'qualifier'
 
-const GROUPS: { key: ArrayKey; facet: keyof Facets; enumPrefix?: string }[] = [
+const GROUPS: { key: ArrayKey; facet: keyof Facets; enumPrefix?: string; family?: TermFamily }[] = [
   { key: 'brand_id', facet: 'brands' },
   { key: 'item_type', facet: 'item_types', enumPrefix: 'enum.itemType' },
   { key: 'target_group', facet: 'target_groups', enumPrefix: 'enum.targetGroup' },
   { key: 'color', facet: 'colors' },
   { key: 'season', facet: 'seasons' },
   { key: 'collection', facet: 'collections' },
+  // Material claims (organic, recycled, post-consumer, ...). Optional in the API: a node that
+  // sends no `qualifiers` facet gets no group.
+  { key: 'qualifier', facet: 'qualifiers', family: 'qualifier' },
 ]
+
+const byVocabulary = (values: FacetValue[]) => {
+  const rank = (v: FacetValue) => ((QUALIFIERS as readonly string[]).includes(v.value) ? (QUALIFIERS as readonly string[]).indexOf(v.value) : QUALIFIERS.length)
+  return [...values].sort((a, b) => rank(a) - rank(b) || a.value.localeCompare(b.value))
+}
 
 export function useFacetLabel() {
   const { t, i18n } = useTranslation()
-  return (v: FacetValue, enumPrefix?: string) => {
+  const term = useTermLabel()
+  return (v: FacetValue, enumPrefix?: string, family?: TermFamily) => {
+    if (family) {
+      // A term: the node's name in the reader's language, else the UI's word, capitalised as a list item.
+      const s = term(family, { code: v.value, name: typeof v.label === 'object' ? v.label : null })
+      return s.charAt(0).toLocaleUpperCase(i18n.language) + s.slice(1)
+    }
     if (enumPrefix) return t(`${enumPrefix}.${v.value}`, { defaultValue: typeof v.label === 'string' ? v.label : humanize(v.value) })
     if (typeof v.label === 'string') return v.label
     if (v.label) return localized(v.label, i18n.language)
@@ -47,8 +63,9 @@ export function FilterPanel({ facets, search, onChange }: { facets: Facets | und
           ))}
         </div>
       </fieldset>
-      {GROUPS.map(({ key, facet, enumPrefix }) => {
-        const values = facets?.[facet] ?? []
+      {GROUPS.map(({ key, facet, enumPrefix, family }) => {
+        // Claims in the vocabulary's order (organic, in conversion, recycled, pre-/post-consumer, ...), so related ones stay together.
+        const values = family === 'qualifier' ? byVocabulary(facets?.[facet] ?? []) : (facets?.[facet] ?? [])
         const chosen = search[key] ?? []
         if (!values.length && !chosen.length) return null
         return (
@@ -66,7 +83,7 @@ export function FilterPanel({ facets, search, onChange }: { facets: Facets | und
                         checked={on}
                         onChange={() => onChange({ ...search, [key]: on ? chosen.filter((x) => x !== v.value) : [...chosen, v.value] })}
                       />
-                      <span className="flex-1 truncate">{label(v, enumPrefix)}</span>
+                      <span className="flex-1 truncate">{label(v, enumPrefix, family)}</span>
                       <span className="text-xs text-stone-500 tabular">{v.count}</span>
                     </label>
                   </li>

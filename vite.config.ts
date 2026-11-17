@@ -63,14 +63,17 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
-    // `npm run dev` against a real node: OBX_NODE_URL=http://localhost:8080 npm run dev
-    proxy: process.env.OBX_NODE_URL
-      ? {
-          '/admin/api': { target: process.env.OBX_NODE_URL },
-          '/obx': { target: process.env.OBX_NODE_URL },
-          '/.well-known': { target: process.env.OBX_NODE_URL },
-        }
-      : undefined,
+    // `npm run dev` against a node on this computer (every reference node listens on
+    // http://localhost:8080 by default); another address: OBX_NODE_URL=http://localhost:8787 npm run dev.
+    // Mock mode answers the API in the browser and needs no proxy.
+    proxy:
+      mode === 'mock'
+        ? undefined
+        : {
+            '/admin/api': { target: process.env.OBX_NODE_URL || 'http://localhost:8080' },
+            '/obx': { target: process.env.OBX_NODE_URL || 'http://localhost:8080' },
+            '/.well-known': { target: process.env.OBX_NODE_URL || 'http://localhost:8080' },
+          },
   },
   test: {
     environment: 'jsdom',

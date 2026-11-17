@@ -300,6 +300,7 @@
     "materialPercentage": "Százalék",
     "materialName": "Anyag",
     "materialQualifier": "Fenntarthatóság",
+    "materialQualifierHint": "jelölje be az összes érvényeset",
     "addFibre": "Anyag hozzáadása",
     "addPart": "Rész hozzáadása",
     "removeFibre": "Anyag eltávolítása",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Szűrők",
       "clear": "Szűrők törlése",
+      "showResults": "Találatok megjelenítése",
       "new": "Új vagy módosult",
       "anytime": "Bármikor",
       "lastDays_one": "Az elmúlt nap",
@@ -1006,7 +1008,8 @@
       "target_group": "Kinek",
       "color": "Szín",
       "season": "Szezon",
-      "collection": "Kollekció"
+      "collection": "Kollekció",
+      "qualifier": "Fenntarthatóság"
     },
     "tile": {
       "colours_one": "{{count}} szín",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "bio",
+      "in_conversion": "átállási időszakban",
       "recycled": "újrahasznosított",
+      "pre_consumer": "fogyasztás előtti",
+      "post_consumer": "fogyasztás utáni",
       "regenerative": "regeneratív"
     },
     "care": {

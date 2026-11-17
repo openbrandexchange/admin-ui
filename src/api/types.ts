@@ -117,5 +117,7 @@ export type PortalFilter = {
   season?: string[]
   collection?: string[]
   target_group?: string[]
+  /** Material qualifier codes (spec 0.3): any fibre of any part has any of them. */
+  qualifier?: string[]
   updated_since?: string
 }

@@ -22,6 +22,7 @@
     "test:watch": "vitest",
     "i18n:check": "vitest run tests/i18n.test.ts",
     "e2e": "playwright test",
+    "e2e:hunt": "playwright test e2e/ux-hunt.spec.ts",
     "size": "node scripts/check-bundle.mjs dist",
     "licenses": "node scripts/check-licenses.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=low",

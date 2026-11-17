@@ -294,9 +294,18 @@
     "styleHint": "Saját cikkszáma. Azonosítja a terméket, és később nem módosítható.",
     "styleLocked": "A cikkszám azonosítja ezt a terméket, és nem módosítható.",
     "seasonHint": "Ahogy Ön használja, például AW26 vagy NOS.",
-    "materialsHint": "Mint a címkén: „outer: 65% cotton, 35% polyamide; lining: 100% polyester”.",
-    "materialsInvalid": "„{{part}}” nem olvasható. Adjon meg százalékot és anyagot, pl. 100% cotton.",
     "materialsNot100": "A(z) {{parts}} százalékai nem adnak ki 100%-ot.",
+    "materialsEditorHint": "Részenként, mint a címkén: a százalék, az anyag és adott esetben az, hogy a szál bio, újrahasznosított vagy regeneratív.",
+    "materialPart": "Rész",
+    "materialPercentage": "Százalék",
+    "materialName": "Anyag",
+    "materialQualifier": "Fenntarthatóság",
+    "materialQualifierHint": "jelölje be az összes érvényeset",
+    "addFibre": "Anyag hozzáadása",
+    "addPart": "Rész hozzáadása",
+    "removeFibre": "Anyag eltávolítása",
+    "removePart": "Rész eltávolítása",
+    "materialsRowInvalid": "Minden használt sorban adjon meg egy 0 és 100 közötti százalékot és egy anyagot.",
     "careHint": "Válassza ki a kezelési címke szimbólumait a címkén szereplő sorrendben.",
     "careGroup": {
       "washing": "Mosás",
@@ -373,7 +382,6 @@
     "delete": "Termék törlése",
     "deleteTitle": "Törli ezt: {{style}}?",
     "deleteBody": "A termék, a méretei és a fotói eltávolításra kerülnek. A viszonteladók rendszerei értesülnek róla, hogy eltűnt. Ez nem vonható vissza.",
-    "materialsFlags": "Adott esetben írja a szál után: (recycled) vagy (organic), pl. „100% polyester (recycled)”.",
     "animalOriginHint": "Például bőrfolt, szőrmeszegély vagy szarugombok. Ha vannak ilyenek, a címkén fel kell tüntetni.",
     "footwearHint": "A lábbelik címkéjén kötelező: az az anyag, amelyből az egyes részek túlnyomó része (legalább 80%) készül.",
     "certificationsHint": "Nem kötelező. Tanúsítási rendszer és licencszám, pl. „gots:CU 123456”; írja hozzá: (material), ha csak egy anyag tanúsított.",
@@ -990,6 +998,7 @@
     "filters": {
       "title": "Szűrők",
       "clear": "Szűrők törlése",
+      "showResults": "Találatok megjelenítése",
       "new": "Új vagy módosult",
       "anytime": "Bármikor",
       "lastDays_one": "Az elmúlt nap",
@@ -999,7 +1008,8 @@
       "target_group": "Kinek",
       "color": "Szín",
       "season": "Szezon",
-      "collection": "Kollekció"
+      "collection": "Kollekció",
+      "qualifier": "Fenntarthatóság"
     },
     "tile": {
       "colours_one": "{{count}} szín",
@@ -1229,8 +1239,6 @@
     },
     "fibre": {
       "cotton": "pamut",
-      "organic_cotton": "biopamut",
-      "recycled_cotton": "újrahasznosított pamut",
       "linen": "len",
       "hemp": "kender",
       "silk": "selyem",
@@ -1246,9 +1254,7 @@
       "cupro": "cupro",
       "acetate": "acetát",
       "polyester": "poliészter",
-      "recycled_polyester": "újrahasznosított poliészter",
       "polyamide": "poliamid",
-      "recycled_polyamide": "újrahasznosított poliamid",
       "elastane": "elasztán",
       "acrylic": "akril",
       "polypropylene": "polipropilén",
@@ -1260,6 +1266,14 @@
       "rubber": "gumi",
       "metal": "fém",
       "other": "egyéb szálak"
+    },
+    "qualifier": {
+      "organic": "bio",
+      "in_conversion": "átállási időszakban",
+      "recycled": "újrahasznosított",
+      "pre_consumer": "fogyasztás előtti",
+      "post_consumer": "fogyasztás utáni",
+      "regenerative": "regeneratív"
     },
     "care": {
       "wash_95": "Mosás 95 °C-on",
@@ -1496,8 +1510,6 @@
   "article": {
     "label": "Címkeadatok",
     "composition": "Összetétel",
-    "recycled": "újrahasznosított",
-    "organic": "bio",
     "animalOrigin": "Állati eredetű nem textil részeket tartalmaz",
     "footwear": "A lábbeli anyagai",
     "footwearPart": {

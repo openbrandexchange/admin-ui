@@ -31,10 +31,23 @@ export function Button({
   className,
   children,
   type = 'button',
+  onClick,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: 'sm' | 'md'; loading?: boolean }) {
+  // While loading the button is aria-disabled, not disabled: a disabled button loses focus,
+  // and keyboard users would land on the page itself after every save.
   return (
-    <button type={type} className={cx(buttonClass(variant, size), className)} disabled={rest.disabled || loading} aria-busy={loading || undefined} {...rest}>
+    <button
+      type={type}
+      className={cx(buttonClass(variant, size), loading && 'cursor-wait opacity-50', className)}
+      aria-disabled={loading || undefined}
+      aria-busy={loading || undefined}
+      onClick={(e) => {
+        if (loading) return e.preventDefault()
+        onClick?.(e)
+      }}
+      {...rest}
+    >
       {loading && <Spinner size={14} />}
       {children}
     </button>

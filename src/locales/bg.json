@@ -300,6 +300,7 @@
     "materialPercentage": "Процент",
     "materialName": "Материал",
     "materialQualifier": "Устойчивост",
+    "materialQualifierHint": "отбележете всичко приложимо",
     "addFibre": "Добави материал",
     "addPart": "Добави част",
     "removeFibre": "Премахни материала",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Филтри",
       "clear": "Изчисти филтрите",
+      "showResults": "Покажи резултатите",
       "new": "Нови или променени",
       "anytime": "По всяко време",
       "lastDays_one": "Последния ден",
@@ -1006,7 +1008,8 @@
       "target_group": "За кого",
       "color": "Цвят",
       "season": "Сезон",
-      "collection": "Колекция"
+      "collection": "Колекция",
+      "qualifier": "Устойчивост"
     },
     "tile": {
       "colours_one": "{{count}} цвят",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "органичен",
+      "in_conversion": "в преход",
       "recycled": "рециклиран",
+      "pre_consumer": "предпотребителски",
+      "post_consumer": "следпотребителски",
       "regenerative": "регенеративен"
     },
     "care": {

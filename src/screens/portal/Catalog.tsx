@@ -98,18 +98,36 @@ export function CatalogScreen() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[14rem_1fr]">
-        <aside className={cx('lg:block', showFilters ? 'block' : 'hidden')} aria-label={t('portal.filters.title')}>
+        <aside id="filters" tabIndex={-1} className={cx('outline-none lg:block', showFilters ? 'block' : 'hidden')} aria-label={t('portal.filters.title')}>
           <FilterPanel facets={facets.data} search={search} onChange={update} />
           {nFilters > 0 && (
-            <button type="button" className="mt-4 text-sm text-stone-600 underline underline-offset-2" onClick={() => update({ q: search.q })}>
+            <button type="button" className="mt-4 text-sm text-stone-600 underline underline-offset-2" onClick={() => {
+                // The button goes away with the filters: keep the keyboard in the filter panel.
+                update({ q: search.q })
+                document.getElementById('filters')?.focus()
+              }}
+            >
               {t('portal.filters.clear')}
             </button>
           )}
+          {/* On a phone the filters push the articles far down: one tap back to them. */}
+          <Button
+            variant="primary"
+            className="mt-4 w-full lg:hidden"
+            onClick={() => {
+              setShowFilters(false)
+              const h = document.getElementById('results-heading')
+              h?.focus({ preventScroll: true })
+              h?.scrollIntoView({ block: 'start' })
+            }}
+          >
+            {t('portal.filters.showResults')}
+          </Button>
         </aside>
 
         <section aria-labelledby="results-heading" className="min-w-0 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 id="results-heading" className="text-sm text-stone-600" aria-live="polite">
+            <h1 id="results-heading" tabIndex={-1} className="text-sm text-stone-600 outline-none" aria-live="polite">
               {products.isPending ? t('common.loading') : t('portal.catalog.count', { count: total, formatted: formatNumber(total, i18n.language) })}
             </h1>
             <div className="flex flex-wrap items-center gap-2">

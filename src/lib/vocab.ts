@@ -26,8 +26,9 @@ export const MATERIALS = [
   'acrylic', 'polypropylene', 'polyurethane', 'leather', 'suede', 'down', 'feather', 'rubber', 'metal', 'other',
 ] as const
 
-/** Qualifier codes of a fibre (spec vocabularies/qualifiers.json): one per fibre. */
-export const QUALIFIERS = ['organic', 'recycled', 'regenerative'] as const
+/** Qualifier codes of a fibre (spec vocabularies/qualifiers.json), in the vocabulary's order:
+ *  a fibre can have several (recycled + post_consumer). */
+export const QUALIFIERS = ['organic', 'in_conversion', 'recycled', 'pre_consumer', 'post_consumer', 'regenerative'] as const
 
 /** ISO 3758 care categories in label order (spec Care.json). */
 export const CARE_CATEGORIES = ['washing', 'bleaching', 'drying', 'ironing', 'professional_care'] as const

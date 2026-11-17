@@ -300,6 +300,7 @@
     "materialPercentage": "Prosentti",
     "materialName": "Materiaali",
     "materialQualifier": "Kestävyys",
+    "materialQualifierHint": "valitse kaikki sopivat",
     "addFibre": "Lisää materiaali",
     "addPart": "Lisää osa",
     "removeFibre": "Poista materiaali",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Suodattimet",
       "clear": "Tyhjennä suodattimet",
+      "showResults": "Näytä tulokset",
       "new": "Uusi tai muuttunut",
       "anytime": "Milloin tahansa",
       "lastDays_one": "Viimeinen {{count}} päivä",
@@ -1006,7 +1008,8 @@
       "target_group": "Kenelle",
       "color": "Väri",
       "season": "Sesonki",
-      "collection": "Mallisto"
+      "collection": "Mallisto",
+      "qualifier": "Kestävyys"
     },
     "tile": {
       "colours_one": "{{count}} väri",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "luomu",
+      "in_conversion": "siirtymävaiheen",
       "recycled": "kierrätetty",
+      "pre_consumer": "kuluttajaa edeltävä",
+      "post_consumer": "kuluttajan jälkeinen",
       "regenerative": "regeneratiivinen"
     },
     "care": {

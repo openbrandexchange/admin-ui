@@ -68,7 +68,7 @@ export interface MockDb {
   selections: Record<string, string[]>
 }
 
-const STORAGE = 'obx.mock.v3'
+const STORAGE = 'obx.mock.v4'
 const now = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const daysAgo = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString().replace(/\.\d{3}Z$/, 'Z')
 

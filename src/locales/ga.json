@@ -309,6 +309,7 @@
     "materialPercentage": "Céatadán",
     "materialName": "Ábhar",
     "materialQualifier": "Inbhuanaitheacht",
+    "materialQualifierHint": "roghnaigh gach ceann a bhaineann leis",
     "addFibre": "Cuir ábhar leis",
     "addPart": "Cuir cuid leis",
     "removeFibre": "Bain an t-ábhar",
@@ -1051,6 +1052,7 @@
     "filters": {
       "title": "Scagairí",
       "clear": "Glan na scagairí",
+      "showResults": "Taispeáin na torthaí",
       "new": "Nua nó athraithe",
       "anytime": "Am ar bith",
       "lastDays_one": "An lá deireanach",
@@ -1063,7 +1065,8 @@
       "target_group": "Do ché",
       "color": "Dath",
       "season": "Séasúr",
-      "collection": "Bailiúchán"
+      "collection": "Bailiúchán",
+      "qualifier": "Inbhuanaitheacht"
     },
     "tile": {
       "colours_one": "Dathanna: {{count}}",
@@ -1356,7 +1359,10 @@
     },
     "qualifier": {
       "organic": "orgánach",
+      "in_conversion": "faoi thiontú",
       "recycled": "athchúrsáilte",
+      "pre_consumer": "réamhthomhaltóra",
+      "post_consumer": "iarthomhaltóra",
       "regenerative": "athghiniúnach"
     },
     "care": {

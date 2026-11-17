@@ -149,6 +149,45 @@ describe('retailer portal', () => {
     expect(r.router.state.location.search).toMatchObject({ item_type: ['jeans'] })
   })
 
+  it('filters on two material claims at once and downloads exactly that filter', async () => {
+    const r = await loginAs('retailer')
+    await screen.findByRole('list', { name: /articles/i })
+    const claims = await screen.findByRole('group', { name: /^sustainability$/i })
+    // Names from the node's vocabulary, with counts.
+    expect(within(claims).getByRole('checkbox', { name: /^post-consumer/i })).toBeInTheDocument()
+    await r.user.click(within(claims).getByRole('checkbox', { name: /^organic/i }))
+    await waitFor(() => expect(within(screen.getByRole('list', { name: /articles/i })).getAllByRole('listitem')).toHaveLength(1))
+    await r.user.click(within(screen.getByRole('group', { name: /^sustainability$/i })).getByRole('checkbox', { name: /^post-consumer/i }))
+    await waitFor(() => expect(within(screen.getByRole('list', { name: /articles/i })).getAllByRole('listitem')).toHaveLength(2))
+    const grid = screen.getByRole('list', { name: /articles/i })
+    expect(within(grid).getAllByRole('link', { name: /KO-1003|KO-1009/ }).length).toBeGreaterThanOrEqual(2)
+    expect(r.router.state.location.search).toMatchObject({ qualifier: ['organic', 'post_consumer'] })
+    expect(within(screen.getByRole('group', { name: /^sustainability$/i })).getByRole('checkbox', { name: /^organic/i })).toBeChecked()
+    // The filter count on the phone's "Filters" button includes both.
+    expect(screen.getByRole('button', { name: /^filters/i })).toHaveTextContent('2')
+    const sent: unknown[] = []
+    const listen = async ({ request }: { request: Request }) => {
+      if (request.method === 'POST' && request.url.endsWith('/portal/download-jobs')) sent.push(await request.clone().json())
+    }
+    server.events.on('request:start', listen)
+    await r.user.click(screen.getByRole('button', { name: /^download all$/i }))
+    const dialog = await screen.findByRole('dialog')
+    await r.user.click(within(dialog).getByRole('button', { name: /prepare zip/i }))
+    await waitFor(() => expect(db().downloadJobs).toHaveLength(1))
+    server.events.removeListener('request:start', listen)
+    await waitFor(() => expect(sent).toHaveLength(1))
+    expect(sent[0]).toMatchObject({ source: 'filter', filter: { qualifier: ['organic', 'post_consumer'] } })
+  })
+
+  it('hides the sustainability filter when the node sends no qualifiers facet', async () => {
+    server.use(
+      http.get('*/admin/api/portal/facets', () => HttpResponse.json({ brands: [], item_types: [{ value: 'jeans', count: 1 }], colors: [], seasons: [], collections: [], target_groups: [] })),
+    )
+    await loginAs('retailer')
+    await screen.findByRole('group', { name: /product type/i })
+    expect(screen.queryByRole('group', { name: /^sustainability$/i })).toBeNull()
+  })
+
   it('only shows what the retailer’s grant allows', async () => {
     const d = db()
     const trail = d.brands.find((b) => b.external_id === 'kestrel-trail')!
@@ -453,8 +492,13 @@ describe('brand admin', () => {
     await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1009' } })
     const outer = await screen.findByRole('group', { name: 'Outer' })
     expect(within(outer).getByLabelText('Material')).toHaveValue('polyester')
-    expect(within(outer).getByLabelText('Sustainability')).toHaveValue('recycled')
-    await r.user.selectOptions(within(outer).getByLabelText('Sustainability'), 'regenerative')
+    // Two claims on one fibre: both ticked, in a group named after the fibre.
+    const claims = within(outer).getByRole('group', { name: /^sustainability\b.*100% polyester/i })
+    expect(within(claims).getByRole('checkbox', { name: 'Recycled' })).toBeChecked()
+    expect(within(claims).getByRole('checkbox', { name: 'Post-consumer' })).toBeChecked()
+    expect(within(claims).getByRole('checkbox', { name: 'Organic' })).not.toBeChecked()
+    await r.user.click(within(claims).getByRole('checkbox', { name: 'Post-consumer' }))
+    await r.user.click(within(claims).getByRole('checkbox', { name: 'Pre-consumer' }))
     await r.user.click(within(outer).getByRole('button', { name: 'Add material' }))
     const pct = within(outer).getAllByLabelText('Percentage')
     await r.user.type(pct[1], '5')
@@ -467,10 +511,29 @@ describe('brand admin', () => {
     await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
     const p = db().products.find((x) => x.external_id === 'KO-1009')!
     expect(p.data.materials).toEqual([
-      { part: { code: 'outer' }, fibers: [{ material: { code: 'polyester' }, percentage: 95, qualifier: { code: 'regenerative' } }, { material: { code: 'elastane' }, percentage: 5, qualifier: null }] },
-      { part: { code: 'lining' }, fibers: [{ material: { code: 'polyamide' }, percentage: 100, qualifier: null }] },
+      { part: { code: 'outer' }, fibers: [{ material: { code: 'polyester' }, percentage: 95, qualifiers: [{ code: 'recycled' }, { code: 'pre_consumer' }] }, { material: { code: 'elastane' }, percentage: 5, qualifiers: [] }] },
+      { part: { code: 'lining' }, fibers: [{ material: { code: 'polyamide' }, percentage: 100, qualifiers: [] }] },
     ])
     expect(p.data.care).toEqual(['hand_wash', 'do_not_bleach', 'do_not_tumble_dry', 'do_not_iron', 'do_not_dry_clean'].map((code) => ({ code })))
+  })
+
+  it('gives a fibre without claims two of them and saves them in the order ticked', async () => {
+    const r = await loginAs('admin')
+    await screen.findByRole('heading', { name: /hello iris/i })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1004' } })
+    const main = await screen.findByRole('group', { name: 'Main fabric' })
+    const claims = within(main).getAllByRole('group', { name: /^sustainability/i })
+    expect(claims).toHaveLength(2)
+    expect(within(claims[0]).getAllByRole('checkbox').filter((c) => (c as HTMLInputElement).checked)).toHaveLength(0)
+    await r.user.click(within(claims[0]).getByRole('checkbox', { name: 'Regenerative' }))
+    await r.user.click(within(claims[0]).getByRole('checkbox', { name: 'Organic' }))
+    await r.user.click(screen.getByRole('button', { name: /^save$/i }))
+    await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
+    const p = db().products.find((x) => x.external_id === 'KO-1004')!
+    expect(p.data.materials[0].fibers[0]).toEqual({ material: { code: 'cotton' }, percentage: 98, qualifiers: [{ code: 'regenerative' }, { code: 'organic' }] })
+    expect(p.data.materials[0].fibers[1]).toEqual({ material: { code: 'elastane' }, percentage: 2, qualifiers: [] })
+    // The article screen shows them as the retailer will read them.
+    expect(await screen.findByText(/98% Cotton \(Regenerative, Organic\)/)).toBeInTheDocument()
   })
 
   it('shows names in the reader\'s language, the qualifier next to the material and care by category', async () => {
@@ -478,7 +541,7 @@ describe('brand admin', () => {
     await screen.findByRole('list', { name: /articles/i })
     await r.user.click(screen.getAllByRole('link', { name: /KO-1009/ })[0])
     const label = await screen.findByRole('region', { name: /label information/i })
-    expect(within(label).getByText(/100% Polyester \(Recycled\)/)).toBeInTheDocument()
+    expect(within(label).getByText(/100% Polyester \(Recycled, Post-consumer\)/)).toBeInTheDocument()
     expect(within(label).getByText('Outer fabric:')).toBeInTheDocument()
     expect(within(label).getByText('Washing')).toBeInTheDocument()
     expect(within(label).getByText('Hand wash')).toBeInTheDocument()

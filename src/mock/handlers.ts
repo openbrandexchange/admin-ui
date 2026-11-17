@@ -18,8 +18,8 @@ import type {
   Variant,
 } from '../api/types'
 import { formatCertifications, formatFeature, formatFootwear, formatMeasurement, labelWarnings } from '../lib/article'
-import { formatMaterials } from '../lib/materials'
-import { withTermNames } from './terms'
+import { formatMaterials, qualifierCodes } from '../lib/materials'
+import { VOCABULARIES, withTermNames } from './terms'
 import { gtinValid } from '../lib/validate'
 import { FEATURE_KEYS, MEASUREMENTS } from '../lib/vocab'
 import { applyImport, brandByKey, db, DEMO, newId, record, resetDb, save, slug, touch, type ManifestItem, type MockDb } from './db'
@@ -242,11 +242,11 @@ function portalSummary(d: MockDb, p: Rec, u: MockUser): PortalProductSummary {
   }
 }
 
-type Filter = { q?: string; brand_id?: string[]; item_type?: string[]; color?: string[]; season?: string[]; collection?: string[]; target_group?: string[]; updated_since?: string }
+type Filter = { q?: string; brand_id?: string[]; item_type?: string[]; color?: string[]; season?: string[]; collection?: string[]; target_group?: string[]; qualifier?: string[]; updated_since?: string }
 
 function filterFrom(url: URL): Filter {
   const all = (k: string) => url.searchParams.getAll(k).filter(Boolean)
-  return { q: url.searchParams.get('q') ?? undefined, brand_id: all('brand_id'), item_type: all('item_type'), color: all('color'), season: all('season'), collection: all('collection'), target_group: all('target_group'), updated_since: url.searchParams.get('updated_since') ?? undefined }
+  return { q: url.searchParams.get('q') ?? undefined, brand_id: all('brand_id'), item_type: all('item_type'), color: all('color'), season: all('season'), collection: all('collection'), target_group: all('target_group'), qualifier: all('qualifier'), updated_since: url.searchParams.get('updated_since') ?? undefined }
 }
 
 function portalProducts(d: MockDb, u: MockUser, f: Filter, skip?: keyof Filter) {
@@ -265,6 +265,7 @@ function portalProducts(d: MockDb, u: MockUser, f: Filter, skip?: keyof Filter) 
       }
       const any = (k: keyof Filter, v: string | null | undefined) => skip === k || !(f[k] as string[] | undefined)?.length || (v != null && (f[k] as string[]).includes(v))
       if (!any('brand_id', s.brand.id) || !any('item_type', s.item_type) || !any('season', s.season) || !any('collection', s.collection) || !any('target_group', s.target_group)) return false
+      if (skip !== 'qualifier' && f.qualifier?.length && !qualifierCodes(p.data.materials).some((c) => f.qualifier!.includes(c))) return false
       if (skip !== 'color' && f.color?.length && !s.colors.some((c) => f.color!.includes(c.code))) return false
       if (f.updated_since && s.updated_at < f.updated_since) return false
       return true
@@ -1241,6 +1242,10 @@ export const handlers = [
         seasons: facet(of('season').map((p) => ({ value: p.season }))),
         collections: facet(of('collection').map((p) => ({ value: p.collection }))),
         target_groups: facet(of('target_group').map((p) => ({ value: p.target_group }))),
+        // The qualifiers' names from the vocabulary (LocalizedText); a code outside it has none.
+        qualifiers: facet(
+          of('qualifier').flatMap((s) => qualifierCodes(d.products.find((p) => p.id === s.id)?.data.materials).map((code) => ({ value: code, label: VOCABULARIES.qualifier.get(code)?.name ?? undefined }))),
+        ),
       })
     }),
   ),

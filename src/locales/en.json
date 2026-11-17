@@ -300,6 +300,7 @@
     "materialPercentage": "Percentage",
     "materialName": "Material",
     "materialQualifier": "Sustainability",
+    "materialQualifierHint": "tick all that apply",
     "addFibre": "Add material",
     "addPart": "Add part",
     "removeFibre": "Remove material",
@@ -997,6 +998,7 @@
     "filters": {
       "title": "Filters",
       "clear": "Clear filters",
+      "showResults": "Show results",
       "new": "New or changed",
       "anytime": "Any time",
       "lastDays_one": "Last {{count}} day",
@@ -1006,7 +1008,8 @@
       "target_group": "For",
       "color": "Colour",
       "season": "Season",
-      "collection": "Collection"
+      "collection": "Collection",
+      "qualifier": "Sustainability"
     },
     "tile": {
       "colours_one": "{{count}} colour",
@@ -1266,7 +1269,10 @@
     },
     "qualifier": {
       "organic": "organic",
+      "in_conversion": "in conversion",
       "recycled": "recycled",
+      "pre_consumer": "pre-consumer",
+      "post_consumer": "post-consumer",
       "regenerative": "regenerative"
     },
     "care": {

@@ -105,6 +105,7 @@ export const catalogRoute = createRoute({
     season: strs(s.season),
     collection: strs(s.collection),
     target_group: strs(s.target_group),
+    qualifier: strs(s.qualifier),
     new: s.new === '7' || s.new === '30' || s.new === '90' ? s.new : undefined,
   }),
   component: lazyRouteComponent(() => import('./screens/portal/Catalog'), 'CatalogScreen'),

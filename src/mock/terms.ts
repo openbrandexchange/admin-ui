@@ -19,7 +19,7 @@ export function materialsWithNames(m: Materials | null | undefined): Materials |
     normaliseMaterials(m)?.map((p) => ({
       ...p,
       part: named(VOCABULARIES.part, p.part),
-      fibers: p.fibers.map((f) => ({ ...f, material: named(VOCABULARIES.material, f.material), qualifier: f.qualifier ? named(VOCABULARIES.qualifier, f.qualifier) : null })),
+      fibers: p.fibers.map((f) => ({ ...f, material: named(VOCABULARIES.material, f.material), qualifiers: (f.qualifiers ?? []).map((q) => named(VOCABULARIES.qualifier, q)) })),
     })) ?? null
   )
 }

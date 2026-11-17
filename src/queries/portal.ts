@@ -16,7 +16,7 @@ export const useViewer = () => useQuery(viewerQuery)
 export function cleanFilter(f: PortalFilter): PortalFilter {
   const out: PortalFilter = {}
   if (f.q?.trim()) out.q = f.q.trim()
-  for (const k of ['brand_id', 'item_type', 'color', 'season', 'collection', 'target_group'] as const) {
+  for (const k of ['brand_id', 'item_type', 'color', 'season', 'collection', 'target_group', 'qualifier'] as const) {
     if (f[k]?.length) out[k] = [...f[k]!].sort()
   }
   if (f.updated_since) out.updated_since = f.updated_since
