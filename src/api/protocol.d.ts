@@ -1813,7 +1813,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of changes. More pages follow while `has_more` is `true` ([pagination](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#pagination)). */
+            /** @description A page of changes. More pages follow while `has_more` is `true` (protocol.md §2.1 Pagination). */
             200: {
                 headers: {
                     "RateLimit-Limit": components["headers"]["RateLimit-Limit"];
@@ -1900,7 +1900,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of products. More pages follow while `next_cursor` is not `null` ([pagination](https://github.com/openbrandexchange/spec/blob/main/docs/protocol.md#pagination)). */
+            /** @description A page of products. More pages follow while `next_cursor` is not `null` (protocol.md §2.1 Pagination). */
             200: {
                 headers: {
                     [name: string]: unknown;
