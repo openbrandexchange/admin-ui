@@ -1,4 +1,5 @@
-@import 'tailwindcss';
+/* Classes are only looked for in src/, so local build output (dist-mock/, test-results/) never changes the build. */
+@import 'tailwindcss' source('../src');
 
 /* The theme engine (src/lib/theme.ts) sets the brand's look per scope (the document, or the
    Appearance preview) as custom properties: the stone ramp, `white` (the surface colour), the

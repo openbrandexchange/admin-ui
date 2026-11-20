@@ -1407,7 +1407,7 @@ export interface components {
         PortalLongText: {
             [key: string]: string;
         } | null;
-        /** @description A portal path starting with a single `/` (`/catalog?category=jeans`, `/products/KO-1001`) or an `https://` URL; nothing else (no `//host`, `http:`, `javascript:`, `mailto:`). The UI opens portal paths in the portal and `https://` URLs in a new tab with `rel="noopener noreferrer"`. */
+        /** @description A portal path starting with a single `/` (`/catalog?category=jeans`, `/products/MN-1001`) or an `https://` URL; nothing else (no `//host`, `http:`, `javascript:`, `mailto:`). The UI opens portal paths in the portal and `https://` URLs in a new tab with `rel="noopener noreferrer"`. */
         PortalLink: string | null;
         /**
          * @description A font bundled with the admin UI (all SIL OFL, served from the portal itself); `system` is the platform's UI font; null uses the default.
@@ -2247,7 +2247,7 @@ export interface components {
         PublicationStatus: "published" | "unpublished";
         /**
          * @description The brand's own identifier for an object (from its PIM/ERP/spreadsheet). 1-200 characters, no control characters and no '/'. Leading/trailing whitespace is trimmed by nodes. Compared case-sensitively.
-         * @example KO-1001
+         * @example MN-1001
          */
         ExternalId: string;
         /**
@@ -2997,7 +2997,7 @@ export interface components {
             view: components["schemas"]["View"] | null;
             /** @description Order within (product, color_code), 1-based. Unique among visible assets of that product+colour. */
             position: number;
-            /** @description Suggested download filename for the original, e.g. KO-1001_NVY_1.jpg. */
+            /** @description Suggested download filename for the original, e.g. MN-1001_NVY_1.jpg. */
             filename: string;
             alt_text?: components["schemas"]["LocalizedText"] | null;
             /**
