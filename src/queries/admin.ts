@@ -22,6 +22,7 @@ import type {
   SettingsPatch,
   VariantInput,
 } from '../api/types'
+import type { BrandingImage } from '../api/appearance'
 
 const inval = (qc: ReturnType<typeof useQueryClient>, ...keys: QueryKey[]) =>
   Promise.all(keys.map((queryKey) => qc.invalidateQueries({ queryKey })))
@@ -30,14 +31,14 @@ const inval = (qc: ReturnType<typeof useQueryClient>, ...keys: QueryKey[]) =>
 
 export const settingsQuery = queryOptions({
   queryKey: ['admin', 'settings'],
-  queryFn: () => req(() => api.GET('/admin/api/settings')),
+  queryFn: async () => (await req(() => api.GET('/admin/api/settings'))) as Settings,
   staleTime: 60_000,
 })
 
 export function useUpdateSettings() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (patch: SettingsPatch) => req(() => api.PATCH('/admin/api/settings', { body: patch as Settings })),
+    mutationFn: async (patch: SettingsPatch) => (await req(() => api.PATCH('/admin/api/settings', { body: patch as never }))) as Settings,
     onSuccess: (s) => {
       qc.setQueryData(settingsQuery.queryKey, s)
       return inval(qc, ['public-branding'], ['portal', 'viewer'])
@@ -58,8 +59,62 @@ export function useLogoMutations() {
       onSuccess: done,
     }),
     remove: useMutation({
-      mutationFn: () => req(() => api.DELETE('/admin/api/settings/logo')),
+      mutationFn: async () => (await req(() => api.DELETE('/admin/api/settings/logo'))) as Settings,
       onSuccess: done,
+    }),
+  }
+}
+
+// ---------------------------------------------------------------- appearance (spec 0.3.1)
+// Not in the generated paths yet (src/api/appearance.ts): raw requests with the same CSRF and
+// error handling as the typed client.
+
+async function json<T>(res: Response): Promise<T> {
+  return (await res.json()) as T
+}
+
+export function useFaviconMutations() {
+  const qc = useQueryClient()
+  const done = (s: Settings) => {
+    qc.setQueryData(settingsQuery.queryKey, s)
+    return inval(qc, ['public-branding'], ['portal', 'viewer'])
+  }
+  return {
+    upload: useMutation({
+      mutationFn: async (file: File) => json<Settings>(await rawRequest('PUT', '/admin/api/settings/favicon', { body: file, contentType: file.type })),
+      onSuccess: done,
+    }),
+    remove: useMutation({
+      mutationFn: async () => json<Settings>(await rawRequest('DELETE', '/admin/api/settings/favicon')),
+      onSuccess: done,
+    }),
+  }
+}
+
+export const brandingImagesQuery = queryOptions({
+  queryKey: ['admin', 'branding-images'],
+  queryFn: async () => json<{ items: BrandingImage[] }>(await rawRequest('GET', '/admin/api/settings/images', { headers: { Accept: 'application/json' } })),
+  staleTime: 30_000,
+})
+
+export function useBrandingImageMutations() {
+  const qc = useQueryClient()
+  const invalidate = () => inval(qc, brandingImagesQuery.queryKey)
+  return {
+    upload: useMutation({
+      mutationFn: async (file: File) => {
+        const form = new FormData()
+        form.append('file', file, file.name)
+        return json<BrandingImage>(await rawRequest('POST', '/admin/api/settings/images', { body: form, headers: { Accept: 'application/json' } }))
+      },
+      onSuccess: (img) => {
+        qc.setQueryData<{ items: BrandingImage[] }>(brandingImagesQuery.queryKey, (old) => (old ? { items: [img, ...old.items.filter((x) => x.id !== img.id)] } : old))
+        return invalidate()
+      },
+    }),
+    remove: useMutation({
+      mutationFn: async (id: string) => void (await rawRequest('DELETE', `/admin/api/settings/images/${encodeURIComponent(id)}`)),
+      onSuccess: invalidate,
     }),
   }
 }

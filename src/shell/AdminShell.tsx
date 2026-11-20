@@ -2,11 +2,11 @@ import { Link, Outlet, useNavigate } from '@tanstack/react-router'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useState, type ReactNode } from 'react'
-import { useApplyBranding } from '../lib/branding'
+import { useApplyBranding, useResolvedTheme } from '../lib/branding'
 import { accessRequestsQuery, settingsQuery } from '../queries/admin'
 import { sessionQuery, useLogout } from '../queries/session'
 import { buttonClass, cx } from '../ui/controls'
-import { IconBolt, IconBox, IconChart, IconCog, IconEye, IconHome, IconInbox, IconLogout, IconMenu, IconUpload, IconUsers, IconX } from '../ui/icons'
+import { IconBolt, IconBox, IconBrush, IconChart, IconCog, IconEye, IconHome, IconInbox, IconLogout, IconMenu, IconUpload, IconUsers, IconX } from '../ui/icons'
 import { BrandMark, LanguageSwitcher, WorksWithBadge, SkipLink } from './common'
 import { InMainContext } from './Fallbacks'
 import { DemoBanner } from './DemoBanner'
@@ -23,7 +23,10 @@ export function AdminShell() {
   const navigate = useNavigate()
   const [menu, setMenu] = useState(false)
   const name = settings.data?.branding?.display_name ?? settings.data?.company?.name ?? ''
-  useApplyBranding(settings.data?.branding?.accent_color, name ? `${name} · ${t('admin.title')}` : t('admin.title'))
+  // The admin keeps the default look (light, system fonts) in the brand's primary colour.
+  const primary = settings.data?.branding?.theme?.colors?.primary ?? settings.data?.branding?.accent_color
+  const theme = useResolvedTheme(null, primary)
+  useApplyBranding(theme, name ? `${name} · ${t('admin.title')}` : t('admin.title'), settings.data?.branding?.favicon_url)
   const pendingCount = pending.data?.pages[0]?.items.length ?? 0
 
   const links: { to: string; label: string; icon: ReactNode; exact?: boolean; badge?: number }[] = [
@@ -34,6 +37,7 @@ export function AdminShell() {
     { to: '/admin/retailers', label: t('admin.nav.retailers'), icon: <IconUsers size={18} /> },
     { to: '/admin/requests', label: t('admin.nav.requests'), icon: <IconInbox size={18} />, badge: pendingCount },
     { to: '/admin/stats', label: t('admin.nav.stats'), icon: <IconChart size={18} /> },
+    { to: '/admin/appearance', label: t('admin.nav.appearance'), icon: <IconBrush size={18} /> },
     { to: '/admin/settings', label: t('admin.nav.settings'), icon: <IconCog size={18} /> },
   ]
 

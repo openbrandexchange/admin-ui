@@ -1,6 +1,6 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, req, setCsrfRefresher, setCsrfToken } from '../api/client'
-import type { Session } from '../api/types'
+import type { PublicBranding, Session } from '../api/types'
 
 export const sessionQuery = queryOptions({
   queryKey: ['session'],
@@ -14,7 +14,7 @@ export const sessionQuery = queryOptions({
 
 export const brandingQuery = queryOptions({
   queryKey: ['public-branding'],
-  queryFn: () => req(() => api.GET('/admin/api/public/branding')),
+  queryFn: async () => (await req(() => api.GET('/admin/api/public/branding'))) as PublicBranding,
   staleTime: 5 * 60_000,
 })
 

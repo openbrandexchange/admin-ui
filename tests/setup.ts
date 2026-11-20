@@ -89,7 +89,8 @@ beforeEach(() => {
   sessionStorage.clear()
   localStorage.clear()
   resetPrefs()
-  resetDb('seeded')
+  // The portal's default look (catalogue as the start page); tests of the themed showroom reset to 'seeded' themselves.
+  resetDb('plain')
 })
 afterEach(() => cleanup())
 afterAll(() => server.close())

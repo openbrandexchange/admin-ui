@@ -12,9 +12,12 @@ export async function chooseEnglish(page: Page) {
   await page.addInitScript(() => localStorage.setItem('obx.lang', 'en'))
 }
 
-/** Log in from a freshly reset mock node. */
-export async function logIn(page: Page, who: { email: string; password: string }) {
-  await page.goto('./login?mock=reset')
+/**
+ * Log in from a freshly reset mock node: `plain` is the portal's default look (the catalogue is
+ * the start page), `showroom` the themed MAISON NOOR demo with its start page.
+ */
+export async function logIn(page: Page, who: { email: string; password: string }, look: 'plain' | 'showroom' = 'plain') {
+  await page.goto(`./login?mock=${look === 'plain' ? 'plain' : 'reset'}`)
   await page.getByLabel('Email address').fill(who.email)
   await page.getByLabel('Password', { exact: true }).fill(who.password)
   await page.getByRole('button', { name: 'Log in' }).click()

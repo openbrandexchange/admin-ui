@@ -10,7 +10,7 @@ async function chooseEnglish(page: Page) {
 }
 
 async function logIn(page: Page, who: { email: string; password: string }) {
-  await page.goto('./login?mock=reset')
+  await page.goto('./login?mock=plain')
   await page.getByLabel('Email address').fill(who.email)
   await page.getByLabel('Password', { exact: true }).fill(who.password)
   await page.getByRole('button', { name: 'Log in' }).click()
@@ -62,7 +62,7 @@ for (const [lang, button, heading] of [
   ['bg', 'Вход', 'Имейл адрес'],
 ] as const) {
   test(`the language switcher shows the login page in ${lang} and remembers it`, async ({ page }) => {
-    await page.goto('./login?mock=reset')
+    await page.goto('./login?mock=plain')
     await page.getByTestId('language-switcher').selectOption(lang)
     await expect(page.getByRole('button', { name: button })).toBeVisible()
     await expect(page.getByLabel(heading)).toBeVisible()

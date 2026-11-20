@@ -36,6 +36,12 @@ export function thirdPartyNotices(): Plugin {
         })
         .sort((a, b) => a.name.localeCompare(b.name))
       const unique = entries.filter((e, i) => entries.findIndex((x) => x.name === e.name && x.version === e.version) === i)
+      // The bundled fonts (src/fonts, SIL OFL 1.1) travel with their licence too.
+      const fontDir = 'src/fonts'
+      if (existsSync(join(fontDir, 'fonts.json'))) {
+        const fonts = JSON.parse(readFileSync(join(fontDir, 'fonts.json'), 'utf8')) as { id: string; name: string; version: string; package: string }[]
+        for (const f of fonts) unique.push({ name: `${f.name} (font, ${f.package})`, version: f.version, license: 'OFL-1.1', homepage: undefined, text: readFileSync(join(fontDir, f.id, 'OFL.txt'), 'utf8').trim() })
+      }
       const body = [
         'Third-party software included in this build of the Open Brand Exchange admin UI.',
         'The admin UI itself is licensed under the Apache License 2.0 (see LICENSE and NOTICE).',

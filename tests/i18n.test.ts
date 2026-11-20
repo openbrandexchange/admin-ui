@@ -71,6 +71,29 @@ describe('UI languages', () => {
   })
 })
 
+// The Appearance editor's strings: one file per language next to the main ones (loaded with the editor).
+const appearanceFiles = import.meta.glob<Record<string, unknown>>('../src/locales/appearance/*.json', { eager: true, import: 'default' })
+const appearance = Object.fromEntries(Object.entries(appearanceFiles).map(([p, v]) => [p.match(/(\w+)\.json$/)![1], flatten(v)]))
+
+describe('Appearance editor strings', () => {
+  const ref = appearance.en
+  const refPlural = new Set(Object.keys(ref).filter((k) => PLURAL.test(k)).map((k) => k.replace(PLURAL, '')))
+  it('ships all 25 languages', () => expect(Object.keys(appearance).sort()).toEqual(LANGUAGES.map((l) => l.code).sort()))
+  it.each(LANGUAGES.map((l) => l.code))('%s is complete, with the same placeholders', (lang) => {
+    const flat = appearance[lang] ?? {}
+    expect(Object.keys(ref).filter((k) => !PLURAL.test(k) && !flat[k]?.trim())).toEqual([])
+    expect(Object.keys(flat).filter((k) => !(k in ref) && !(PLURAL.test(k) && refPlural.has(k.replace(PLURAL, ''))))).toEqual([])
+    const wrong = Object.entries(flat).filter(([k, v]) => {
+      const r = ref[k] ?? ref[k.replace(PLURAL, '_other')]
+      return r !== undefined && placeholders(r).join() !== placeholders(v).join()
+    })
+    expect(wrong).toEqual([])
+  })
+  it('never shows protocol words to users', () => {
+    expect(Object.entries(ref).filter(([, v]) => /\b(tombstone|cursor|grant|ingest|node)\b/i.test(v))).toEqual([])
+  })
+})
+
 describe('labels for every stable key', () => {
   const families: [string, readonly string[]][] = [
     ['enum.role', ROLES],

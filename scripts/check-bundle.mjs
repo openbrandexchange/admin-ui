@@ -11,7 +11,10 @@ const KB = 1024
 const BUDGET = {
   entry: 170 * KB, // index-*.js: React, router, query, i18n, shell
   chunk: 20 * KB, // any lazily loaded screen or helper chunk
-  locale: 25 * KB, // one language (loaded on demand)
+  // One language (loaded on demand). 27 kB since the start page, quick view and image zoom
+  // (0.3.1) added their strings for retailers; the Appearance editor's own strings are separate
+  // files per language, loaded only with the editor.
+  locale: 27 * KB,
   css: 14 * KB,
   firstLoad: 200 * KB, // entry + css + one language: what a visitor downloads before the first screen
 }
@@ -20,7 +23,8 @@ const dist = resolve(process.argv[2] ?? 'dist')
 const dir = join(dist, 'assets')
 const files = readdirSync(dir).filter((f) => statSync(join(dir, f)).isFile())
 const gz = (f) => gzipSync(readFileSync(join(dir, f)), { level: 9 }).length
-const kind = (f) => (f.endsWith('.css') ? 'css' : /^index-.*\.js$/.test(f) ? 'entry' : LANGS.includes(f.split('-')[0]) && f.endsWith('.js') ? 'locale' : f.endsWith('.js') ? 'chunk' : 'other')
+// Only the main stylesheet loads first; a font's stylesheet (src/fonts) loads when a theme uses it.
+const kind = (f) => (f.endsWith('.css') ? (/^index-/.test(f) ? 'css' : 'chunk') : /^index-.*\.js$/.test(f) ? 'entry' : LANGS.includes(f.split('-')[0]) && f.endsWith('.js') ? 'locale' : f.endsWith('.js') ? 'chunk' : 'other')
 
 const rows = files.map((f) => ({ f, kind: kind(f), size: gz(f) })).filter((r) => r.kind !== 'other')
 const over = rows.filter((r) => r.size > BUDGET[r.kind])

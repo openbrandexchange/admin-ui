@@ -1,23 +1,61 @@
 @import 'tailwindcss';
 
-/* Calm, neutral base. The brand's accent colour (Settings → Branding) is injected at runtime as
-   --accent / --accent-contrast / --accent-soft / --accent-strong (src/lib/accent.ts). */
+/* The theme engine (src/lib/theme.ts) sets the brand's look per scope (the document, or the
+   Appearance preview) as custom properties: the stone ramp, `white` (the surface colour), the
+   accent, radius, card style, image fit/background and the two fonts. The values below are the
+   defaults until it runs (and in unit tests). */
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font-sans);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-  --color-accent: var(--accent, #334155);
+  --color-accent: var(--accent, #2f5d62);
   --color-accent-contrast: var(--accent-contrast, #ffffff);
-  --color-accent-soft: var(--accent-soft, #eef2f6);
-  --color-accent-strong: var(--accent-strong, #1e293b);
+  --color-accent-soft: var(--accent-soft, #eaf0f0);
+  --color-accent-strong: var(--accent-strong, #24484c);
+  --color-secondary: var(--secondary, #7a5c99);
+  --color-secondary-contrast: var(--secondary-contrast, #ffffff);
+  /* Literal white for text on photographs (`white` follows the surface colour). */
+  --color-snow: #ffffff;
   --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-image: 0.5rem;
   /* A shade darker than Tailwind's stone-500, so secondary text keeps 4.5:1 contrast (WCAG AA)
      on the stone-50/100 backgrounds too, not only on white. */
   --color-stone-500: oklch(50% 0.014 58);
 }
 
+/* Status colours in a dark theme: light text on dark tints instead of the other way round. */
+[data-scheme='dark'] {
+  --color-red-50: oklch(25.8% 0.092 26.042 / 0.55);
+  --color-red-100: oklch(39.6% 0.141 25.723 / 0.6);
+  --color-red-200: oklch(44.4% 0.177 26.899);
+  --color-red-700: oklch(80.8% 0.114 19.571);
+  --color-red-800: oklch(88.5% 0.062 18.334);
+  --color-amber-50: oklch(27.9% 0.077 45.635 / 0.55);
+  --color-amber-100: oklch(41.4% 0.112 45.904 / 0.6);
+  --color-amber-200: oklch(47.3% 0.137 46.201);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-amber-700: oklch(87.9% 0.169 91.605);
+  --color-amber-800: oklch(92.4% 0.12 95.746);
+  --color-amber-900: oklch(96.2% 0.059 95.617);
+  --color-amber-950: oklch(98.7% 0.022 95.277);
+  --color-emerald-50: oklch(26.2% 0.051 172.552 / 0.55);
+  --color-emerald-200: oklch(43.2% 0.095 166.913);
+  --color-emerald-700: oklch(84.5% 0.143 164.978);
+  --color-emerald-800: oklch(90.5% 0.093 164.15);
+  --color-emerald-900: oklch(95% 0.052 163.051);
+  --color-sky-50: oklch(29.3% 0.066 243.157 / 0.55);
+  --color-sky-200: oklch(44.3% 0.11 240.79);
+  --color-sky-700: oklch(82.8% 0.111 230.318);
+  --color-sky-800: oklch(90.1% 0.058 230.902);
+  --color-sky-900: oklch(95.1% 0.026 236.824);
+}
+
 @layer base {
   html {
-    @apply bg-stone-50 text-stone-900 antialiased;
+    background-color: var(--obx-bg, var(--color-stone-50));
+    color: var(--obx-text, var(--color-stone-900));
+    @apply antialiased;
     -webkit-text-size-adjust: 100%;
   }
   body {
@@ -34,10 +72,15 @@
   h2,
   h3 {
     @apply text-balance;
+    font-family: var(--font-display);
+    letter-spacing: var(--display-tracking, -0.02em);
   }
   code,
   pre {
     @apply font-mono;
+  }
+  dialog {
+    color: inherit;
   }
 }
 
@@ -46,10 +89,40 @@
     @apply block w-full rounded-control border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 shadow-xs placeholder:text-stone-500 disabled:bg-stone-100 disabled:text-stone-500 aria-invalid:border-red-500;
   }
   .card {
-    @apply rounded-xl border border-stone-200 bg-white shadow-xs;
+    @apply rounded-card border bg-white;
+    border-color: var(--card-border, var(--color-stone-200));
+    box-shadow: var(--card-shadow, 0 1px 2px rgb(0 0 0 / 0.05));
   }
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+  /* Large editorial headings in the brand's display face. */
+  .display {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight, 650);
+    letter-spacing: var(--display-tracking, -0.025em);
+    line-height: 1.08;
+  }
+  /* Product photographs: fit and backdrop are theme choices. */
+  .product-img {
+    object-fit: var(--img-fit, contain);
+    background-color: var(--img-bg, var(--color-stone-100));
+  }
+  .img-frame {
+    background-color: var(--img-bg, var(--color-stone-100));
+    border-radius: var(--radius-image, 0.5rem);
+  }
+  .themed-scope {
+    background-color: var(--obx-bg);
+    color: var(--obx-text);
+    font-family: var(--font-sans);
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -59,5 +132,6 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

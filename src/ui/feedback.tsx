@@ -57,10 +57,31 @@ export function Notice({ tone = 'info', children }: { tone?: 'info' | 'warn' | '
 }
 
 /** Modal dialog on the native <dialog> element (focus trap, Esc, inert background for free). */
-export function Dialog({ open, onClose, title, children, footer, wide }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; wide?: boolean }) {
+export function Dialog({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  wide,
+  size,
+  hideTitle,
+}: {
+  open: boolean
+  onClose: () => void
+  title: ReactNode
+  children: ReactNode
+  footer?: ReactNode
+  wide?: boolean
+  /** `xl`: a large two-column dialog (quick view); `sheet`: slides up from the bottom on a phone, from the side on a wide screen. */
+  size?: 'md' | 'wide' | 'xl' | 'sheet'
+  /** Title only for screen readers (the content shows its own heading). */
+  hideTitle?: boolean
+}) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const { t } = useTranslation()
+  const kind = size ?? (wide ? 'wide' : 'md')
   useEffect(() => {
     const d = ref.current
     if (!d || !open) return
@@ -83,17 +104,22 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
         onClose()
       }}
       aria-labelledby={titleId}
-      className={cx('m-auto w-[calc(100%-2rem)] rounded-2xl bg-white p-0 shadow-xl backdrop:bg-stone-900/40', wide ? 'max-w-3xl' : 'max-w-lg')}
+      className={cx(
+        'bg-white p-0 shadow-xl backdrop:bg-stone-900/40',
+        kind === 'sheet'
+          ? 'mt-auto mb-0 max-h-[88dvh] w-full max-w-none rounded-t-2xl sm:mr-0 sm:ml-auto sm:h-dvh sm:max-h-none sm:w-96 sm:rounded-none sm:rounded-l-2xl'
+          : cx('m-auto w-[calc(100%-2rem)] rounded-2xl', kind === 'xl' ? 'max-w-5xl' : kind === 'wide' ? 'max-w-3xl' : 'max-w-lg'),
+      )}
     >
-      <div className="flex items-start justify-between gap-4 border-b border-stone-100 px-5 py-4">
-        <h2 id={titleId} className="text-lg font-semibold">
+      <div className={cx('flex items-start justify-between gap-4 px-5', hideTitle ? 'absolute end-0 top-0 z-10 py-3' : 'border-b border-stone-100 py-4')}>
+        <h2 id={titleId} className={hideTitle ? 'sr-only' : 'text-lg font-semibold'}>
           {title}
         </h2>
-        <button type="button" onClick={onClose} className="rounded-md p-1 text-stone-500 hover:bg-stone-100" aria-label={t('common.close')}>
+        <button type="button" onClick={onClose} className={cx('grid size-10 place-items-center rounded-full text-stone-600 hover:bg-stone-100', hideTitle && 'bg-white/90 shadow-sm')} aria-label={t('common.close')}>
           <IconX />
         </button>
       </div>
-      <div className="max-h-[70dvh] overflow-y-auto px-5 py-4 space-y-4">{children}</div>
+      <div className={cx('overflow-y-auto space-y-4', kind === 'xl' ? 'max-h-[86dvh] p-0' : kind === 'sheet' ? 'max-h-[calc(88dvh-8rem)] px-5 py-4 sm:max-h-[calc(100dvh-9rem)]' : 'max-h-[70dvh] px-5 py-4')}>{children}</div>
       {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-stone-100 px-5 py-3">{footer}</div>}
     </dialog>
   )

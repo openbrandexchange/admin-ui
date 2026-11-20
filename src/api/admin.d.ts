@@ -235,6 +235,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/api/settings/favicon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Upload the portal favicon (PNG or WebP, square, max 1 MB)
+         * @description The image MUST be square (else 422 `validation_failed`) and SHOULD be at least 180×180 px. Sets `branding.favicon_url`.
+         */
+        put: operations["uploadFavicon"];
+        post?: never;
+        /** Remove the favicon (the UI falls back to its default) */
+        delete: operations["deleteFavicon"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/api/settings/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Branding images (login background, home blocks)
+         * @description Not paginated (a node holds at most 200), newest first.
+         */
+        get: operations["listBrandingImages"];
+        put?: never;
+        /**
+         * Upload a branding image (PNG, JPEG or WebP, max 10 MB, max 8,000 px per side)
+         * @description Nodes MUST check the content (magic bytes), not only the declared type: anything else
+         *     is 415, more than 10 MB 413, a side above 8,000 px 422 `validation_failed`. Nodes store
+         *     the original and serve it unchanged; they MAY also serve a resized variant (at most
+         *     2,560 px, JPEG or WebP) at the same URL. At most 200 images per node: beyond that 409
+         *     `limit_exceeded`. Ids are never reused.
+         */
+        post: operations["uploadBrandingImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/api/settings/images/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a branding image
+         * @description 409 `conflict` while `branding.login` or `branding.home` still references it.
+         */
+        delete: operations["deleteBrandingImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/api/public/images/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A branding image (public; it appears on the login page)
+         * @description No authentication. Nodes MUST send the stored content type,
+         *     `X-Content-Type-Options: nosniff` and `Cache-Control: public, max-age=31536000, immutable`
+         *     (in demo mode `private, max-age=300`, like other demo files). 404 for an unknown or
+         *     deleted id.
+         */
+        get: operations["getPublicBrandingImage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/api/catalog/brands": {
         parameters: {
             query?: never;
@@ -1289,11 +1381,296 @@ export interface components {
             default_language: components["schemas"]["LanguageTag"];
             access_requests_enabled: boolean;
             setup_required: boolean;
+            favicon_url?: string | null;
+            theme?: components["schemas"]["BrandingTheme"] | null;
+            /** @description With `background_image_url` resolved. */
+            login?: components["schemas"]["BrandingLogin"] | null;
             /** @description Published brands (for the request-access form). */
             brands?: {
                 id: string;
                 name: string;
             }[];
+        };
+        /** @description `#rrggbb`; null uses the node default. */
+        HexColor: string | null;
+        /** @description A branding image id from `POST /admin/api/settings/images` (nodes generate `img_` + random characters). Opaque; never reused. */
+        ImageId: string;
+        /** @description A branding image id, or null for none. Nodes MUST reject ids they do not hold (422 `validation_failed` with a pointer). */
+        NullableImageId: components["schemas"]["ImageId"] | null;
+        /** @description The image's URL (`/admin/api/public/images/{id}`), set by the node in PublicBranding and PortalViewer responses (it MAY also set it in settings responses). Ignored on write. */
+        ResolvedImageUrl: string | null;
+        /** @description A text shown in the portal, per language (at most 2,000 characters each), or null. The UI shows the reader's language, else the brand's default language, else any. */
+        PortalText: {
+            [key: string]: string;
+        } | null;
+        /** @description Like PortalText but at most 10,000 characters per language. Plain text; a blank line starts a new paragraph. Never HTML or Markdown. */
+        PortalLongText: {
+            [key: string]: string;
+        } | null;
+        /** @description A portal path starting with a single `/` (`/catalog?category=jeans`, `/products/KO-1001`) or an `https://` URL; nothing else (no `//host`, `http:`, `javascript:`, `mailto:`). The UI opens portal paths in the portal and `https://` URLs in a new tab with `rel="noopener noreferrer"`. */
+        PortalLink: string | null;
+        /**
+         * @description A font bundled with the admin UI (all SIL OFL, served from the portal itself); `system` is the platform's UI font; null uses the default.
+         * @enum {string|null}
+         */
+        PortalFont: "system" | "inter" | "dm-sans" | "manrope" | "work-sans" | "jost" | "space-grotesk" | "fraunces" | "playfair-display" | "libre-baskerville" | "cormorant-garamond" | null;
+        /** @description Look of the portal. Every member is optional; null or absent uses the node default (the look before 0.3.1). Nodes MUST store and return members they do not know unchanged; the UI ignores them. */
+        BrandingTheme: {
+            /**
+             * @description `auto` follows the reader's system setting.
+             * @enum {string|null}
+             */
+            color_scheme?: "light" | "dark" | "auto" | null;
+            colors?: ({
+                /** @description Buttons, links, active states. Wins over `branding.accent_color` when set. */
+                primary?: components["schemas"]["HexColor"];
+                /** @description Highlights and badges. */
+                secondary?: components["schemas"]["HexColor"];
+                /** @description Page background. */
+                background?: components["schemas"]["HexColor"];
+                /** @description Cards and panels. */
+                surface?: components["schemas"]["HexColor"];
+                /** @description Body text. */
+                text?: components["schemas"]["HexColor"];
+            } & {
+                [key: string]: unknown;
+            }) | null;
+            heading_font?: components["schemas"]["PortalFont"];
+            body_font?: components["schemas"]["PortalFont"];
+            /**
+             * @description Corner radius of buttons, cards and images.
+             * @enum {string|null}
+             */
+            radius?: "none" | "small" | "medium" | "large" | null;
+            /**
+             * @description Product grid: `editorial` shows fewer, larger images.
+             * @enum {string|null}
+             */
+            grid_density?: "compact" | "comfortable" | "editorial" | null;
+            /** @enum {string|null} */
+            card_style?: "plain" | "bordered" | "elevated" | null;
+            /**
+             * @description How product images fill their tile.
+             * @enum {string|null}
+             */
+            image_fit?: "contain" | "cover" | null;
+            /** @description Behind product images. */
+            image_background?: components["schemas"]["HexColor"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description The login and request-access pages. Unknown members are stored and returned unchanged. */
+        BrandingLogin: {
+            /**
+             * @description `split`: the background image fills one half (the start side, left in left-to-right languages), the form the other; on narrow screens the image is a band above the form.
+             * @enum {string|null}
+             */
+            layout?: "centered" | "split" | null;
+            background_image?: components["schemas"]["NullableImageId"];
+            background_image_url?: components["schemas"]["ResolvedImageUrl"];
+            title?: components["schemas"]["PortalText"];
+            text?: components["schemas"]["PortalText"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description The retailer start page. No or no blocks means the catalogue is the start page. Not public (absent from PublicBranding). */
+        BrandingHome: {
+            /** @description Shown top to bottom. Block ids MUST be unique within the list. */
+            blocks?: components["schemas"]["HomeBlock"][] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * @description One block of the start page, chosen by `type`. A block of a type this schema does not
+         *     list is valid: nodes MUST store and return it unchanged and the UI skips it. Members
+         *     a block type does not list are kept the same way. Every member except `id` and
+         *     `type` is optional; the UI leaves out what is empty.
+         */
+        HomeBlock: components["schemas"]["HeroBlock"] | components["schemas"]["TilesBlock"] | components["schemas"]["TextBlock"] | components["schemas"]["ImageTextBlock"] | components["schemas"]["ProductsBlock"] | components["schemas"]["AnnouncementBlock"] | components["schemas"]["ContactBlock"] | components["schemas"]["UnknownBlock"];
+        /** @description Chosen by the client, unique within the page. */
+        HomeBlockId: string;
+        /** @description A large image with a title, text and one button. */
+        HeroBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "hero";
+            image?: components["schemas"]["NullableImageId"];
+            image_url?: components["schemas"]["ResolvedImageUrl"];
+            title?: components["schemas"]["PortalText"];
+            text?: components["schemas"]["PortalText"];
+            button_label?: components["schemas"]["PortalText"];
+            link?: components["schemas"]["PortalLink"];
+            /** @enum {string|null} */
+            align?: "left" | "center" | null;
+            /** @enum {string|null} */
+            height?: "medium" | "large" | null;
+            /**
+             * @description A shade over the image so the text stays readable.
+             * @enum {string|null}
+             */
+            overlay?: "none" | "dark" | "light" | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description Image tiles that link somewhere, typically to catalogue filters (collections, categories). */
+        TilesBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "tiles";
+            title?: components["schemas"]["PortalText"];
+            /**
+             * @description Columns on wide screens.
+             * @enum {integer|null}
+             */
+            columns?: 2 | 3 | 4 | null;
+            items?: ({
+                image?: components["schemas"]["NullableImageId"];
+                image_url?: components["schemas"]["ResolvedImageUrl"];
+                title?: components["schemas"]["PortalText"];
+                link?: components["schemas"]["PortalLink"];
+            } & {
+                [key: string]: unknown;
+            })[];
+        } & {
+            [key: string]: unknown;
+        };
+        TextBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "text";
+            title?: components["schemas"]["PortalText"];
+            body?: components["schemas"]["PortalLongText"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description An image beside a title, text and one button. */
+        ImageTextBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "image_text";
+            image?: components["schemas"]["NullableImageId"];
+            image_url?: components["schemas"]["ResolvedImageUrl"];
+            title?: components["schemas"]["PortalText"];
+            text?: components["schemas"]["PortalText"];
+            button_label?: components["schemas"]["PortalText"];
+            link?: components["schemas"]["PortalLink"];
+            /** @enum {string|null} */
+            image_side?: "left" | "right" | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * @description A row of products the reader may see, loaded by the UI with the normal portal product
+         *     endpoints: `style_numbers` (in that order; unknown or invisible ones are left out),
+         *     else `query`, else the most recently updated products. When both are set,
+         *     `style_numbers` wins. Never more than `max`.
+         */
+        ProductsBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "products";
+            title?: components["schemas"]["PortalText"];
+            style_numbers?: string[] | null;
+            /** @description Query string of `GET /admin/api/portal/products` without the leading `?`, e.g. `qualifier=organic&season=AW26`. `cursor` and `limit` are ignored. */
+            query?: string | null;
+            /** @description Default 8. */
+            max?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description A short notice in a coloured band. */
+        AnnouncementBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "announcement";
+            text?: components["schemas"]["PortalText"];
+            /** @enum {string|null} */
+            tone?: "neutral" | "info" | "success" | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description The brand's contact for retailers (account manager). */
+        ContactBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "contact";
+            title?: components["schemas"]["PortalText"];
+            name?: string | null;
+            email?: components["schemas"]["Email"] | null;
+            phone?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description A block of a type from a later version. Stored and returned unchanged; the UI skips it. */
+        UnknownBlock: {
+            id: components["schemas"]["HomeBlockId"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "UnknownBlock";
+        } & {
+            [key: string]: unknown;
+        };
+        BrandingImage: {
+            id: components["schemas"]["ImageId"];
+            /** @description `/admin/api/public/images/{id}` (relative to the node). */
+            url: string;
+            width: number;
+            height: number;
+            bytes: number;
+            /** @enum {string} */
+            content_type: "image/png" | "image/jpeg" | "image/webp";
+            /** @description In lists only: true while `branding.login` or `branding.home` references it. */
+            used?: boolean;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        /**
+         * @description `Settings.branding`. Updated with a JSON merge patch like the rest of the settings; a
+         *     client that edits `home.blocks` sends the whole array (merge patch replaces arrays).
+         *     Nodes MUST reject a `branding` larger than 64 KiB (serialised JSON) with 422
+         *     `validation_failed`.
+         */
+        BrandingSettings: {
+            display_name?: string;
+            /** @description Set via PUT /admin/api/settings/logo. */
+            readonly logo_url?: string | null;
+            /** @description Set via PUT /admin/api/settings/favicon. */
+            readonly favicon_url?: string | null;
+            /** @description Still honoured; `theme.colors.primary` wins when set. */
+            accent_color?: string | null;
+            welcome_text?: components["schemas"]["LocalizedText"] | null;
+            /** @description Overrides the local portal word ("Beeldbank", "Händlerportal" ...) per language; null uses the glossary word. See PublicBranding.portal_name. The settings update is a JSON merge patch (RFC 7396): `{"branding":{"portal_name":{"de":null}}}` removes the German text only, `{"branding":{"portal_name":null}}` removes the whole override. A client that edits the texts as a whole sends `null` for every language it removed. */
+            portal_name?: components["schemas"]["LocalizedText"] | null;
+            theme?: components["schemas"]["BrandingTheme"] | null;
+            login?: components["schemas"]["BrandingLogin"] | null;
+            home?: components["schemas"]["BrandingHome"] | null;
+        };
+        /** @description PublicBranding plus the start page, for signed-in readers. Every image id in `home` is resolved (`image_url` next to `image`). */
+        PortalBranding: components["schemas"]["PublicBranding"] & {
+            home?: components["schemas"]["BrandingHome"] | null;
         };
         SetupInput: {
             setup_code: string;
@@ -1350,15 +1727,7 @@ export interface components {
                 contact_email?: components["schemas"]["Email"] | null;
                 country?: string | null;
             };
-            branding?: {
-                display_name?: string;
-                /** @description Set via PUT /admin/api/settings/logo. */
-                readonly logo_url?: string | null;
-                accent_color?: string | null;
-                welcome_text?: components["schemas"]["LocalizedText"] | null;
-                /** @description Overrides the local portal word ("Beeldbank", "Händlerportal" ...) per language; null uses the glossary word. See PublicBranding.portal_name. The settings update is a JSON merge patch (RFC 7396): `{"branding":{"portal_name":{"de":null}}}` removes the German text only, `{"branding":{"portal_name":null}}` removes the whole override. A client that edits the texts as a whole sends `null` for every language it removed. */
-                portal_name?: components["schemas"]["LocalizedText"] | null;
-            };
+            branding?: components["schemas"]["BrandingSettings"];
             portal?: {
                 /** @default true */
                 access_requests_enabled: boolean;
@@ -1664,7 +2033,7 @@ export interface components {
                 article_data_export: boolean;
                 api_self_service: boolean;
             };
-            branding: components["schemas"]["PublicBranding"];
+            branding: components["schemas"]["PortalBranding"];
             languages: components["schemas"]["LanguageTag"][];
             selection_count?: number;
             limits?: {
@@ -2833,6 +3202,7 @@ export interface components {
     parameters: {
         Csrf: string;
         IdPath: components["schemas"]["Id"];
+        ImageIdPath: components["schemas"]["ImageId"];
         TokenPath: string;
         ExternalId: components["schemas"]["ExternalId"];
         Cursor: components["schemas"]["Cursor"];
@@ -2849,6 +3219,30 @@ export interface components {
 export type NextCursor = components['schemas']['NextCursor'];
 export type Password = components['schemas']['Password'];
 export type PublicBranding = components['schemas']['PublicBranding'];
+export type HexColor = components['schemas']['HexColor'];
+export type ImageId = components['schemas']['ImageId'];
+export type NullableImageId = components['schemas']['NullableImageId'];
+export type ResolvedImageUrl = components['schemas']['ResolvedImageUrl'];
+export type PortalText = components['schemas']['PortalText'];
+export type PortalLongText = components['schemas']['PortalLongText'];
+export type PortalLink = components['schemas']['PortalLink'];
+export type PortalFont = components['schemas']['PortalFont'];
+export type BrandingTheme = components['schemas']['BrandingTheme'];
+export type BrandingLogin = components['schemas']['BrandingLogin'];
+export type BrandingHome = components['schemas']['BrandingHome'];
+export type HomeBlock = components['schemas']['HomeBlock'];
+export type HomeBlockId = components['schemas']['HomeBlockId'];
+export type HeroBlock = components['schemas']['HeroBlock'];
+export type TilesBlock = components['schemas']['TilesBlock'];
+export type TextBlock = components['schemas']['TextBlock'];
+export type ImageTextBlock = components['schemas']['ImageTextBlock'];
+export type ProductsBlock = components['schemas']['ProductsBlock'];
+export type AnnouncementBlock = components['schemas']['AnnouncementBlock'];
+export type ContactBlock = components['schemas']['ContactBlock'];
+export type UnknownBlock = components['schemas']['UnknownBlock'];
+export type BrandingImage = components['schemas']['BrandingImage'];
+export type BrandingSettings = components['schemas']['BrandingSettings'];
+export type PortalBranding = components['schemas']['PortalBranding'];
 export type SetupInput = components['schemas']['SetupInput'];
 export type User = components['schemas']['User'];
 export type Session = components['schemas']['Session'];
@@ -2940,6 +3334,7 @@ export type ResponseUnsupportedMediaType = components['responses']['UnsupportedM
 export type ResponseTooManyRequests = components['responses']['TooManyRequests'];
 export type ParameterCsrf = components['parameters']['Csrf'];
 export type ParameterIdPath = components['parameters']['IdPath'];
+export type ParameterImageIdPath = components['parameters']['ImageIdPath'];
 export type ParameterTokenPath = components['parameters']['TokenPath'];
 export type ParameterExternalId = components['parameters']['ExternalId'];
 export type ParameterCursor = components['parameters']['Cursor'];
@@ -3357,6 +3752,173 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    uploadFavicon: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: components["parameters"]["Csrf"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "image/png": string;
+                "image/webp": string;
+            };
+        };
+        responses: {
+            /** @description Updated settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            413: components["responses"]["PayloadTooLarge"];
+            415: components["responses"]["UnsupportedMediaType"];
+            422: components["responses"]["ValidationFailed"];
+        };
+    };
+    deleteFavicon: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: components["parameters"]["Csrf"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listBrandingImages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All branding images. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["BrandingImage"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    uploadBrandingImage: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: components["parameters"]["Csrf"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Stored. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingImage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["PayloadTooLarge"];
+            415: components["responses"]["UnsupportedMediaType"];
+            422: components["responses"]["ValidationFailed"];
+        };
+    };
+    deleteBrandingImage: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: components["parameters"]["Csrf"];
+            };
+            path: {
+                id: components["parameters"]["ImageIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getPublicBrandingImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ImageIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The image. */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                    "image/jpeg": string;
+                    "image/webp": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     adminListBrands: {

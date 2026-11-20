@@ -2,7 +2,7 @@
 // visitor), so they must be permissive and compatible with Apache-2.0. Build and test tools
 // never ship; they may also use weak-copyleft or documentation licences, never GPL/AGPL.
 //   bun scripts/check-licenses.mjs             (fails on anything outside the lists)
-import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 const RUNTIME_OK = ['MIT', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', '0BSD', 'MIT-0', 'CC0-1.0', 'Unlicense', 'BlueOak-1.0.0']
@@ -70,5 +70,24 @@ for (const [label, dirs, ok] of [
     console.error(`✗ ${label} licences not allowed:\n  ` + bad.map(([n, l]) => `${n}: ${l}`).join('\n  '))
   }
 }
+// Bundled fonts (src/fonts): every file listed in fonts.json, every font with its SIL OFL 1.1 text.
+{
+  const dir = join(root, 'src/fonts')
+  const fonts = JSON.parse(readFileSync(join(dir, 'fonts.json'), 'utf8'))
+  const listed = new Set(fonts.flatMap((f) => f.files.map((x) => `${f.id}/${x}`)))
+  const problems = []
+  for (const f of fonts) {
+    const ofl = join(dir, f.id, 'OFL.txt')
+    if (!existsSync(ofl) || !readFileSync(ofl, 'utf8').includes('SIL Open Font License, Version 1.1')) problems.push(`${f.id}: OFL.txt missing or not the SIL OFL 1.1`)
+    for (const file of f.files) if (!existsSync(join(dir, f.id, file))) problems.push(`${f.id}/${file}: listed but missing`)
+  }
+  for (const id of readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name))
+    for (const file of readdirSync(join(dir, id)).filter((x) => x.endsWith('.woff2'))) if (!listed.has(`${id}/${file}`)) problems.push(`${id}/${file}: not listed in fonts.json`)
+  console.log(`fonts: ${fonts.length} — OFL-1.1 ${fonts.length}`)
+  if (problems.length) {
+    failed = true
+    console.error('✗ fonts:\n  ' + problems.join('\n  '))
+  }
+}
 if (failed) process.exit(1)
-console.log('✓ all dependency licences allowed')
+console.log('✓ all dependency and font licences allowed')

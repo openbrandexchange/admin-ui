@@ -291,9 +291,103 @@ function logEvent(d: MockDb, u: MockUser, e: Omit<DownloadEvent, 'id' | 'at' | '
   if (r) r.last_activity_at = nowIso()
 }
 
+// ---------------------------------------------------------------- appearance (spec 0.3.1)
+
+const imageUrl = (id: string) => `/admin/api/public/images/${id}`
+const IMAGE_ID = /^[A-Za-z0-9_-]{1,64}$/
+const LINK = /^(\/(?![/\\])|https:\/\/[^/\s])\S*$/
+
+/** Image ids in branding.login and branding.home. */
+function referencedImages(b: Record<string, unknown> | undefined): Set<string> {
+  const out = new Set<string>()
+  const login = b?.login as { background_image?: string | null } | null | undefined
+  if (login?.background_image) out.add(login.background_image)
+  const blocks = ((b?.home as { blocks?: Record<string, unknown>[] | null } | null | undefined)?.blocks ?? []) as Record<string, unknown>[]
+  for (const block of blocks) {
+    if (typeof block.image === 'string') out.add(block.image)
+    for (const item of (Array.isArray(block.items) ? block.items : []) as Record<string, unknown>[]) if (typeof item.image === 'string') out.add(item.image)
+  }
+  return out
+}
+
+/** A copy of `home` with image_url next to every image id. */
+function resolveHome(home: unknown): unknown {
+  const h = home as { blocks?: Record<string, unknown>[] | null } | null | undefined
+  if (!h) return h ?? null
+  const res = (o: Record<string, unknown>) => (typeof o.image === 'string' ? { ...o, image_url: imageUrl(o.image) } : o)
+  return { ...h, blocks: (h.blocks ?? []).map((b) => ({ ...res(b), ...(Array.isArray(b.items) && { items: (b.items as Record<string, unknown>[]).map(res) }) })) }
+}
+
+function resolveLogin(login: unknown): PublicBranding['login'] {
+  const l = login as { background_image?: string | null } | null | undefined
+  if (!l) return null
+  return { ...l, background_image_url: l.background_image ? imageUrl(l.background_image) : null } as PublicBranding['login']
+}
+
+/** Node-side checks of a branding patch result (spec: 422 validation_failed with a pointer). */
+function validateBranding(d: MockDb, b: Record<string, unknown> | undefined) {
+  if (!b) return
+  const errors: { pointer: string; obx_error: string; detail: string }[] = []
+  if (JSON.stringify(b).length > 64 * 1024) errors.push({ pointer: '/branding', obx_error: 'validation_failed', detail: 'The branding is larger than 64 KiB.' })
+  const theme = (b.theme ?? {}) as Record<string, unknown>
+  for (const [k, v] of Object.entries((theme.colors ?? {}) as Record<string, unknown>)) if (v !== null && typeof v === 'string' && !/^#[0-9a-fA-F]{6}$/.test(v)) errors.push({ pointer: `/branding/theme/colors/${k}`, obx_error: 'validation_failed', detail: 'Use #rrggbb.' })
+  const known = new Set(d.images.map((i) => i.id))
+  for (const id of referencedImages(b)) if (!known.has(id) || !IMAGE_ID.test(id)) errors.push({ pointer: '/branding', obx_error: 'validation_failed', detail: `Unknown image ${id}.` })
+  const blocks = (((b.home ?? {}) as Record<string, unknown>).blocks ?? []) as Record<string, unknown>[]
+  if (blocks.length > 30) errors.push({ pointer: '/branding/home/blocks', obx_error: 'validation_failed', detail: 'At most 30 blocks.' })
+  const ids = new Set<string>()
+  blocks.forEach((block, i) => {
+    if (typeof block.id !== 'string' || !block.id || block.id.length > 40 || ids.has(block.id)) errors.push({ pointer: `/branding/home/blocks/${i}/id`, obx_error: 'validation_failed', detail: 'Block ids are unique, 1 to 40 characters.' })
+    ids.add(String(block.id))
+    const links = [block.link, ...((Array.isArray(block.items) ? block.items : []) as Record<string, unknown>[]).map((x) => x.link)]
+    for (const l of links) if (l !== undefined && l !== null && (typeof l !== 'string' || !LINK.test(l))) errors.push({ pointer: `/branding/home/blocks/${i}/link`, obx_error: 'validation_failed', detail: 'A link is a portal path starting with / or an https:// address.' })
+  })
+  if (errors.length) throw stop(422, 'validation_failed', errors[0].detail, errors)
+}
+
+/** Bytes of an uploaded image (PNG/JPEG/WebP by magic bytes) and its pixel size when readable. */
+function sniffImage(bytes: Uint8Array): { type: 'image/png' | 'image/jpeg' | 'image/webp'; width: number; height: number } | null {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  if (bytes.length > 24 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return { type: 'image/png', width: dv.getUint32(16), height: dv.getUint32(20) }
+  if (bytes.length > 4 && bytes[0] === 0xff && bytes[1] === 0xd8) {
+    for (let i = 2; i + 9 < bytes.length; ) {
+      if (bytes[i] !== 0xff) break
+      const marker = bytes[i + 1]
+      const len = dv.getUint16(i + 2)
+      if (marker >= 0xc0 && marker <= 0xc3) return { type: 'image/jpeg', width: dv.getUint16(i + 7), height: dv.getUint16(i + 5) }
+      i += 2 + len
+    }
+    return { type: 'image/jpeg', width: 1200, height: 800 }
+  }
+  if (bytes.length > 30 && String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP') {
+    const chunk = String.fromCharCode(...bytes.slice(12, 16))
+    if (chunk === 'VP8X') return { type: 'image/webp', width: 1 + (bytes[24] | (bytes[25] << 8) | (bytes[26] << 16)), height: 1 + (bytes[27] | (bytes[28] << 8) | (bytes[29] << 16)) }
+    return { type: 'image/webp', width: 1200, height: 800 }
+  }
+  return null
+}
+
+/** Keep small uploads across reloads (data: URL in sessionStorage); large ones for this tab only. */
+function storedUrl(bytes: Uint8Array, type: string): string {
+  if (bytes.length <= 1_500_000) {
+    let bin = ''
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+    return `data:${type};base64,${btoa(bin)}`
+  }
+  return typeof URL.createObjectURL === 'function' ? URL.createObjectURL(new Blob([bytes as BlobPart], { type })) : 'data:,'
+}
+
+function imageView(d: MockDb, img: MockDb['images'][number], withUsed: boolean) {
+  const used = referencedImages(d.settings.branding as Record<string, unknown>).has(img.id)
+  return { id: img.id, url: imageUrl(img.id), width: img.width, height: img.height, bytes: img.bytes, content_type: img.content_type, created_at: img.created_at, ...(withUsed && { used }) }
+}
+
 function publicBranding(d: MockDb): PublicBranding {
   const b = d.settings.branding ?? {}
   return {
+    favicon_url: b.favicon_url ?? null,
+    theme: b.theme ?? null,
+    login: resolveLogin(b.login),
     name: b.display_name ?? d.settings.company?.name ?? '',
     logo_url: b.logo_url ?? null,
     accent_color: b.accent_color ?? null,
@@ -591,9 +685,76 @@ export const handlers = [
     route(async ({ request, d }) => {
       admin(d)
       const b = await body<Record<string, Record<string, unknown>>>(request)
+      if ('branding' in b) {
+        const { logo_url: _l, favicon_url: _f, ...patch } = b.branding ?? {}
+        validateBranding(d, mergePatch(d.settings.branding, patch) as Record<string, unknown>)
+        b.branding = patch
+      }
       for (const k of ['company', 'branding', 'portal', 'defaults'] as const) if (k in b) (d.settings as Record<string, unknown>)[k] = mergePatch(d.settings[k], b[k])
       return HttpResponse.json(d.settings)
     }),
+  ),
+  http.put(
+    `${API}/settings/favicon`,
+    route(async ({ request, d }) => {
+      admin(d)
+      const bytes = new Uint8Array(await request.arrayBuffer())
+      const img = sniffImage(bytes)
+      if (!img || img.type === 'image/jpeg') throw stop(415, 'unsupported_media_type', 'Use a PNG or WebP image.')
+      if (bytes.length > 1024 * 1024) throw stop(413, 'payload_too_large')
+      if (img.width !== img.height) throw stop(422, 'validation_failed', 'The favicon must be square.', [{ pointer: '/file', obx_error: 'validation_failed', detail: 'The favicon must be square.' }])
+      d.settings.branding = { ...d.settings.branding, favicon_url: storedUrl(bytes, img.type) }
+      return HttpResponse.json(d.settings)
+    }),
+  ),
+  http.delete(
+    `${API}/settings/favicon`,
+    route(({ d }) => {
+      admin(d)
+      d.settings.branding = { ...d.settings.branding, favicon_url: null }
+      return HttpResponse.json(d.settings)
+    }),
+  ),
+  http.get(`${API}/settings/images`, route(({ d }) => (admin(d), HttpResponse.json({ items: [...d.images].sort((a, b) => b.created_at.localeCompare(a.created_at)).map((i) => imageView(d, i, true)) })))),
+  http.post(
+    `${API}/settings/images`,
+    route(async ({ request, d }) => {
+      admin(d)
+      const form = await multipartFiles(request)
+      const file = form.file
+      if (!file) throw stop(422, 'validation_failed', 'Send the image as the multipart field "file".', [{ pointer: '/file', obx_error: 'validation_failed', detail: 'Missing file.' }])
+      if (file.length > 10 * 1024 * 1024) throw stop(413, 'payload_too_large')
+      const img = sniffImage(file)
+      if (!img) throw stop(415, 'unsupported_media_type', 'Use a PNG, JPEG or WebP image.')
+      if (img.width > 8000 || img.height > 8000) throw stop(422, 'validation_failed', 'At most 8,000 pixels per side.', [{ pointer: '/file', obx_error: 'validation_failed', detail: 'At most 8,000 pixels per side.' }])
+      if (d.images.length >= 200) throw stop(409, 'limit_exceeded', 'At most 200 branding images.')
+      const stored = { id: newId(d, 'img'), src: storedUrl(file, img.type), width: img.width, height: img.height, bytes: file.length, content_type: img.type, created_at: nowIso() }
+      d.images.push(stored)
+      return HttpResponse.json(imageView(d, stored, false), { status: 201 })
+    }),
+  ),
+  http.delete(
+    `${API}/settings/images/:id`,
+    route(({ params, d }) => {
+      admin(d)
+      const img = d.images.find((i) => i.id === params.id)
+      if (!img) throw stop(404, 'not_found')
+      if (referencedImages(d.settings.branding as Record<string, unknown>).has(img.id)) throw stop(409, 'conflict', 'The image is still used on the login page or the start page.')
+      d.images = d.images.filter((i) => i !== img)
+      return new HttpResponse(null, { status: 204 })
+    }),
+  ),
+  http.get(
+    `${API}/public/images/:id`,
+    route(
+      async ({ params, d }) => {
+        const img = d.images.find((i) => i.id === params.id)
+        if (!img) throw stop(404, 'not_found')
+        const res = await fetch(img.src)
+        return new HttpResponse(await res.arrayBuffer(), { headers: { 'Content-Type': res.headers.get('Content-Type') || img.content_type, 'Cache-Control': 'private, max-age=300', 'X-Content-Type-Options': 'nosniff' } })
+      },
+      { public: true },
+    ),
   ),
   http.put(
     `${API}/settings/logo`,
@@ -1214,7 +1375,7 @@ export const handlers = [
         retailer: r ? { id: r.id, name: r.name } : null,
         brands,
         permissions: { original_download: allowOriginals(d, u), article_data_export: !!d.settings.portal?.allow_article_data_export, api_self_service: !!d.settings.portal?.retailer_api_self_service },
-        branding: publicBranding(d),
+        branding: { ...publicBranding(d), home: resolveHome(d.settings.branding?.home) },
         languages: d.settings.portal?.languages ?? ['en'],
         selection_count: (d.selections[u.id] ?? []).length,
         limits: { selection_max_products: 1000, sync_zip_max_images: 400, gtin_lookup_max: 2000 },
@@ -1493,6 +1654,34 @@ function advanceJob(j: MockDb['downloadJobs'][number]) {
       Object.assign(j, { status: 'succeeded', finished_at: nowIso(), expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString().replace(/\.\d{3}Z$/, 'Z'), file_url: `/admin/api/portal/download-jobs/${j.id}/file`, files: total, bytes: total * 850_000 })
       j.progress.done = total
     }
+  }
+}
+
+/** Binary file parts of a multipart body (branding image uploads). */
+async function multipartFiles(request: Request): Promise<Record<string, Uint8Array>> {
+  const out: Record<string, Uint8Array> = {}
+  const type = request.headers.get('Content-Type') ?? ''
+  const raw = new Uint8Array(await request.arrayBuffer())
+  try {
+    const form = await new Response(raw, { headers: { 'Content-Type': type } }).formData()
+    for (const [k, v] of form.entries()) if (typeof v !== 'string') out[k] = new Uint8Array(await v.arrayBuffer())
+    return out
+  } catch {
+    const boundary = /boundary=([^;]+)/.exec(type)?.[1]
+    if (!boundary) return out
+    const text = Array.from(raw, (c) => String.fromCharCode(c)).join('')
+    const marker = `--${boundary}`
+    let at = text.indexOf(marker)
+    while (at >= 0) {
+      const next = text.indexOf(marker, at + marker.length)
+      if (next < 0) break
+      const part = text.slice(at + marker.length, next)
+      const headEnd = part.indexOf('\r\n\r\n')
+      const name = /name="([^"]+)"/.exec(part.slice(0, headEnd))?.[1]
+      if (name && headEnd >= 0 && /filename=/.test(part.slice(0, headEnd))) out[name] = raw.slice(at + marker.length + headEnd + 4, next - 2)
+      at = next
+    }
+    return out
   }
 }
 

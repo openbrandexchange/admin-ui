@@ -94,20 +94,34 @@ const portalLayout = createRoute({
   component: lazyRouteComponent(() => import('./shell/PortalShell'), 'PortalShell'),
 })
 
-export const catalogRoute = createRoute({
+export const catalogSearch = (s: Record<string, unknown>): CatalogSearch => ({
+  q: str(s.q),
+  brand_id: strs(s.brand_id),
+  item_type: strs(s.item_type),
+  color: strs(s.color),
+  season: strs(s.season),
+  collection: strs(s.collection),
+  target_group: strs(s.target_group),
+  qualifier: strs(s.qualifier),
+  new: s.new === '7' || s.new === '30' || s.new === '90' ? s.new : undefined,
+})
+
+/**
+ * The start page: the brand's home page blocks when it has them, else the catalogue (as
+ * before 0.3.1). A start page URL with catalogue filters (`/?q=…`, old bookmarks) shows the
+ * catalogue too.
+ */
+export const homeRoute = createRoute({
   getParentRoute: () => portalLayout,
   path: '/',
-  validateSearch: (s: Record<string, unknown>): CatalogSearch => ({
-    q: str(s.q),
-    brand_id: strs(s.brand_id),
-    item_type: strs(s.item_type),
-    color: strs(s.color),
-    season: strs(s.season),
-    collection: strs(s.collection),
-    target_group: strs(s.target_group),
-    qualifier: strs(s.qualifier),
-    new: s.new === '7' || s.new === '30' || s.new === '90' ? s.new : undefined,
-  }),
+  validateSearch: catalogSearch,
+  component: lazyRouteComponent(() => import('./screens/portal/Home'), 'StartScreen'),
+})
+
+export const catalogRoute = createRoute({
+  getParentRoute: () => portalLayout,
+  path: 'catalog',
+  validateSearch: catalogSearch,
   component: lazyRouteComponent(() => import('./screens/portal/Catalog'), 'CatalogScreen'),
 })
 
@@ -262,6 +276,17 @@ const adminStats = createRoute({
   component: lazyRouteComponent(() => import('./screens/admin/Stats'), 'StatsScreen'),
 })
 
+export const adminAppearanceRoute = createRoute({
+  getParentRoute: () => adminLayout,
+  path: 'appearance',
+  validateSearch: (s: Record<string, unknown>): { tab?: AppearanceTab } => ({
+    tab: (['theme', 'login', 'home', 'images'] as const).find((x) => x === s.tab),
+  }),
+  component: lazyRouteComponent(() => import('./screens/admin/appearance/Appearance'), 'AppearanceScreen'),
+})
+
+export type AppearanceTab = 'theme' | 'login' | 'home' | 'images'
+
 export type SettingsTab = 'brand' | 'portal' | 'defaults' | 'team' | 'account' | 'system'
 
 export const adminSettingsRoute = createRoute({
@@ -275,7 +300,7 @@ export const adminSettingsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   publicLayout.addChildren([setupRoute, loginRoute, forgotRoute, resetRoute, inviteRoute, requestAccessRoute]),
-  portalLayout.addChildren([catalogRoute, portalProductRoute, selectionRoute, eanRoute, downloadsRoute, accountRoute]),
+  portalLayout.addChildren([homeRoute, catalogRoute, portalProductRoute, selectionRoute, eanRoute, downloadsRoute, accountRoute]),
   adminLayout.addChildren([
     adminHome,
     adminCatalogRoute,
@@ -291,6 +316,7 @@ const routeTree = rootRoute.addChildren([
     adminRetailerRoute,
     adminRequestsRoute,
     adminStats,
+    adminAppearanceRoute,
     adminSettingsRoute,
   ]),
 ])
@@ -301,7 +327,7 @@ export function basepath(): string {
   return new URL(document.baseURI).pathname.replace(/\/+$/, '') || '/'
 }
 
-export function makeRouter(queryClient: QueryClient, opts: { history?: Parameters<typeof createRouter>[0]['history'] } = {}) {
+export function makeRouter(queryClient: QueryClient, opts: { history?: Parameters<typeof createRouter>[0]['history']; scrollRestoration?: boolean } = {}) {
   return createRouter({
     routeTree,
     context: { queryClient },

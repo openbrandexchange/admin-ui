@@ -1,13 +1,13 @@
 // Retailer portal server state. Admins get the same data as a preview.
 import { infiniteQueryOptions, keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, req } from '../api/client'
-import type { DownloadJobInput, PortalFilter, ProductDetail, Selection } from '../api/types'
+import { ApiError, api, req } from '../api/client'
+import type { DownloadJobInput, PortalFilter, PortalViewer, ProductDetail, Selection } from '../api/types'
 
 export const PAGE_SIZE = 48
 
 export const viewerQuery = queryOptions({
   queryKey: ['portal', 'viewer'],
-  queryFn: () => req(() => api.GET('/admin/api/portal/viewer')),
+  queryFn: async () => (await req(() => api.GET('/admin/api/portal/viewer'))) as PortalViewer,
   staleTime: 60_000,
 })
 export const useViewer = () => useQuery(viewerQuery)
@@ -46,11 +46,26 @@ export const facetsQuery = (filter: PortalFilter) =>
     staleTime: 60_000,
   })
 
+const getProduct = async (id: string) => (await req(() => api.GET('/admin/api/portal/products/{id}', { params: { path: { id } } }))) as ProductDetail
+
+/**
+ * An article by its id, or by its article number: start page links name articles the way
+ * brands know them (`/products/KO-1001`).
+ */
 export const portalProductQuery = (id: string) =>
   queryOptions({
     queryKey: ['portal', 'product', id],
-    queryFn: async () =>
-      (await req(() => api.GET('/admin/api/portal/products/{id}', { params: { path: { id } } }))) as ProductDetail,
+    queryFn: async () => {
+      try {
+        return await getProduct(id)
+      } catch (e) {
+        if (!(e instanceof ApiError) || e.status !== 404) throw e
+        const page = await req(() => api.GET('/admin/api/portal/products', { params: { query: { q: id, limit: 10 } as never } }))
+        const match = page.items.find((p) => p.style_number.toLowerCase() === id.toLowerCase())
+        if (!match) throw e
+        return getProduct(match.id)
+      }
+    },
   })
 
 /**

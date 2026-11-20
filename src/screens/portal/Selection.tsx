@@ -59,7 +59,7 @@ export function SelectionScreen() {
         <EmptyState
           title={t('portal.selection.emptyTitle')}
           action={
-            <Link to="/" className="text-sm font-medium text-accent-strong underline underline-offset-2">
+            <Link to="/catalog" className="text-sm font-medium text-accent-strong underline underline-offset-2">
               {t('portal.selection.browse')}
             </Link>
           }

@@ -175,7 +175,7 @@ describe('destructive actions ask first', () => {
     Object.assign(db().settings.branding!, { logo_url: 'http://localhost/logo.png' })
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/settings' })
+    await r.router.navigate({ to: '/admin/appearance' })
     await r.user.click(await screen.findByRole('button', { name: /remove logo/i }))
     const dialog = await screen.findByRole('dialog', { name: /remove the logo\?/i })
     await r.user.click(within(dialog).getByRole('button', { name: /remove logo/i }))

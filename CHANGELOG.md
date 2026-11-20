@@ -6,7 +6,19 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 
 ## Unreleased
 
+### Added
+
+- **Appearance** (brand admin, spec 0.3.1): the brand gives its portal its own look without code, with a live preview of the real retailer screens (computer or phone) before saving. Colours (main, highlight, background, panels, text) with a warning when text would be hard to read (WCAG AA) and readable button text chosen automatically; light, dark or following the device; ten bundled fonts for headings and text (SIL OFL, self-hosted, loaded only when used); corners, article grid size, tile style, image fit and background; logo and browser icon. The login page: form in the middle or beside an image, with a title and text per language. The start page: blocks to add, reorder (drag, or arrow keys on the handle), duplicate and delete — large image, image tiles, text, image and text, articles (newest, a filter, or picked), notice, contact person — with texts per language and links to catalogue filters, an article or an https address. An image library (upload, see what is in use, delete). Leaving with unsaved changes asks first. The editor's texts are a separate file per language, loaded only with the editor.
+- **Start page for retailers**: when the brand has blocks, `/` shows them and the catalogue is at `/catalog`; without blocks nothing changes.
+- **Quick view** in the catalogue and on the start page: images, key data, sizes and EANs, add to the selection, open the article.
+
 ### Changed
+
+- **A new default look**: image-led article grid in three sizes (small, medium, large), the next image of the same colour on hover, colour swatches that switch the image, chosen filters as removable chips, filters that stay in view on a wide screen and open as a sheet on a phone. The article page has a large gallery with zoom (click) and a full-screen view with arrow keys. Navigation is quieter; headings use the brand's display font.
+- **Branded login page**: the brand's image, title and text (Appearance), centred or split.
+- Logo and colours moved from Settings > Brand to Appearance; `accent_color` is still read and is kept equal to the main colour.
+- The mock opens as a themed demo showroom (`?mock=reset`); `?mock=plain` shows the default look.
+- Bundle budget: one language may be 27 kB (was 25 kB) for the new retailer texts.
 
 - Development tooling: Bun installs the dependencies and runs the scripts (`bun install`, `bun run …`, `bun.lock` instead of `package-lock.json`), and oxlint replaces ESLint for lint and type check (`.oxlintrc.json`). The build is the same; only `dist/NOTICE` now says `bun run mock`.
 

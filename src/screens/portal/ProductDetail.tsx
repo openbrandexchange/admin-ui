@@ -8,8 +8,9 @@ import { localized } from '../../lib/localized'
 import { humanize } from '../../lib/prefs'
 import { portalProductQuery, useSelection, useSetSelection, useViewer } from '../../queries/portal'
 import { Badge, Button, Loading, cx } from '../../ui/controls'
-import { EmptyState, ErrorNote, tabListKeys } from '../../ui/feedback'
-import { IconCheck, IconChevronLeft, IconImage, IconPlus, IconSparkle } from '../../ui/icons'
+import { Gallery, byColour } from './Gallery'
+import { EmptyState, ErrorNote } from '../../ui/feedback'
+import { IconCheck, IconChevronLeft, IconPlus } from '../../ui/icons'
 import { AttributeList, FeatureList, LabelInfo, MeasurementsTable, SizesTable } from '../shared/ArticleData'
 import { DownloadButton, VariantHelp, VariantPicker, useVariant } from './DownloadTools'
 
@@ -35,22 +36,11 @@ export function PortalProductScreen() {
 function BackLink() {
   const { t } = useTranslation()
   return (
-    <Link to="/" className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900">
+    <Link to="/catalog" className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900">
       <IconChevronLeft size={16} />
       {t('portal.product.back')}
     </Link>
   )
-}
-
-/** Colour groups in feed order (colour code, then position). */
-function byColour(assets: Asset[]) {
-  const groups = new Map<string, Asset[]>()
-  for (const a of assets) {
-    const k = a.color_code ?? ''
-    groups.set(k, [...(groups.get(k) ?? []), a])
-  }
-  for (const list of groups.values()) list.sort((a, b) => a.position - b.position)
-  return groups
 }
 
 function Product({ product }: { product: ProductDetail }) {
@@ -65,7 +55,7 @@ function Product({ product }: { product: ProductDetail }) {
   const [colour, setColour] = useState(colourCodes[0] ?? '')
   const images = groups.get(colour) ?? []
   const [active, setActive] = useState(0)
-  const current = images[Math.min(active, images.length - 1)]
+  const current = images[Math.min(active, Math.max(0, images.length - 1))]
   const brand = viewer.data?.brands.find((b) => b.id === product.brand_id)
   const selected = selection.data?.product_ids.includes(product.id) ?? false
   const colourName = (code: string) => {
@@ -74,62 +64,9 @@ function Product({ product }: { product: ProductDetail }) {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <section aria-label={t('portal.product.images')} className="min-w-0 space-y-3">
-        {colourCodes.length > 1 && (
-          <div role="tablist" aria-label={t('portal.product.colours')} className="flex flex-wrap gap-2">
-            {colourCodes.map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="tab"
-                onKeyDown={tabListKeys}
-                aria-selected={c === colour}
-                onClick={() => {
-                  setColour(c)
-                  setActive(0)
-                }}
-                className={cx('rounded-full border px-3 py-1 text-sm', c === colour ? 'border-accent bg-accent-soft font-medium text-accent-strong' : 'border-stone-300 bg-white')}
-              >
-                {colourName(c)}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-stone-200 bg-white">
-          {current ? (
-            <img src={current.renditions.web.url} alt={localized(current.alt_text, lang) || `${product.style_number} ${colourName(colour)} ${current.position}`} className="size-full object-contain" />
-          ) : (
-            <div className="grid size-full place-items-center text-stone-400">
-              <IconImage size={40} />
-            </div>
-          )}
-          {current && (current.provenance.ai_generated || current.provenance.ai_edited) && (
-            <span className="absolute left-3 top-3">
-              <Badge tone="blue">
-                <IconSparkle size={14} />
-                {current.provenance.ai_generated ? t('portal.product.aiGenerated') : t('portal.product.aiEdited')}
-              </Badge>
-            </span>
-          )}
-        </div>
-        {images.length > 1 && (
-          <ul className="flex gap-2 overflow-x-auto pb-1">
-            {images.map((a, i) => (
-              <li key={a.id}>
-                <button
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={t('portal.product.showImage', { n: a.position })}
-                  aria-current={i === active}
-                  className={cx('block size-20 overflow-hidden rounded-lg border bg-white', i === active ? 'border-accent ring-2 ring-accent' : 'border-stone-200')}
-                >
-                  <img src={a.renditions.thumb.url} alt="" loading="lazy" className="size-full object-contain" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+    <div className="grid gap-8 @5xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] @7xl:gap-14">
+      <section aria-label={t('portal.product.images')} className="min-w-0 space-y-4">
+        <Gallery images={images} active={active} onActive={setActive} altOf={(a) => localized(a.alt_text, lang) || `${product.style_number} ${colourName(a.color_code ?? '')} ${a.position}`} />
         {current && <ImageFacts asset={current} />}
         {current && (
           <DownloadButton path={`/admin/api/portal/assets/${encodeURIComponent(current.id)}/download`} query={{ variant }} fallbackName={current.filename}>
@@ -138,10 +75,10 @@ function Product({ product }: { product: ProductDetail }) {
         )}
       </section>
 
-      <section className="min-w-0 space-y-6">
-        <div className="space-y-2">
-          <p className="font-mono text-sm text-stone-500">{product.style_number}</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{localized(product.name, lang)}</h1>
+      <section className="min-w-0 space-y-6 @5xl:sticky @5xl:top-24 @5xl:self-start">
+        <div className="space-y-3">
+          <p className="text-sm text-stone-500 tabular">{product.style_number}</p>
+          <h1 className="display text-3xl text-stone-900 @[40rem]:text-4xl">{localized(product.name, lang)}</h1>
           <div className="flex flex-wrap gap-1.5">
             {brand && <Badge tone="accent">{brand.name}</Badge>}
             {product.item_type && <Badge>{t(`enum.itemType.${product.item_type}`, { defaultValue: humanize(product.item_type) })}</Badge>}
@@ -150,8 +87,38 @@ function Product({ product }: { product: ProductDetail }) {
             {product.season && <Badge>{product.season}</Badge>}
             {product.collection && <Badge>{product.collection}</Badge>}
           </div>
-          {product.description && <p className="whitespace-pre-line text-sm text-stone-700">{localized(product.description, lang)}</p>}
+          {product.description && <p className="max-w-prose whitespace-pre-line text-sm leading-relaxed text-stone-700">{localized(product.description, lang)}</p>}
         </div>
+
+        {colourCodes.length > 1 && (
+          <div className="space-y-2">
+            <p id="colour-label" className="text-sm font-medium text-stone-800">
+              {t('portal.product.colours')}: <span className="font-normal text-stone-600">{colourName(colour)}</span>
+            </p>
+            <div role="radiogroup" aria-labelledby="colour-label" className="flex flex-wrap gap-2">
+              {colourCodes.map((c) => {
+                const thumb = groups.get(c)?.[0]?.renditions.thumb.url
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    role="radio"
+                    aria-checked={c === colour}
+                    aria-label={colourName(c)}
+                    title={colourName(c)}
+                    onClick={() => {
+                      setColour(c)
+                      setActive(0)
+                    }}
+                    className={cx('img-frame block aspect-[4/5] w-14 overflow-hidden border-2', c === colour ? 'border-stone-900' : 'border-transparent hover:border-stone-300')}
+                  >
+                    {thumb ? <img src={thumb} alt="" className="product-img size-full" /> : <span className="block p-1 text-xs">{colourName(c)}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="card space-y-3 p-4">
           <div className="flex flex-wrap items-center gap-2">

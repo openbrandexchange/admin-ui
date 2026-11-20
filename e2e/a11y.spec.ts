@@ -7,7 +7,7 @@ failOnCspViolations()
 test.beforeEach(async ({ page }) => chooseEnglish(page))
 
 test('public pages', async ({ page }) => {
-  for (const path of ['./login?mock=reset', './forgot-password', './request-access', './invite/inv_no_such_token', './no-such-page']) {
+  for (const path of ['./login?mock=reset', './login?mock=plain', './forgot-password', './request-access', './invite/inv_no_such_token', './no-such-page']) {
     await page.goto(path)
     await expectAccessible(page, path)
   }
@@ -30,6 +30,35 @@ test('retailer portal', async ({ page }) => {
     await page.goto(path)
     await expectAccessible(page, path)
     await expectNoSideways(page)
+  }
+})
+
+test('themed showroom: start page, catalogue, quick view, article', async ({ page }) => {
+  await logIn(page, buyer, 'showroom')
+  await page.getByRole('heading', { name: 'Autumn/Winter 2026' }).waitFor()
+  await expectAccessible(page, 'start page')
+  await expectNoSideways(page)
+  await page.goto('./catalog')
+  await expectAccessible(page, 'themed catalog')
+  await expectNoSideways(page)
+  await page.getByRole('button', { name: /^Quick view/ }).first().click()
+  await page.getByRole('dialog').getByRole('table').waitFor()
+  await expectAccessible(page, 'quick view')
+  await page.keyboard.press('Escape')
+  await page.goto('./products/KO-1001')
+  await page.getByRole('heading', { name: 'Sizes and EAN' }).waitFor()
+  await expectAccessible(page, 'themed article')
+})
+
+test.describe('appearance editor', () => {
+  for (const tab of ['', '?tab=login', '?tab=home', '?tab=images']) {
+    test(`/admin/appearance${tab}`, async ({ page }) => {
+      await logIn(page, admin, 'showroom')
+      await page.goto(`./admin/appearance${tab}`)
+      await page.getByRole('region', { name: 'Preview' }).waitFor()
+      await expectAccessible(page, `appearance ${tab}`)
+      await expectNoSideways(page)
+    })
   }
 })
 

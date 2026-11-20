@@ -1,0 +1,104 @@
+[
+  {
+    "id": "inter",
+    "name": "Inter",
+    "files": [
+      "inter-latin-ext-wght-normal.woff2",
+      "inter-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/inter"
+  },
+  {
+    "id": "dm-sans",
+    "name": "DM Sans",
+    "files": [
+      "dm-sans-latin-ext-wght-normal.woff2",
+      "dm-sans-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/dm-sans"
+  },
+  {
+    "id": "manrope",
+    "name": "Manrope",
+    "files": [
+      "manrope-latin-ext-wght-normal.woff2",
+      "manrope-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/manrope"
+  },
+  {
+    "id": "work-sans",
+    "name": "Work Sans",
+    "files": [
+      "work-sans-latin-ext-wght-normal.woff2",
+      "work-sans-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/work-sans"
+  },
+  {
+    "id": "jost",
+    "name": "Jost",
+    "files": [
+      "jost-latin-ext-wght-normal.woff2",
+      "jost-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/jost"
+  },
+  {
+    "id": "space-grotesk",
+    "name": "Space Grotesk",
+    "files": [
+      "space-grotesk-latin-ext-wght-normal.woff2",
+      "space-grotesk-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/space-grotesk"
+  },
+  {
+    "id": "fraunces",
+    "name": "Fraunces",
+    "files": [
+      "fraunces-latin-ext-wght-normal.woff2",
+      "fraunces-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/fraunces"
+  },
+  {
+    "id": "playfair-display",
+    "name": "Playfair Display",
+    "files": [
+      "playfair-display-latin-ext-wght-normal.woff2",
+      "playfair-display-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/playfair-display"
+  },
+  {
+    "id": "libre-baskerville",
+    "name": "Libre Baskerville",
+    "files": [
+      "libre-baskerville-latin-ext-400-normal.woff2",
+      "libre-baskerville-latin-400-normal.woff2",
+      "libre-baskerville-latin-ext-700-normal.woff2",
+      "libre-baskerville-latin-700-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource/libre-baskerville"
+  },
+  {
+    "id": "cormorant-garamond",
+    "name": "Cormorant Garamond",
+    "files": [
+      "cormorant-garamond-latin-ext-wght-normal.woff2",
+      "cormorant-garamond-latin-wght-normal.woff2"
+    ],
+    "version": "5.3.0",
+    "package": "@fontsource-variable/cormorant-garamond"
+  }
+]

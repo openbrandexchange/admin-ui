@@ -66,6 +66,22 @@ export async function setLanguage(lang: Lang, { remember = true } = {}) {
   }
 }
 
+// The Appearance editor's strings (brand admins only) are a separate file per language, loaded
+// with the editor, so they cost retailers nothing. Same keys under `appearance.*`.
+const appearanceLoaders = import.meta.glob<{ default: Record<string, unknown> }>('../locales/appearance/*.json')
+const appearanceLoaded = new Set<string>()
+
+export async function ensureAppearanceStrings(lang: string) {
+  for (const l of new Set([SOURCE_LANG, lang])) {
+    if (appearanceLoaded.has(l)) continue
+    const load = appearanceLoaders[`../locales/appearance/${l}.json`]
+    if (!load) continue
+    const mod = await load()
+    i18next.addResourceBundle(l, 'translation', { appearance: mod.default }, true, true)
+    appearanceLoaded.add(l)
+  }
+}
+
 export function currentLanguage(): Lang {
   const l = i18next.resolvedLanguage ?? i18next.language
   return isLang(l) ? l : SOURCE_LANG

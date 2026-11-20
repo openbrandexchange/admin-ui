@@ -5,7 +5,9 @@ import { useBranding, useLogin, useSession } from '../../queries/session'
 import { setLanguage } from '../../i18n'
 import { isLang } from '../../i18n/languages'
 import { localized } from '../../lib/localized'
-import { usePortalTitle } from '../../lib/branding'
+import { portalText, usePortalTitle } from '../../lib/branding'
+import type { PublicBranding } from '../../api/types'
+import { PublicFrame } from '../../shell/PublicShell'
 import { Button, TextField } from '../../ui/controls'
 import { ErrorNote, Notice } from '../../ui/feedback'
 import { PublicCard } from './PublicCard'
@@ -27,14 +29,14 @@ export function LoginScreen() {
     return <Navigate to={search.redirect ?? (session.data.user?.role === 'admin' ? '/admin' : '/')} replace />
   }
 
-  const welcome = localized(branding.data?.welcome_text, i18n.language)
+  const { heading, intro } = loginTexts(branding.data, title.full, i18n.language, t)
   const demo = demoOf(branding.data)
   // A demo portal has no accounts with passwords: only the one-click sign-in.
   if (demo) return <DemoSignIn demo={demo} />
 
   return (
     <>
-      <PublicCard title={t('login.title', { portal: title.full })} intro={welcome || t('login.intro')}>
+      <PublicCard title={heading} intro={intro}>
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -79,5 +81,38 @@ export function LoginScreen() {
         </Notice>
       )}
     </>
+  )
+}
+
+/** The login page's title and text: the brand's own (Appearance), else the welcome text, else ours. */
+function loginTexts(b: PublicBranding | undefined, portal: string, lang: string, t: (k: string, o?: Record<string, unknown>) => string) {
+  const heading = portalText(b?.login?.title, lang, b?.default_language) || t('login.title', { portal })
+  const intro = portalText(b?.login?.text, lang, b?.default_language) || localized(b?.welcome_text, lang) || t('login.intro')
+  return { heading, intro }
+}
+
+/** The login page as retailers will see it, for the Appearance preview (the form does nothing). */
+export function LoginPreview({ branding }: { branding: PublicBranding }) {
+  const { t, i18n } = useTranslation()
+  const title = usePortalTitle(branding)
+  const { heading, intro } = loginTexts(branding, title.full, i18n.language, t)
+  return (
+    <PublicFrame branding={branding}>
+      <PublicCard title={heading} intro={intro}>
+        <form className="space-y-4" onSubmit={(e) => e.preventDefault()} aria-label={t('appearance.preview.loginForm')}>
+          <TextField label={t('fields.email')} type="email" autoComplete="off" readOnly value="" tabIndex={-1} />
+          <TextField label={t('fields.password')} type="password" autoComplete="off" readOnly value="" tabIndex={-1} />
+          <Button type="submit" variant="primary" className="w-full" tabIndex={-1}>
+            {t('login.submit')}
+          </Button>
+          <p className="text-center text-sm text-stone-600 underline underline-offset-2">{t('login.forgot')}</p>
+        </form>
+      </PublicCard>
+      {branding.access_requests_enabled && (
+        <p className="text-center text-sm text-stone-600">
+          {t('login.noAccount')} <span className="font-medium text-accent-strong underline underline-offset-2">{t('login.requestAccess')}</span>
+        </p>
+      )}
+    </PublicFrame>
   )
 }

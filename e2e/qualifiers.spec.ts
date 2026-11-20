@@ -96,6 +96,8 @@ test('a retailer filters on two claims, keeps them in the address and downloads 
     await page.getByRole('button', { name: /^Filters/ }).click()
   }
   await expect(page.getByRole('group', { name: 'Sustainability', exact: true }).getByRole('checkbox', { name: /^Organic/ })).toBeChecked()
+  // On a phone the filters are a sheet: back to the articles.
+  if (isMobile) await page.getByRole('button', { name: 'Show 2 articles' }).click()
 
   // "Download all" sends the same filter to the node.
   const request = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/admin/api/portal/download-jobs'))

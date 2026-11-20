@@ -36,7 +36,7 @@ test('after following a link inside the page, focus starts at the new content', 
 })
 
 test('logs in with the keyboard only', async ({ page }) => {
-  await page.goto('./login?mock=reset')
+  await page.goto('./login?mock=plain')
   await tabTo(page, "(el) => el?.getAttribute('type') === 'email'")
   await page.keyboard.type(buyer.email)
   await page.keyboard.press('Tab')

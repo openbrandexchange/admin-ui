@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => chooseEnglish(page))
 
 type Screen = { path: string; name?: string; prepare?: (page: Page, isMobile: boolean) => Promise<void> }
 
-const TOP_KEYS = Object.keys(JSON.parse(readFileSync(new URL('../src/locales/en.json', import.meta.url), 'utf8')))
+const TOP_KEYS = [...Object.keys(JSON.parse(readFileSync(new URL('../src/locales/en.json', import.meta.url), 'utf8'))), 'appearance']
 
 /** Everything the hunt checks inside the page. Runs in the browser; returns readable problems. */
 function inspect({ topKeys }: { topKeys: string[] }): string[] {
@@ -23,8 +23,11 @@ function inspect({ topKeys }: { topKeys: string[] }): string[] {
     const text = ((el as HTMLElement).innerText || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim().replace(/\s+/g, ' ').slice(0, 40)
     return `<${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''}${el.getAttribute('role') ? ` role=${el.getAttribute('role')}` : ''}> "${text}"`
   }
+  // An open modal dialog makes the rest of the page inert: only its own controls count then.
+  const modal = document.querySelector('dialog:modal')
   const shown = (el: Element) => {
     if (el.closest('[aria-hidden="true"], [inert], [hidden]')) return false
+    if (modal && !modal.contains(el)) return false
     const r = el.getBoundingClientRect()
     const cs = getComputedStyle(el)
     return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) > 0
@@ -180,11 +183,37 @@ const openFilters = async (page: Page, isMobile: boolean) => {
 }
 
 const PORTAL: Screen[] = [
-  { path: './', name: 'catalog', prepare: openFilters },
-  { path: `./?${new URLSearchParams({ qualifier: JSON.stringify(['organic', 'post_consumer']), item_type: JSON.stringify(['t_shirt', 'bag']) })}`, name: 'catalog with filters', prepare: openFilters },
-  { path: './?q=no-such-article', name: 'catalog without results' },
+  { path: './', name: 'start page (themed showroom)' },
   {
-    path: './?q=KO-1009',
+    path: './',
+    name: 'start page, quick view of a product',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: /^Quick view/ }).first().click()
+      await page.getByRole('dialog').getByRole('table').waitFor()
+    },
+  },
+  { path: './catalog', name: 'catalog', prepare: openFilters },
+  {
+    path: './catalog',
+    name: 'catalog, quick view',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: /^Quick view/ }).first().click()
+      await page.getByRole('dialog').getByRole('table').waitFor()
+    },
+  },
+  { path: './catalog?item_type=bag', name: 'catalog from a start page tile' },
+  { path: `./catalog?${new URLSearchParams({ qualifier: JSON.stringify(['organic', 'post_consumer']), item_type: JSON.stringify(['t_shirt', 'bag']) })}`, name: 'catalog with filters', prepare: openFilters },
+  { path: './catalog?q=no-such-article', name: 'catalog without results' },
+  {
+    path: './products/KO-1001',
+    name: 'article page, image full screen',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: 'View image full screen' }).click()
+      await page.getByRole('button', { name: 'Next image' }).waitFor()
+    },
+  },
+  {
+    path: './catalog?q=KO-1009',
     name: 'article page (bag, two claims)',
     prepare: async (page) => {
       await page.getByRole('list', { name: 'Articles' }).getByRole('link').first().click()
@@ -192,7 +221,7 @@ const PORTAL: Screen[] = [
     },
   },
   {
-    path: './?q=KO-1008',
+    path: './catalog?q=KO-1008',
     name: 'article page (suitcase), added to the selection',
     prepare: async (page) => {
       await page.getByRole('list', { name: 'Articles' }).getByRole('link').first().click()
@@ -242,8 +271,31 @@ const ADMIN: Screen[] = [
   './admin/settings?tab=team',
   './admin/settings?tab=account',
   './admin/settings?tab=system',
+  './admin/appearance',
+  './admin/appearance?tab=login',
+  './admin/appearance?tab=home',
+  './admin/appearance?tab=images',
   './',
 ].map((path) => ({ path }))
+
+ADMIN.push(
+  {
+    path: './admin/appearance?tab=home',
+    name: 'appearance: a block opened, preview on the phone',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: /^Image tiles/ }).click()
+      await page.getByRole('radio', { name: 'Phone' }).click()
+    },
+  },
+  {
+    path: './admin/appearance?tab=home',
+    name: 'appearance: adding a block',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: 'Add a block' }).click()
+      await page.getByRole('dialog').waitFor()
+    },
+  },
+)
 
 ADMIN.push(
   {
@@ -282,12 +334,17 @@ test.describe('UX hunt', () => {
   })
 
   test('retailer portal', async ({ page, isMobile }) => {
-    await logIn(page, buyer)
+    await logIn(page, buyer, 'showroom')
     await walk(page, isMobile, PORTAL)
   })
 
+  test('retailer portal in the default look', async ({ page, isMobile }) => {
+    await logIn(page, buyer)
+    await walk(page, isMobile, [{ path: './', name: 'catalog as the start page', prepare: openFilters }, { path: './?q=KO-1003', name: 'catalog with a search' }, { path: './products/KO-1003', name: 'article page' }])
+  })
+
   test('brand admin', async ({ page, isMobile }) => {
-    await logIn(page, admin)
+    await logIn(page, admin, 'showroom')
     await walk(page, isMobile, ADMIN)
   })
 })

@@ -38,7 +38,7 @@ export function DashboardScreen() {
   const pending = requests.data?.pages[0]?.items ?? []
   const steps = [
     { done: (total.data ?? 0) > 0, label: t('dashboard.step.import'), to: '/admin/imports' },
-    { done: !!settings.data?.branding?.logo_url || !!settings.data?.branding?.welcome_text, label: t('dashboard.step.look'), to: '/admin/settings' },
+    { done: !!settings.data?.branding?.logo_url || !!settings.data?.branding?.welcome_text || !!settings.data?.branding?.theme, label: t('dashboard.step.look'), to: '/admin/appearance' },
     { done: (retailers.data?.pages[0]?.items.length ?? 0) > 0, label: t('dashboard.step.retailer'), to: '/admin/retailers' },
     {
       done: (tokens.data?.items.some((x) => x.status === 'active') ?? false) || (sources.data?.items.length ?? 0) > 0,

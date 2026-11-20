@@ -27,6 +27,7 @@ import { parseMaterials, unknownMaterials } from '../lib/materials'
 import { defaultVariantId } from '../lib/validate'
 import { labelWarnings, measurementsFrom, parseCertifications, parseFeature, parseFootwear, type FeatureValue } from '../lib/article'
 import { COLOUR_FAMILIES, MEASUREMENTS } from '../lib/vocab'
+import { showroomBranding, showroomImages, showroomPackshot, type MockImage } from './showroom'
 
 export const DEMO = {
   admin: { email: 'admin@kestrel.example', password: 'kestrel-admin-2026' },
@@ -68,9 +69,11 @@ export interface MockDb {
   downloadJobs: (DownloadJob & { user_id: string })[]
   events: DownloadEvent[]
   selections: Record<string, string[]>
+  /** Branding images (Appearance): login background, start page blocks. */
+  images: MockImage[]
 }
 
-const STORAGE = 'obx.mock.v4'
+const STORAGE = 'obx.mock.v5'
 const now = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const daysAgo = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString().replace(/\.\d{3}Z$/, 'Z')
 
@@ -135,6 +138,7 @@ function emptyDb(): MockDb {
     downloadJobs: [],
     events: [],
     selections: {},
+    images: [],
   }
 }
 
@@ -396,7 +400,8 @@ Kestrel,KL-8005,Label Test Sandal,sandals,,,upper: leather; lining_and_sock: lea
 Kestrel,KL-8006,Label Test Complete,t_shirt,main: 100% cotton,no,
 `
 
-export function seedDb(): MockDb {
+/** `showroom`: the themed MAISON NOOR demo; otherwise the portal's default look. */
+export function seedDb(showroom = true): MockDb {
   const db = emptyDb()
   db.setupRequired = false
   const admin: MockUser = { id: 'usr_admin', email: DEMO.admin.email, name: 'Iris de Vries', role: 'admin', status: 'active', language: 'nl', retailer_id: null, last_login_at: daysAgo(1), invite_expires_at: null, created_at: daysAgo(120), password: DEMO.admin.password }
@@ -404,7 +409,7 @@ export function seedDb(): MockDb {
   db.brands.push(record(db, 'brand', 'kestrel', { name: 'Kestrel', website: 'https://kestrel.example' }))
   const base = fixtureBase()
   const images = imagesJson as Record<string, { sha256: string; bytes: number; width: number; height: number }>
-  for (const [file, meta] of Object.entries(images)) db.blobs[meta.sha256] = { sha256: meta.sha256, bytes: meta.bytes, content_type: 'image/png', width: meta.width, height: meta.height, url: base + file }
+  for (const [file, meta] of Object.entries(images)) db.blobs[meta.sha256] = { sha256: meta.sha256, bytes: meta.bytes, content_type: 'image/png', width: meta.width, height: meta.height, url: showroom ? showroomPackshot(file) : base + file }
   const manifest = Object.entries(images).map(([file, m]) => ({ file, sha256: m.sha256, width: m.width, height: m.height }))
   const outcome = applyImport(db, { csv: productsCsv, assetsCsv, manifest, defaultLang: 'en' })
 
@@ -446,6 +451,12 @@ export function seedDb(): MockDb {
   const checkRun: ImportRun = { id: newId(db, 'imp'), source_id: null, trigger: 'upload', status: 'succeeded', mode: 'upsert', dry_run: true, created_at: daysAgo(1), started_at: daysAgo(1), finished_at: daysAgo(1), files: [{ name: 'products.csv', bytes: LABEL_CHECK_CSV.length, sha256: null }], counts: check.counts, error: null, errors_preview: check.errors.slice(0, 50) as ImportRowError[] }
   db.importRuns.unshift(checkRun)
   db.importErrors[checkRun.id] = check.errors as ImportRowError[]
+  if (showroom) {
+    db.settings.company = { ...db.settings.company, name: 'Maison Noor' }
+    db.settings.branding = showroomBranding()
+    db.brands[0].data.name = 'MAISON NOOR'
+    db.images = showroomImages(daysAgo(20))
+  }
   return db
 }
 
@@ -475,9 +486,9 @@ export function save() {
   }
 }
 
-/** `fresh` = a node that still needs first-run setup; `seeded` = the Kestrel demo. */
-export function resetDb(kind: 'fresh' | 'seeded' = 'seeded') {
-  current = kind === 'fresh' ? emptyDb() : seedDb()
+/** `fresh` = a node that still needs first-run setup; `seeded` = the themed demo showroom; `plain` = the same catalogue in the portal's default look. */
+export function resetDb(kind: 'fresh' | 'seeded' | 'plain' = 'seeded') {
+  current = kind === 'fresh' ? emptyDb() : seedDb(kind === 'seeded')
   save()
   return current
 }
