@@ -45,7 +45,7 @@ test('themed showroom: start page, catalogue, quick view, article', async ({ pag
   await page.getByRole('dialog').getByRole('table').waitFor()
   await expectAccessible(page, 'quick view')
   await page.keyboard.press('Escape')
-  await page.goto('./products/KO-1001')
+  await page.goto('./products/MN-1001')
   await page.getByRole('heading', { name: 'Sizes and EAN' }).waitFor()
   await expectAccessible(page, 'themed article')
 })
@@ -65,9 +65,9 @@ test.describe('appearance editor', () => {
 const ADMIN_PATHS = [
   './admin',
   './admin/catalog',
-  './admin/catalog/KO-1001',
-  './admin/catalog/KO-1008',
-  './admin/catalog/KO-1010',
+  './admin/catalog/MN-1001',
+  './admin/catalog/MN-1008',
+  './admin/catalog/MN-1010',
   './admin/catalog/new',
   './admin/imports',
   './admin/automation',

@@ -68,13 +68,13 @@ describe('theme engine', () => {
 
 describe('start page links', () => {
   it('accepts portal paths and https only', () => {
-    for (const ok of ['/catalog?item_type=bag', '/products/KO-1001', '/', 'https://example.com/x']) expect(isPortalLink(ok), ok).toBe(true)
+    for (const ok of ['/catalog?item_type=bag', '/products/MN-1001', '/', 'https://example.com/x']) expect(isPortalLink(ok), ok).toBe(true)
     for (const bad of ['//evil.example', 'http://example.com', 'javascript:alert(1)', 'mailto:a@b.c', '/\\evil', 'catalog', '']) expect(isPortalLink(bad), bad).toBe(false)
   })
 
   it('turns a catalogue link into route and filters', () => {
     expect(parseLink('/catalog?item_type=bag&item_type=shoes&q=noir')).toEqual({ external: false, to: '/catalog', search: { item_type: ['bag', 'shoes'], q: 'noir' } })
-    expect(parseLink('https://maisonnoor.example/')).toEqual({ external: true, href: 'https://maisonnoor.example/' })
+    expect(parseLink('https://maison-noor.example/')).toEqual({ external: true, href: 'https://maison-noor.example/' })
     expect(queryFilter('season=AW26&qualifier=organic&cursor=5&limit=3')).toEqual({ season: ['AW26'], qualifier: ['organic'] })
   })
 
@@ -142,14 +142,14 @@ describe('the themed showroom', () => {
     expect(r.router.state.location.pathname).toBe('/')
     expect(screen.getByRole('note')).toHaveTextContent('order window closes on 15 December')
     expect(screen.getByRole('link', { name: 'Bags' })).toHaveAttribute('href', '/catalog?item_type=%5B%22bag%22%5D')
-    expect(screen.getByRole('link', { name: 'wholesale@maisonnoor.example' })).toHaveAttribute('href', 'mailto:wholesale@maisonnoor.example')
+    expect(screen.getByRole('link', { name: 'wholesale@maison-noor.example' })).toHaveAttribute('href', 'mailto:wholesale@maison-noor.example')
     expect(screen.queryByText('Not for this version')).toBeNull()
     // The products block: AW26 articles only.
     const row = await screen.findByRole('list', { name: 'New this season' })
     await waitFor(() => expect(within(row).getAllByRole('article').length).toBeGreaterThan(0))
     for (const a of within(row).getAllByRole('article')) expect(a).toHaveTextContent('AW26')
     // Filters on the start page URL show the catalogue (old bookmarks keep working).
-    await r.router.navigate({ to: '/', search: { q: 'KO-1001' } })
+    await r.router.navigate({ to: '/', search: { q: 'MN-1001' } })
     expect(await screen.findByRole('heading', { name: 'Catalog', level: 1 })).toBeInTheDocument()
   })
 
@@ -157,9 +157,9 @@ describe('the themed showroom', () => {
     resetDb('seeded')
     const r = await loginAs('retailer')
     await screen.findByRole('heading', { name: 'Autumn/Winter 2026' })
-    await r.router.navigate({ to: '/catalog', search: { q: 'KO-1001' } })
-    await r.user.click(await screen.findByRole('button', { name: /quick view.*merino crew sweater/i }))
-    const dialog = await screen.findByRole('dialog', { name: 'Merino Crew Sweater' })
+    await r.router.navigate({ to: '/catalog', search: { q: 'MN-1001' } })
+    await r.user.click(await screen.findByRole('button', { name: /quick view.*fine merino crew-neck sweater/i }))
+    const dialog = await screen.findByRole('dialog', { name: 'Fine Merino Crew-Neck Sweater' })
     expect(await within(dialog).findByText('2000100101018')).toBeInTheDocument()
     await r.user.click(within(dialog).getByRole('button', { name: 'Add to selection' }))
     await waitFor(() => expect(db().selections.usr_buyer).toHaveLength(1))
@@ -170,8 +170,8 @@ describe('the themed showroom', () => {
     resetDb('seeded')
     const r = await loginAs('retailer')
     await screen.findByRole('heading', { name: 'Autumn/Winter 2026' })
-    await r.router.navigate({ to: '/products/$id', params: { id: 'KO-1004' } })
-    expect(await screen.findByRole('heading', { name: 'Selvedge Straight Jeans', level: 1 })).toBeInTheDocument()
+    await r.router.navigate({ to: '/products/$id', params: { id: 'MN-1004' } })
+    expect(await screen.findByRole('heading', { name: 'High-Rise Straight Selvedge Jeans', level: 1 })).toBeInTheDocument()
   })
 })
 

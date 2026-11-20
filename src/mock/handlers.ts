@@ -971,7 +971,7 @@ export const handlers = [
     `${API}/import-template.csv`,
     route(({ d }) => {
       admin(d)
-      const csv = 'brand,style_number,name:en,name:nl,item_type,season,materials,contains_animal_origin,care,country_of_origin,feature:closure,gtin,color_code,color_name:en,color_family,size,weight_kg\r\nKestrel,KO-9001,Rain Jacket,Regenjas,jacket,AW26,outer: 100% polyamide (recycled); lining: 100% polyester,no,wash_30|do_not_bleach,PT,zip,2000100101018,NVY,Navy,blue,M,0.45\r\n'
+      const csv = 'brand,style_number,name:en,name:nl,item_type,season,materials,contains_animal_origin,care,country_of_origin,feature:closure,gtin,color_code,color_name:en,color_family,size,weight_kg\r\nMAISON NOOR,MN-9001,Rain Jacket,Regenjas,jacket,AW26,outer: 100% polyamide (recycled); lining: 100% polyester,no,wash_30|do_not_bleach,PT,zip,2000100101018,NVY,Navy,blue,M,0.45\r\n'
       return new HttpResponse('﻿' + csv, { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="products-template.csv"' } })
     }),
   ),
@@ -1030,7 +1030,7 @@ export const handlers = [
       admin(d)
       const s = d.importSources.find((x) => x.id === params.id)
       if (!s) throw stop(404, 'not_found')
-      return HttpResponse.json({ ok: true, message: 'Connected (mock).', host_key_fingerprint: s.kind === 'sftp' ? 'SHA256:mockmockmockmockmockmockmockmockmockmock0' : null, files: [{ name: 'products.csv', bytes: 18_422, modified_at: nowIso() }, { name: 'images/KO-1001_NVY_1.jpg', bytes: 812_004, modified_at: nowIso() }] })
+      return HttpResponse.json({ ok: true, message: 'Connected (mock).', host_key_fingerprint: s.kind === 'sftp' ? 'SHA256:mockmockmockmockmockmockmockmockmockmock0' : null, files: [{ name: 'products.csv', bytes: 18_422, modified_at: nowIso() }, { name: 'images/MN-1001_NVY_1.jpg', bytes: 812_004, modified_at: nowIso() }] })
     }),
   ),
   http.post(

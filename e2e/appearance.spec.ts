@@ -31,7 +31,7 @@ test('a retailer starts on the brand’s start page and follows a tile into the 
   await expect(page.getByRole('heading', { name: 'Autumn/Winter 2026' })).toBeVisible()
   await expect(page.getByRole('note')).toContainText('order window closes on 15 December')
   await expect(page.getByRole('heading', { name: 'New this season' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'wholesale@maisonnoor.example' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'wholesale@maison-noor.example' })).toBeVisible()
   await expectNoSideways(page)
   await shot(page, 'showroom-start', isMobile)
   await page.getByRole('link', { name: 'Bags' }).click()
@@ -45,10 +45,10 @@ test('a retailer starts on the brand’s start page and follows a tile into the 
 
 test('quick view: images, sizes and EANs, add to the selection, Escape returns focus', async ({ page, isMobile }) => {
   await logIn(page, buyer, 'showroom')
-  await page.goto('./catalog?q=KO-1001')
+  await page.goto('./catalog?q=MN-1001')
   const open = page.getByRole('button', { name: /^Quick view/ }).first()
   await open.click()
-  const dialog = page.getByRole('dialog', { name: 'Merino Crew Sweater' })
+  const dialog = page.getByRole('dialog', { name: 'Fine Merino Crew-Neck Sweater' })
   await expect(dialog.getByText('2000100101018')).toBeVisible()
   await dialog.getByRole('button', { name: 'Add to selection' }).click()
   await expect(dialog.getByRole('button', { name: 'In your selection' })).toBeVisible()
@@ -61,8 +61,8 @@ test('quick view: images, sizes and EANs, add to the selection, Escape returns f
 
 test('the article page: large gallery, full-screen image with arrow keys', async ({ page, isMobile }) => {
   await logIn(page, buyer, 'showroom')
-  await page.goto('./products/KO-1003')
-  await expect(page.getByRole('heading', { name: 'Organic Cotton Tee', level: 1 })).toBeVisible()
+  await page.goto('./products/MN-1003')
+  await expect(page.getByRole('heading', { name: 'Organic Cotton Boxy Tee', level: 1 })).toBeVisible()
   await page.getByRole('button', { name: 'View image full screen' }).click()
   const viewer = page.getByRole('dialog')
   await expect(viewer.getByText('1 / ')).toBeVisible()

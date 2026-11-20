@@ -35,13 +35,13 @@ describe('LocalizedText fallback: user language → en → first available', () 
 })
 
 describe('website addresses typed without https://', () => {
-  it('adds https:// to a bare domain', () => expect(withScheme(' www.kestrel.example ')).toBe('https://www.kestrel.example'))
+  it('adds https:// to a bare domain', () => expect(withScheme(' www.maison-noor.example ')).toBe('https://www.maison-noor.example'))
   it('keeps an address that has a scheme', () => {
     expect(withScheme('http://shop.example/nl')).toBe('http://shop.example/nl')
     expect(withScheme('HTTPS://Shop.example')).toBe('HTTPS://Shop.example')
   })
   it('leaves an empty field empty', () => expect(withScheme('  ')).toBe(''))
-  it('makes a bare domain pass the address check', () => expect(urlProblem(withScheme('kestrel.example'))).toBeNull())
+  it('makes a bare domain pass the address check', () => expect(urlProblem(withScheme('maison-noor.example'))).toBeNull())
 })
 
 describe('language detection', () => {
@@ -243,7 +243,7 @@ describe('codes and validation', () => {
     expect(passwordProblem('a'.repeat(73))).toBe('validate.passwordLong')
     expect(passwordProblem('correct horse battery')).toBeNull()
   })
-  it('slugs brand names', () => expect(slugify('Kestrel Trail Ñ')).toBe('kestrel-trail-n'))
+  it('slugs brand names', () => expect(slugify('NOOR ATELIER Ñ')).toBe('noor-atelier-n'))
   it('only follows same-site redirects after login', () => {
     expect(safeRedirect('/admin/catalog')).toBe('/admin/catalog')
     expect(safeRedirect('//evil.example')).toBeUndefined()
@@ -284,18 +284,18 @@ describe('client-side renditions', () => {
 
 describe('automation recipes', () => {
   it('fill in the portal address and the token', () => {
-    const s = automationSnippets('https://brands.kestrel.example/', 'obxi_secret')
+    const s = automationSnippets('https://brands.maison-noor.example/', 'obxi_secret')
     const cli = s.find((x) => x.id === 'cli')!.code
-    expect(cli).toContain('OBX_URL=https://brands.kestrel.example\n')
+    expect(cli).toContain('OBX_URL=https://brands.maison-noor.example\n')
     expect(cli).toContain('OBX_TOKEN=obxi_secret')
-    expect(s.find((x) => x.id === 'curl')!.code).toContain('https://brands.kestrel.example/obx/v1/ingest/imports')
+    expect(s.find((x) => x.id === 'curl')!.code).toContain('https://brands.maison-noor.example/obx/v1/ingest/imports')
   })
   it('never invent a token', () => expect(automationSnippets('https://x.example').every((s) => !/obxi_[A-Za-z0-9]/.test(s.code))).toBe(true))
 })
 
 describe('helpers', () => {
   it('reads download names from Content-Disposition', () => {
-    expect(filenameFromDisposition(`attachment; filename*=UTF-8''KO-1001%20NVY.zip`, 'x')).toBe('KO-1001 NVY.zip')
+    expect(filenameFromDisposition(`attachment; filename*=UTF-8''MN-1001%20NVY.zip`, 'x')).toBe('MN-1001 NVY.zip')
     expect(filenameFromDisposition('attachment; filename="a.csv"', 'x')).toBe('a.csv')
     expect(filenameFromDisposition(null, 'x')).toBe('x')
   })
@@ -304,10 +304,10 @@ describe('helpers', () => {
     expect(sinceDays(7, t)).toBe('2026-09-21T00:00:00Z')
   })
   it('parses canonical image names from the right', () => {
-    expect(parseImageName('KO-1001_NVY_2_back.jpg')).toMatchObject({ style: 'KO-1001', color: 'NVY', position: 2, role: 'packshot', view: 'back' })
+    expect(parseImageName('MN-1001_NVY_2_back.jpg')).toMatchObject({ style: 'MN-1001', color: 'NVY', position: 2, role: 'packshot', view: 'back' })
     expect(parseImageName('AB_12_34_BLK_2_packshot_back.JPG')).toMatchObject({ style: 'AB_12_34', color: 'BLK', position: 2 })
-    expect(parseImageName('KO-1004_IND_3_detail.jpg')).toMatchObject({ role: 'detail', view: 'detail' })
-    expect(parseImageName('KO-1001_NVY_front.jpg')).toBeNull()
+    expect(parseImageName('MN-1004_IND_3_detail.jpg')).toMatchObject({ role: 'detail', view: 'detail' })
+    expect(parseImageName('MN-1001_NVY_front.jpg')).toBeNull()
   })
   it('parses CSV with quotes and semicolons', () => expect(parseCsv('a;b\n"x;1";"he said ""hi"""\n')).toEqual([['a', 'b'], ['x;1', 'he said "hi"']]))
 })
@@ -337,12 +337,12 @@ describe('LocalizedText in a merge patch', () => {
 
 describe('variant ids and language tags (spec 0.3)', () => {
   it('proposes style-colour-size[-length], never the EAN', () => {
-    expect(defaultVariantId('KO-1001', 'NVY', 'M')).toBe('KO-1001-NVY-M')
-    expect(defaultVariantId('KO-1004', 'IND', '30', '32')).toBe('KO-1004-IND-30-32')
-    expect(defaultVariantId('KO-1004', 'IND', '32/34')).toBe('KO-1004-IND-32_34')
-    expect(defaultVariantId('KO-1005', 'COG', 'ONE SIZE', '')).toBe('KO-1005-COG-ONE SIZE')
-    expect(defaultVariantId('KO-1005', 'COG', '', '')).toBe('KO-1005-COG')
-    expect(defaultVariantId('KO-1', 'A\tB', 'S')).toBe('KO-1-A_B-S')
+    expect(defaultVariantId('MN-1001', 'NVY', 'M')).toBe('MN-1001-NVY-M')
+    expect(defaultVariantId('MN-1004', 'IND', '30', '32')).toBe('MN-1004-IND-30-32')
+    expect(defaultVariantId('MN-1004', 'IND', '32/34')).toBe('MN-1004-IND-32_34')
+    expect(defaultVariantId('MN-1005', 'COG', 'ONE SIZE', '')).toBe('MN-1005-COG-ONE SIZE')
+    expect(defaultVariantId('MN-1005', 'COG', '', '')).toBe('MN-1005-COG')
+    expect(defaultVariantId('MN-1', 'A\tB', 'S')).toBe('MN-1-A_B-S')
   })
   it('writes language tags with script and numeric region in canonical case', () => {
     expect(canonicalLanguageTag('ZH_hant')).toBe('zh-Hant')

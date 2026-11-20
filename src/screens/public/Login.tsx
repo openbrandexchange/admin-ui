@@ -77,7 +77,7 @@ export function LoginScreen() {
       )}
       {import.meta.env.VITE_OBX_MOCK && (
         <Notice>
-          <strong>Demo</strong> · admin@kestrel.example / kestrel-admin-2026 · buyer@shop.example / kestrel-shop-2026
+          <strong>Demo</strong> · admin@maison-noor.example / noor-admin-2026 · buyer@shop.example / noor-shop-2026
         </Notice>
       )}
     </>

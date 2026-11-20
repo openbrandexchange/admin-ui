@@ -6,7 +6,7 @@ import { thirdPartyNotices } from './scripts/third-party-notices'
 
 // One static single-page app for both the retailer portal (/) and the brand admin (/admin).
 // `base: './'` makes every asset path relative; index.html carries <base href="/"> so deep
-// SPA-fallback URLs (/admin/catalog/KO-1001) still resolve assets. A node mounted under a
+// SPA-fallback URLs (/admin/catalog/MN-1001) still resolve assets. A node mounted under a
 // sub-path only rewrites that one tag (see README "For node implementers").
 // The strictest Content-Security-Policy the UI works under (README "Security headers"). The
 // preview server sends it, so every Playwright run proves the UI needs nothing looser. Mock

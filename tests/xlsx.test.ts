@@ -16,11 +16,11 @@ import { canonicalCsv, readWorkbook } from '../src/mock/xlsx-read'
 const fixture = readFileSync(resolve(__dirname, '../src/mock/fixtures/products.csv'), 'utf8')
 const awkward = [
   ['style_number', 'gtin', 'name:en', 'note', 'materials'],
-  ['KO-1001', '02000100101018', 'Crew "Merino", navy', '=1+1', 'main: 100% merino_wool'],
-  ['KO-1002', '0012345678905', 'Line one\r\nline two', '_x0031_ literal', ' leading space'],
-  ['KO-1003', '', 'Ελληνικά · Български · Ħ', '+31 20 123 4567', 'tab\there'],
+  ['MN-1001', '02000100101018', 'Crew "Merino", navy', '=1+1', 'main: 100% merino_wool'],
+  ['MN-1002', '0012345678905', 'Line one\r\nline two', '_x0031_ literal', ' leading space'],
+  ['MN-1003', '', 'Ελληνικά · Български · Ħ', '+31 20 123 4567', 'tab\there'],
   ['', '', '', '', ''],
-  ['KO-1004', '4006381333931', 'after an empty row', '@sum', '-5'],
+  ['MN-1004', '4006381333931', 'after an empty row', '@sum', '-5'],
 ]
 const csvOf = (rows: string[][]) => rows.map((r) => r.map((v) => (/[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)).join(',')).join('\r\n') + '\r\n'
 

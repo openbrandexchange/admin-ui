@@ -154,5 +154,5 @@ export function postFormWithProgress<T>(path: string, form: FormData, onProgress
   })
 }
 
-/** Path segment encoding for external ids such as "KO-1001" or "KO 1001". */
+/** Path segment encoding for external ids such as "MN-1001" or "KO 1001". */
 export const seg = (s: string) => encodeURIComponent(s)

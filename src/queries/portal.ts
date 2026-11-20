@@ -50,7 +50,7 @@ const getProduct = async (id: string) => (await req(() => api.GET('/admin/api/po
 
 /**
  * An article by its id, or by its article number: start page links name articles the way
- * brands know them (`/products/KO-1001`).
+ * brands know them (`/products/MN-1001`).
  */
 export const portalProductQuery = (id: string) =>
   queryOptions({

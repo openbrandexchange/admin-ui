@@ -19,6 +19,7 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 - Logo and colours moved from Settings > Brand to Appearance; `accent_color` is still read and is kept equal to the main colour.
 - The mock opens as a themed demo showroom (`?mock=reset`); `?mock=plain` shows the default look.
 - Bundle budget: one language may be 27 kB (was 25 kB) for the new retailer texts.
+- The mock, tests and examples use the spec's new fictional brand MAISON NOOR (spec 0.3.1 fixtures) instead of Kestrel: brands `maison-noor` and `noor-atelier`, article numbers `MN-`/`NA-`/`ML-`/`MX-` instead of `KO-`/`KT-`/`KL-`/`KX-`, domains `maison-noor.example`. Demo log-in: `admin@maison-noor.example` / `noor-admin-2026` and `buyer@shop.example` / `noor-shop-2026`; setup code `NOOR-SETUP`.
 
 - Development tooling: Bun installs the dependencies and runs the scripts (`bun install`, `bun run …`, `bun.lock` instead of `package-lock.json`), and oxlint replaces ESLint for lint and type check (`.oxlintrc.json`). The build is the same; only `dist/NOTICE` now says `bun run mock`.
 

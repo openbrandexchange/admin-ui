@@ -1,4 +1,4 @@
-// In-memory mock node, seeded from the spec's Kestrel Outfitters fixtures. Used by
+// In-memory mock node, seeded from the spec's MAISON NOOR Group fixtures. Used by
 // `bun run mock` (MSW in the browser), the vitest suite (MSW in Node) and Playwright.
 // State survives reloads within a tab (sessionStorage). Everything is fictional.
 import productsCsv from './fixtures/products.csv?raw'
@@ -30,9 +30,9 @@ import { COLOUR_FAMILIES, MEASUREMENTS } from '../lib/vocab'
 import { showroomBranding, showroomImages, showroomPackshot, type MockImage } from './showroom'
 
 export const DEMO = {
-  admin: { email: 'admin@kestrel.example', password: 'kestrel-admin-2026' },
-  retailer: { email: 'buyer@shop.example', password: 'kestrel-shop-2026' },
-  setupCode: 'KESTREL-SETUP',
+  admin: { email: 'admin@maison-noor.example', password: 'noor-admin-2026' },
+  retailer: { email: 'buyer@shop.example', password: 'noor-shop-2026' },
+  setupCode: 'NOOR-SETUP',
 }
 
 export interface MockBlob {
@@ -90,13 +90,13 @@ export const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-const fixtureBase = () => (typeof document !== 'undefined' ? new URL('mock-fixtures/kestrel/', document.baseURI).toString() : 'http://localhost/mock-fixtures/kestrel/')
+const fixtureBase = () => (typeof document !== 'undefined' ? new URL('mock-fixtures/maison-noor/', document.baseURI).toString() : 'http://localhost/mock-fixtures/maison-noor/')
 
 function baseSettings(): MockDb['settings'] {
   const origin = typeof location !== 'undefined' ? location.origin : 'http://localhost:5173'
   return {
-    company: { name: 'Kestrel Outfitters', website: 'https://kestrel.example', contact_email: 'trade@kestrel.example', country: 'NL' },
-    branding: { display_name: 'Kestrel', logo_url: null, accent_color: '#1f4e5f', welcome_text: { en: 'Final product images and article data for Kestrel retailers.', nl: 'Definitieve productbeelden en artikeldata voor Kestrel-retailers.' } },
+    company: { name: 'MAISON NOOR Group', website: 'https://maison-noor.example', contact_email: 'trade@maison-noor.example', country: 'NL' },
+    branding: { display_name: 'MAISON NOOR', logo_url: null, accent_color: '#1f4e5f', welcome_text: { en: 'Final product images and article data for MAISON NOOR retailers.', nl: 'Definitieve productbeelden en artikeldata voor MAISON NOOR-retailers.' } },
     portal: { access_requests_enabled: true, allow_original_download: true, allow_article_data_export: true, retailer_api_self_service: true, languages: ['nl', 'en'], default_language: 'nl' },
     defaults: { rights: { license: 'retailer-use', channels: ['webshop', 'marketplace', 'social'], territories: null }, ingest_status: 'published' },
     node: {
@@ -107,7 +107,7 @@ function baseSettings(): MockDb['settings'] {
       email_configured: false,
       renditions_server_generated: true,
       max_upload_bytes: 200 * 1024 * 1024,
-      custom_domain_help: 'Point a CNAME record for your domain (for example brands.kestrel.example) at this installation, then set OBX_PUBLIC_URL to that address and restart.',
+      custom_domain_help: 'Point a CNAME record for your domain (for example brands.maison-noor.example) at this installation, then set OBX_PUBLIC_URL to that address and restart.',
     },
   }
 }
@@ -392,12 +392,12 @@ export function applyImport(db: MockDb, input: { csv?: string; assetsCsv?: strin
 
 /** spec fixtures/imports/label-warnings.csv (conformance I-IMP-8). */
 const LABEL_CHECK_CSV = `brand,style_number,name:en,item_type,materials,contains_animal_origin,footwear_materials
-Kestrel,KL-8001,Label Test Tee,t_shirt,,no,
-Kestrel,KL-8002,Label Test Scarf,scarf,main: 100% wool,,
-Kestrel,KL-8003,Label Test Sneaker,sneakers,upper: 100% polyester,,
-Kestrel,KL-8004,Label Test Shirt,shirt,"main: 60% cotton, 30% polyester",no,
-Kestrel,KL-8005,Label Test Sandal,sandals,,,upper: leather; lining_and_sock: leather
-Kestrel,KL-8006,Label Test Complete,t_shirt,main: 100% cotton,no,
+MAISON NOOR,ML-8001,Label Test Tee,t_shirt,,no,
+MAISON NOOR,ML-8002,Label Test Scarf,scarf,main: 100% wool,,
+MAISON NOOR,ML-8003,Label Test Sneaker,sneakers,upper: 100% polyester,,
+MAISON NOOR,ML-8004,Label Test Shirt,shirt,"main: 60% cotton, 30% polyester",no,
+MAISON NOOR,ML-8005,Label Test Sandal,sandals,,,upper: leather; lining_and_sock: leather
+MAISON NOOR,ML-8006,Label Test Complete,t_shirt,main: 100% cotton,no,
 `
 
 /** `showroom`: the themed MAISON NOOR demo; otherwise the portal's default look. */
@@ -406,7 +406,7 @@ export function seedDb(showroom = true): MockDb {
   db.setupRequired = false
   const admin: MockUser = { id: 'usr_admin', email: DEMO.admin.email, name: 'Iris de Vries', role: 'admin', status: 'active', language: 'nl', retailer_id: null, last_login_at: daysAgo(1), invite_expires_at: null, created_at: daysAgo(120), password: DEMO.admin.password }
   db.users.push(admin)
-  db.brands.push(record(db, 'brand', 'kestrel', { name: 'Kestrel', website: 'https://kestrel.example' }))
+  db.brands.push(record(db, 'brand', 'maison-noor', { name: 'MAISON NOOR', website: 'https://maison-noor.example' }))
   const base = fixtureBase()
   const images = imagesJson as Record<string, { sha256: string; bytes: number; width: number; height: number }>
   for (const [file, meta] of Object.entries(images)) db.blobs[meta.sha256] = { sha256: meta.sha256, bytes: meta.bytes, content_type: 'image/png', width: meta.width, height: meta.height, url: showroom ? showroomPackshot(file) : base + file }
@@ -452,9 +452,7 @@ export function seedDb(showroom = true): MockDb {
   db.importRuns.unshift(checkRun)
   db.importErrors[checkRun.id] = check.errors as ImportRowError[]
   if (showroom) {
-    db.settings.company = { ...db.settings.company, name: 'Maison Noor' }
     db.settings.branding = showroomBranding()
-    db.brands[0].data.name = 'MAISON NOOR'
     db.images = showroomImages(daysAgo(20))
   }
   return db

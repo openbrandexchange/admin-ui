@@ -18,7 +18,7 @@ bun install
 bun run mock          # the whole portal in your browser, no server needed
 ```
 
-Log in as `admin@kestrel.example` / `kestrel-admin-2026` (brand) or `buyer@shop.example` / `kestrel-shop-2026` (retailer).
+Log in as `admin@maison-noor.example` / `noor-admin-2026` (brand) or `buyer@shop.example` / `noor-shop-2026` (retailer).
 
 ## What every change needs
 

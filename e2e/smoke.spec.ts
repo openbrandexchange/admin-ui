@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
-const admin = { email: 'admin@kestrel.example', password: 'kestrel-admin-2026' }
-const buyer = { email: 'buyer@shop.example', password: 'kestrel-shop-2026' }
+const admin = { email: 'admin@maison-noor.example', password: 'noor-admin-2026' }
+const buyer = { email: 'buyer@shop.example', password: 'noor-shop-2026' }
 
 // The demo accounts are Dutch; most checks read English, so they start from a device where
 // the visitor already picked English (an explicit choice wins over the account language).

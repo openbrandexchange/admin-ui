@@ -18,7 +18,7 @@ Needs [Bun](https://bun.sh) 1.3 or newer (package manager and scripts) and Node.
 bun install && bun run mock        # the whole portal in your browser, with demo data
 ```
 
-Open the printed URL (http://localhost:5173). The portal API runs in your browser (a service worker seeded with the spec's fictional *Kestrel Outfitters* fixtures), so nothing else is needed. Changes to the code reload at once.
+Open the printed URL (http://localhost:5173). The portal API runs in your browser (a service worker seeded with the spec's fictional *MAISON NOOR Group* fixtures), so nothing else is needed. Changes to the code reload at once.
 
 Against a real node on your computer (node-go, node-ts or node-php, which all listen on http://localhost:8080):
 
@@ -31,10 +31,10 @@ The first time, the node asks for its setup code (printed in the node's terminal
 
 | Who | Email | Password |
 |---|---|---|
-| Brand admin | `admin@kestrel.example` | `kestrel-admin-2026` |
-| Retailer buyer | `buyer@shop.example` | `kestrel-shop-2026` |
+| Brand admin | `admin@maison-noor.example` | `noor-admin-2026` |
+| Retailer buyer | `buyer@shop.example` | `noor-shop-2026` |
 
-- `?mock=reset` restores the demo data with the themed demo showroom (the fictional MAISON NOOR: its own colours, fonts, login page and start page); `?mock=plain` the same data in the portal's default look; `?mock=fresh` starts an empty portal that still needs setup (setup code `KESTREL-SETUP`).
+- `?mock=reset` restores the demo data with the themed demo showroom (the fictional MAISON NOOR: its own colours, fonts, login page and start page); `?mock=plain` the same data in the portal's default look; `?mock=fresh` starts an empty portal that still needs setup (setup code `NOOR-SETUP`).
 - The demo accounts are set to Dutch, so after login the UI follows the account language unless you already picked a language on the login page.
 
 ## Languages

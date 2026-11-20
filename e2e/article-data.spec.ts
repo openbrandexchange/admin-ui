@@ -15,7 +15,7 @@ async function openArticle(page: Page, style: string) {
 test('a retailer reads the label, measurements and features of a suitcase, a bag and a boot', async ({ page }) => {
   await logIn(page, buyer)
 
-  await openArticle(page, 'KO-1008')
+  await openArticle(page, 'MN-1008')
   const label = page.getByRole('region', { name: 'Label information' })
   await expect(label).toContainText('100% Polyester (Recycled)')
   await expect(label).toContainText('Do not wash')
@@ -26,14 +26,14 @@ test('a retailer reads the label, measurements and features of a suitcase, a bag
   await expectAccessible(page, 'suitcase')
   await expectNoSideways(page)
 
-  await openArticle(page, 'KO-1009')
+  await openArticle(page, 'MN-1009')
   await expect(page.getByRole('region', { name: 'Label information' })).toContainText('GRS')
   await expect(page.getByRole('region', { name: 'Measurements', exact: true })).toContainText('up to 15.6 inches')
   await expect(page.getByRole('region', { name: 'Features' })).toContainText('Water-repellent')
   await expectAccessible(page, 'laptop bag')
   await expectNoSideways(page)
 
-  await openArticle(page, 'KO-1010')
+  await openArticle(page, 'MN-1010')
   await expect(page.getByRole('region', { name: 'Label information' })).toContainText('Lining and sock')
   await expect(page.getByRole('region', { name: 'Measurements', exact: true })).toContainText('Heel height')
   await expectAccessible(page, 'boot')
@@ -52,7 +52,7 @@ test('a brand admin sees label warnings in an import result, as warnings', async
 
 test('a brand admin edits the measurements of a size', async ({ page }) => {
   await logIn(page, admin)
-  await page.goto('./admin/catalog/KO-1009')
+  await page.goto('./admin/catalog/MN-1009')
   await expect(page.getByRole('heading', { name: 'Label information' })).toBeVisible()
   await page.getByRole('region', { name: 'Colours and sizes' }).getByRole('button', { name: 'Edit' }).first().click()
   const dialog = page.getByRole('dialog')

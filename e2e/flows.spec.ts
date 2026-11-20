@@ -16,9 +16,9 @@ test.describe('retailer', () => {
     await expect(list.getByRole('listitem')).toHaveCount(11)
 
     // Search narrows the list and lands in the URL (shareable, survives reload).
-    await page.getByRole('searchbox', { name: 'Search' }).fill('KO-1001')
+    await page.getByRole('searchbox', { name: 'Search' }).fill('MN-1001')
     await expect(list.getByRole('listitem')).toHaveCount(1)
-    await expect(page).toHaveURL(/q=KO-1001/)
+    await expect(page).toHaveURL(/q=MN-1001/)
     await page.reload()
     await expect(list.getByRole('listitem')).toHaveCount(1)
 
@@ -26,7 +26,7 @@ test.describe('retailer', () => {
     await expect(page.getByRole('heading', { name: 'Sizes and EANs' })).toBeVisible()
     const download = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Download this image' }).click()
-    expect((await download).suggestedFilename()).toMatch(/^KO-1001.*\.(jpe?g|png|webp)$/i)
+    expect((await download).suggestedFilename()).toMatch(/^MN-1001.*\.(jpe?g|png|webp)$/i)
 
     await page.getByRole('button', { name: 'Add to selection' }).click()
     await expect(page.getByRole('button', { name: 'In your selection' })).toBeVisible()
@@ -44,7 +44,7 @@ test.describe('retailer', () => {
     expect(file.suggestedFilename()).toBe('selection.xlsx')
     const rows = readWorkbook(new Uint8Array(readFileSync((await file.path())!))).map((r) => r.map((c) => c.text))
     expect(rows[0].slice(0, 2)).toEqual(['brand', 'style_number'])
-    expect(rows.slice(1).every((r) => r[1] === 'KO-1001')).toBe(true)
+    expect(rows.slice(1).every((r) => r[1] === 'MN-1001')).toBe(true)
     expect(rows.slice(1).map((r) => r[rows[0].indexOf('gtin')])).toContain('2000100101018')
 
     // Emptying asks first, and Cancel keeps everything.
@@ -105,7 +105,7 @@ test.describe('retailer', () => {
 test.describe('brand admin', () => {
   test('edits an article, validates inline and publishes it', async ({ page }) => {
     await logIn(page, admin)
-    await page.goto('./admin/catalog/KO-1001')
+    await page.goto('./admin/catalog/MN-1001')
     // A name in at least one language is required; the message sits under the field.
     const dutch = page.getByLabel(/^Name · Dutch/)
     const english = page.getByLabel(/^Name · English/)
@@ -141,13 +141,13 @@ test.describe('brand admin', () => {
     await logIn(page, admin)
     await page.goto('./admin/imports')
     await expect(page.getByRole('link', { name: 'Products (Excel)' })).toHaveAttribute('href', 'https://openbrandexchange.com/downloads/products.xlsx')
-    await expect(page.getByText('KO-1001_NVY_1.jpg', { exact: true })).toBeVisible()
+    await expect(page.getByText('MN-1001_NVY_1.jpg', { exact: true })).toBeVisible()
     const rows = [
       ['style_number', 'name:en', 'ean', 'color_code', 'size', 'weight_kg'],
-      ['KO-9001', 'Rain Jacket', '2000100101019', 'NVY', 'M', '0.4'],
-      ['KO-9002', 'Wind Jacket', '2000900100017', 'NVY', 'L', '0.5'],
-      ['KO-9003', 'Fleece', '2000900100024', 'GRN', 'S', '=F3*2'],
-      ['KO-9004', 'Gilet', '2000900100031', 'GRN', '', ''],
+      ['MN-9001', 'Rain Jacket', '2000100101019', 'NVY', 'M', '0.4'],
+      ['MN-9002', 'Wind Jacket', '2000900100017', 'NVY', 'L', '0.5'],
+      ['MN-9003', 'Fleece', '2000900100024', 'GRN', 'S', '=F3*2'],
+      ['MN-9004', 'Gilet', '2000900100031', 'GRN', '', ''],
     ]
     const parts = workbookParts(rows).map(([name, xml]): [string, Uint8Array] => [
       name,
@@ -240,13 +240,13 @@ test.describe('public pages', () => {
 
   test('a fresh portal is set up with the setup code', async ({ page }) => {
     await page.goto('./setup?mock=fresh')
-    await page.getByLabel('Setup code').fill('KESTREL-SETUP')
+    await page.getByLabel('Setup code').fill('NOOR-SETUP')
     await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByLabel('Company name').fill('Kestrel Outfitters')
+    await page.getByLabel('Company name').fill('MAISON NOOR Group')
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByLabel('Your name').fill('Iris')
-    await page.getByLabel('Email address').fill('iris@kestrel.example')
+    await page.getByLabel('Email address').fill('iris@maison-noor.example')
     await page.getByLabel('Password', { exact: true }).fill('a long passphrase')
     await page.getByLabel('Repeat the password').fill('a long passphrase')
     await page.getByRole('button', { name: 'Finish' }).click()

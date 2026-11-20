@@ -205,7 +205,7 @@ const PORTAL: Screen[] = [
   { path: `./catalog?${new URLSearchParams({ qualifier: JSON.stringify(['organic', 'post_consumer']), item_type: JSON.stringify(['t_shirt', 'bag']) })}`, name: 'catalog with filters', prepare: openFilters },
   { path: './catalog?q=no-such-article', name: 'catalog without results' },
   {
-    path: './products/KO-1001',
+    path: './products/MN-1001',
     name: 'article page, image full screen',
     prepare: async (page) => {
       await page.getByRole('button', { name: 'View image full screen' }).click()
@@ -213,7 +213,7 @@ const PORTAL: Screen[] = [
     },
   },
   {
-    path: './catalog?q=KO-1009',
+    path: './catalog?q=MN-1009',
     name: 'article page (bag, two claims)',
     prepare: async (page) => {
       await page.getByRole('list', { name: 'Articles' }).getByRole('link').first().click()
@@ -221,7 +221,7 @@ const PORTAL: Screen[] = [
     },
   },
   {
-    path: './catalog?q=KO-1008',
+    path: './catalog?q=MN-1008',
     name: 'article page (suitcase), added to the selection',
     prepare: async (page) => {
       await page.getByRole('list', { name: 'Articles' }).getByRole('link').first().click()
@@ -248,12 +248,12 @@ const ADMIN: Screen[] = [
   './admin',
   './admin/catalog',
   './admin/catalog?q=no-such-article',
-  './admin/catalog/KO-1001',
-  './admin/catalog/KO-1004',
-  './admin/catalog/KO-1008',
-  './admin/catalog/KO-1009',
-  './admin/catalog/KO-1010',
-  './admin/catalog/KT-2001',
+  './admin/catalog/MN-1001',
+  './admin/catalog/MN-1004',
+  './admin/catalog/MN-1008',
+  './admin/catalog/MN-1009',
+  './admin/catalog/MN-1010',
+  './admin/catalog/NA-2001',
   './admin/catalog/new',
   './admin/imports',
   './admin/automation',
@@ -315,7 +315,7 @@ ADMIN.push(
     },
   },
   {
-    path: './admin/catalog/KO-1004',
+    path: './admin/catalog/MN-1004',
     name: 'article form with an extra part and material',
     prepare: async (page) => {
       await page.getByRole('button', { name: 'Add part' }).click()
@@ -340,7 +340,7 @@ test.describe('UX hunt', () => {
 
   test('retailer portal in the default look', async ({ page, isMobile }) => {
     await logIn(page, buyer)
-    await walk(page, isMobile, [{ path: './', name: 'catalog as the start page', prepare: openFilters }, { path: './?q=KO-1003', name: 'catalog with a search' }, { path: './products/KO-1003', name: 'article page' }])
+    await walk(page, isMobile, [{ path: './', name: 'catalog as the start page', prepare: openFilters }, { path: './?q=MN-1003', name: 'catalog with a search' }, { path: './products/MN-1003', name: 'article page' }])
   })
 
   test('brand admin', async ({ page, isMobile }) => {
@@ -368,7 +368,7 @@ test.describe('focus after actions', () => {
     await page.getByRole('button', { name: 'Clear filters' }).click()
     await expect(list.getByRole('listitem')).toHaveCount(11)
     await expectFocusKept(page, 'clearing the filters')
-    const tile = page.getByRole('checkbox', { name: /^Select KO-1001/ })
+    const tile = page.getByRole('checkbox', { name: /^Select MN-1001/ })
     await tile.focus()
     await page.keyboard.press('Space')
     await expect(tile).toBeChecked()
@@ -377,7 +377,7 @@ test.describe('focus after actions', () => {
     await all.click()
     await page.keyboard.press('Escape')
     await expect(all).toBeFocused()
-    await page.goto('./?q=KO-1003')
+    await page.goto('./?q=MN-1003')
     await list.getByRole('link').first().click()
     await page.getByRole('button', { name: 'Add to selection' }).click()
     await expect(page.getByRole('button', { name: 'In your selection' })).toBeFocused()
@@ -390,7 +390,7 @@ test.describe('focus after actions', () => {
 
   test('brand: editing materials and saving an article', async ({ page }) => {
     await logIn(page, admin)
-    await page.goto('./admin/catalog/KO-1003')
+    await page.goto('./admin/catalog/MN-1003')
     const main = page.getByRole('group', { name: 'Main fabric' })
     await main.getByRole('checkbox', { name: 'In conversion', exact: true }).check()
     await expectFocusKept(page, 'ticking a claim')

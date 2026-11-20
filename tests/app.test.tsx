@@ -35,7 +35,7 @@ async function loginAs(who: 'admin' | 'retailer', path = '/login', { deviceChoic
 describe('sign-in', () => {
   it('sends logged-out visitors to the login page', async () => {
     await renderApp('/admin/catalog')
-    expect(await screen.findByRole('heading', { name: /log in to kestrel · brand portal/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /log in to maison noor · brand portal/i })).toBeInTheDocument()
   })
 
   it('shows a clear message for a wrong password', async () => {
@@ -103,11 +103,11 @@ describe('first-run wizard', () => {
     await screen.findByRole('heading', { name: /set up your brand portal/i })
     await r.user.type(screen.getByLabelText(/setup code/i), 'WRONG-CODE')
     await r.user.click(screen.getByRole('button', { name: /next/i }))
-    await r.user.type(await screen.findByLabelText(/company name/i), 'Kestrel Outfitters')
+    await r.user.type(await screen.findByLabelText(/company name/i), 'MAISON NOOR Group')
     await r.user.click(screen.getByRole('button', { name: /next/i }))
     await r.user.click(await screen.findByRole('button', { name: /next/i }))
     await r.user.type(await screen.findByLabelText(/your name/i), 'Iris')
-    await r.user.type(screen.getByLabelText(/email address/i), 'iris@kestrel.example')
+    await r.user.type(screen.getByLabelText(/email address/i), 'iris@maison-noor.example')
     await r.user.type(screen.getByLabelText(/^password$/i), 'short')
     await r.user.type(screen.getByLabelText(/repeat the password/i), 'short')
     await r.user.click(screen.getByRole('button', { name: /finish/i }))
@@ -129,7 +129,7 @@ describe('first-run wizard', () => {
     for (let i = 0; i < 2; i++) await r.user.click(await screen.findByRole('button', { name: /next/i }))
     await r.user.click(await screen.findByRole('button', { name: /finish/i }))
     expect(await screen.findByRole('heading', { name: /hello iris/i })).toBeInTheDocument()
-    expect(db().users[0]).toMatchObject({ email: 'iris@kestrel.example', role: 'admin' })
+    expect(db().users[0]).toMatchObject({ email: 'iris@maison-noor.example', role: 'admin' })
   })
 
   it('takes over the setup code an installer put in the address fragment', async () => {
@@ -160,7 +160,7 @@ describe('retailer portal', () => {
     await r.user.click(within(screen.getByRole('group', { name: /^sustainability$/i })).getByRole('checkbox', { name: /^post-consumer/i }))
     await waitFor(() => expect(within(screen.getByRole('list', { name: /articles/i })).getAllByRole('listitem')).toHaveLength(2))
     const grid = screen.getByRole('list', { name: /articles/i })
-    expect(within(grid).getAllByRole('link', { name: /KO-1003|KO-1009/ }).length).toBeGreaterThanOrEqual(2)
+    expect(within(grid).getAllByRole('link', { name: /MN-1003|MN-1009/ }).length).toBeGreaterThanOrEqual(2)
     expect(r.router.state.location.search).toMatchObject({ qualifier: ['organic', 'post_consumer'] })
     expect(within(screen.getByRole('group', { name: /^sustainability$/i })).getByRole('checkbox', { name: /^organic/i })).toBeChecked()
     // The filter count on the phone's "Filters" button includes both.
@@ -190,7 +190,7 @@ describe('retailer portal', () => {
 
   it('only shows what the retailer’s grant allows', async () => {
     const d = db()
-    const trail = d.brands.find((b) => b.external_id === 'kestrel-trail')!
+    const trail = d.brands.find((b) => b.external_id === 'noor-atelier')!
     d.retailers[0].brand_ids = [trail.id]
     await loginAs('retailer')
     const grid = await screen.findByRole('list', { name: /articles/i })
@@ -200,7 +200,7 @@ describe('retailer portal', () => {
   it('selects articles optimistically and keeps the selection on the server', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getByRole('checkbox', { name: /select ko-1001/i }))
+    await r.user.click(screen.getByRole('checkbox', { name: /select mn-1001/i }))
     expect(await screen.findByRole('link', { name: /1 article selected/i })).toBeInTheDocument()
     await waitFor(() => expect(db().selections.usr_buyer).toHaveLength(1))
     await r.user.click(screen.getByRole('link', { name: /1 article selected/i }))
@@ -226,7 +226,7 @@ describe('retailer portal', () => {
   it('offers the web version first, even when originals are allowed', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getAllByRole('link', { name: /KO-1001/ })[0])
+    await r.user.click(screen.getAllByRole('link', { name: /MN-1001/ })[0])
     const versions = await screen.findByRole('radiogroup', { name: /file version/i })
     expect(within(versions).getByRole('radio', { name: /original/i })).not.toBeChecked()
     expect(within(versions).getByRole('radio', { name: /web/i })).toBeChecked()
@@ -236,7 +236,7 @@ describe('retailer portal', () => {
     db().settings.portal!.allow_original_download = false
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getAllByRole('link', { name: /KO-1001/ })[0])
+    await r.user.click(screen.getAllByRole('link', { name: /MN-1001/ })[0])
     const versions = await screen.findByRole('radiogroup', { name: /file version/i })
     expect(within(versions).queryByRole('radio', { name: /original/i })).toBeNull()
     expect(within(versions).getByRole('radio', { name: /web/i })).toBeChecked()
@@ -261,7 +261,7 @@ describe('retailer portal', () => {
   it('shows the label information and measurements of a suitcase', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getAllByRole('link', { name: /KO-1008/ })[0])
+    await r.user.click(screen.getAllByRole('link', { name: /MN-1008/ })[0])
     const label = await screen.findByRole('region', { name: /label information/i })
     expect(within(label).getByText(/100% Polypropylene/)).toBeInTheDocument()
     expect(within(label).getByText(/100% Polyester \(Recycled\)/)).toBeInTheDocument()
@@ -286,7 +286,7 @@ describe('retailer portal', () => {
   it('shows footwear materials, certifications, the animal-origin line and second sizes', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getAllByRole('link', { name: /KO-1010/ })[0])
+    await r.user.click(screen.getAllByRole('link', { name: /MN-1010/ })[0])
     const label = await screen.findByRole('region', { name: /label information/i })
     expect(within(label).getByText('Footwear materials')).toBeInTheDocument()
     expect(within(label).getByText('Other materials')).toBeInTheDocument()
@@ -296,7 +296,7 @@ describe('retailer portal', () => {
     expect(screen.getByRole('region', { name: /features/i })).toHaveTextContent('Detachableinsole')
 
     await r.router.navigate({ to: '/' })
-    await r.user.click((await screen.findAllByRole('link', { name: /KO-1004/ }))[0])
+    await r.user.click((await screen.findAllByRole('link', { name: /MN-1004/ }))[0])
     const jeans = await screen.findByRole('region', { name: /label information/i })
     expect(within(jeans).getByText('Contains non-textile parts of animal origin')).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: /sizes and ean/i })).getByText('30/32')).toBeInTheDocument()
@@ -314,10 +314,10 @@ describe('retailer portal', () => {
     const cols = head.split(',')
     for (const c of ['item_subtype', 'contains_animal_origin', 'footwear_materials', 'certifications', 'feature:wheels', 'feature:detachable_parts', 'color_family', 'size_length', 'height_cm', 'weight_kg', 'volume_expanded_l', 'strap_length_cm', 'laptop_max_inch', 'inseam_cm']) expect(cols, c).toContain(c)
     const rows = lines.map((l) => Object.fromEntries(parseCsv(l)[0].map((v, i) => [cols[i], v])))
-    const cabin = rows.find((x) => x.sku === 'KO-1008-BLK-CABIN')!
+    const cabin = rows.find((x) => x.sku === 'MN-1008-BLK-CABIN')!
     expect(cabin).toMatchObject({ 'feature:wheels': '4', 'feature:expandable': 'yes', height_cm: '55', weight_kg: '2.6', volume_expanded_l: '42', color_family: 'black', materials: 'shell: 100% polypropylene; lining: 100% polyester (recycled)' })
-    const messenger = rows.find((x) => x.sku === 'KO-1009-CHR-ONESIZE')!
-    expect(messenger).toMatchObject({ strap_length_cm: '85-140', laptop_max_inch: '15.6', 'feature:detachable_parts': 'shoulder_strap', certifications: 'grs:CU 200901 (material)', contains_animal_origin: 'no' })
+    const satchel = rows.find((x) => x.sku === 'MN-1009-CHR-ONESIZE')!
+    expect(satchel).toMatchObject({ strap_length_cm: '85-140', laptop_max_inch: '15.6', 'feature:detachable_parts': 'shoulder_strap', certifications: 'grs:CU 200901 (material)', contains_animal_origin: 'no' })
   })
 
   it('downloads the article data as Excel with the CSV export\'s columns and rows', async () => {
@@ -350,11 +350,11 @@ describe('retailer portal', () => {
 
 describe('brand admin', () => {
   it('shows the cron address again on a portal that needs one', async () => {
-    db().settings.node!.cron = { url: 'https://brands.kestrel.example/cron?key=abc123', command: null, last_run_at: null }
+    db().settings.node!.cron = { url: 'https://brands.maison-noor.example/cron?key=abc123', command: null, last_run_at: null }
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
     await r.router.navigate({ to: '/admin/settings', search: { tab: 'system' } })
-    expect(await screen.findByText('https://brands.kestrel.example/cron?key=abc123')).toBeInTheDocument()
+    expect(await screen.findByText('https://brands.maison-noor.example/cron?key=abc123')).toBeInTheDocument()
     expect(screen.getByText(/not called yet/i)).toBeInTheDocument()
   })
 
@@ -400,7 +400,7 @@ describe('brand admin', () => {
     await screen.findByRole('heading', { name: /hello iris/i })
     await r.router.navigate({ to: '/admin/automation/sources/new' })
     await r.user.type(await screen.findByLabelText(/^name$/i), 'Nightly PIM export')
-    await r.user.type(screen.getByLabelText(/web address of the csv or zip/i), 'http://exports.kestrel.example/products.csv')
+    await r.user.type(screen.getByLabelText(/web address of the csv or zip/i), 'http://exports.maison-noor.example/products.csv')
     await r.user.click(screen.getByRole('button', { name: /save scheduled import/i }))
     expect(await screen.findByText(/starting with https:\/\//i)).toBeInTheDocument()
     expect(screen.queryByText(/this address is not allowed/i)).not.toBeInTheDocument()
@@ -436,12 +436,12 @@ describe('brand admin', () => {
   it('publishes and unpublishes an article with an optimistic switch', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1001' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1001' } })
     const sw = await screen.findByRole('switch', { name: /published/i })
     expect(sw).toHaveAttribute('aria-checked', 'true')
     await r.user.click(sw)
     expect(sw).toHaveAttribute('aria-checked', 'false')
-    await waitFor(() => expect(db().products.find((p) => p.external_id === 'KO-1001')!.status).toBe('unpublished'))
+    await waitFor(() => expect(db().products.find((p) => p.external_id === 'MN-1001')!.status).toBe('unpublished'))
   })
 
   it('adds a retailer whose website was typed without https://', async () => {
@@ -472,14 +472,14 @@ describe('brand admin', () => {
   it('shows the article data on the article screen and keeps it when saving', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1009' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1009' } })
     expect(await screen.findByText('GRS')).toBeInTheDocument()
     expect(screen.getByText('Laptop compartment')).toBeInTheDocument()
     expect(screen.getByText('up to 15.6 inches')).toBeInTheDocument()
     expect(screen.getByText('85–140 cm')).toBeInTheDocument()
     await r.user.click(screen.getByRole('button', { name: /^save$/i }))
     await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
-    const p = db().products.find((x) => x.external_id === 'KO-1009')!
+    const p = db().products.find((x) => x.external_id === 'MN-1009')!
     expect(p.data.features).toMatchObject({ laptop_compartment: true, detachable_parts: ['shoulder_strap'] })
     expect(p.data.certifications).toEqual([{ scheme: 'grs', licence_number: 'CU 200901', scope: 'material' }])
     expect(p.data.contains_animal_origin).toBe(false)
@@ -489,7 +489,7 @@ describe('brand admin', () => {
   it('edits the composition with codes from the vocabularies and saves codes only', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1009' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1009' } })
     const outer = await screen.findByRole('group', { name: 'Outer' })
     expect(within(outer).getByLabelText('Material')).toHaveValue('polyester')
     // Two claims on one fibre: both ticked, in a group named after the fibre.
@@ -509,7 +509,7 @@ describe('brand admin', () => {
     await r.user.type(pct[0], '95')
     await r.user.click(screen.getByRole('button', { name: /^save$/i }))
     await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
-    const p = db().products.find((x) => x.external_id === 'KO-1009')!
+    const p = db().products.find((x) => x.external_id === 'MN-1009')!
     expect(p.data.materials).toEqual([
       { part: { code: 'outer' }, fibers: [{ material: { code: 'polyester' }, percentage: 95, qualifiers: [{ code: 'recycled' }, { code: 'pre_consumer' }] }, { material: { code: 'elastane' }, percentage: 5, qualifiers: [] }] },
       { part: { code: 'lining' }, fibers: [{ material: { code: 'polyamide' }, percentage: 100, qualifiers: [] }] },
@@ -520,7 +520,7 @@ describe('brand admin', () => {
   it('gives a fibre without claims two of them and saves them in the order ticked', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1004' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1004' } })
     const main = await screen.findByRole('group', { name: 'Main fabric' })
     const claims = within(main).getAllByRole('group', { name: /^sustainability/i })
     expect(claims).toHaveLength(2)
@@ -529,7 +529,7 @@ describe('brand admin', () => {
     await r.user.click(within(claims[0]).getByRole('checkbox', { name: 'Organic' }))
     await r.user.click(screen.getByRole('button', { name: /^save$/i }))
     await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
-    const p = db().products.find((x) => x.external_id === 'KO-1004')!
+    const p = db().products.find((x) => x.external_id === 'MN-1004')!
     expect(p.data.materials[0].fibers[0]).toEqual({ material: { code: 'cotton' }, percentage: 98, qualifiers: [{ code: 'regenerative' }, { code: 'organic' }] })
     expect(p.data.materials[0].fibers[1]).toEqual({ material: { code: 'elastane' }, percentage: 2, qualifiers: [] })
     // The article screen shows them as the retailer will read them.
@@ -539,7 +539,7 @@ describe('brand admin', () => {
   it('shows names in the reader\'s language, the qualifier next to the material and care by category', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getAllByRole('link', { name: /KO-1009/ })[0])
+    await r.user.click(screen.getAllByRole('link', { name: /MN-1009/ })[0])
     const label = await screen.findByRole('region', { name: /label information/i })
     expect(within(label).getByText(/100% Polyester \(Recycled, Post-consumer\)/)).toBeInTheDocument()
     expect(within(label).getByText('Outer fabric:')).toBeInTheDocument()
@@ -548,19 +548,19 @@ describe('brand admin', () => {
   })
 
   it('saves a material without a percentage and keeps extension members (x-…) when saving', async () => {
-    const p = db().products.find((x) => x.external_id === 'KO-1005')!
+    const p = db().products.find((x) => x.external_id === 'MN-1005')!
     p.data['x-acme-erp'] = { id: 4711 }
     p.data.materials[0]['x-acme-part'] = 'P1'
     p.data.materials[0].fibers[0]['x-acme-lot'] = 'L9'
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1005' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1005' } })
     const outer = await screen.findByRole('group', { name: 'Outer' })
     expect(within(outer).getByLabelText('Percentage')).toHaveValue('')
     expect(within(outer).getByLabelText('Material')).toHaveValue('leather')
     await r.user.click(screen.getByRole('button', { name: /^save$/i }))
     await waitFor(() => expect(screen.getByText(/^saved$/i)).toBeInTheDocument())
-    const saved = db().products.find((x) => x.external_id === 'KO-1005')!.data
+    const saved = db().products.find((x) => x.external_id === 'MN-1005')!.data
     expect(saved['x-acme-erp']).toEqual({ id: 4711 })
     expect(saved.materials[0]).toEqual({ 'x-acme-part': 'P1', part: { code: 'outer' }, fibers: [{ 'x-acme-lot': 'L9', material: { code: 'leather' }, percentage: null, qualifiers: [] }] })
     expect(saved.materials[1].fibers[0]).toMatchObject({ material: { code: 'cotton' }, percentage: 100 })
@@ -569,7 +569,7 @@ describe('brand admin', () => {
   it('proposes the variant ID from article number, colour and size, never the EAN', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1001' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1001' } })
     const sizes = await screen.findByRole('region', { name: /colours and sizes/i })
     expect(sizes).toBeInTheDocument()
     await r.user.click(screen.getByRole('button', { name: /add size/i }))
@@ -578,12 +578,12 @@ describe('brand admin', () => {
     await r.user.type(within(dialog).getByLabelText(/^colour code$/i), 'RED')
     await r.user.type(within(dialog).getByLabelText(/^size$/i), 'XL')
     const id = within(dialog).getByLabelText(/^variant ID$/i)
-    expect(id).toHaveAttribute('placeholder', 'KO-1001-RED-XL')
-    expect(within(dialog).getByText(/leave empty to use KO-1001-RED-XL/i)).toBeInTheDocument()
+    expect(id).toHaveAttribute('placeholder', 'MN-1001-RED-XL')
+    expect(within(dialog).getByText(/leave empty to use MN-1001-RED-XL/i)).toBeInTheDocument()
     await r.user.click(within(dialog).getByRole('button', { name: /^save$/i }))
-    await waitFor(() => expect(db().variants.find((v) => v.external_id === 'KO-1001-RED-XL')?.data.gtin).toBe('2000100109991'))
-    // The Kestrel sizes have their default ids too.
-    expect(db().variants.some((v) => v.external_id === 'KO-1001-NVY-M')).toBe(true)
+    await waitFor(() => expect(db().variants.find((v) => v.external_id === 'MN-1001-RED-XL')?.data.gtin).toBe('2000100109991'))
+    // The MAISON NOOR sizes have their default ids too.
+    expect(db().variants.some((v) => v.external_id === 'MN-1001-NVY-M')).toBe(true)
   })
 
   it('adds a content language with script or numeric region in canonical case', async () => {
@@ -606,7 +606,7 @@ describe('brand admin', () => {
   it('edits the measurements of a size', async () => {
     const r = await loginAs('admin')
     await screen.findByRole('heading', { name: /hello iris/i })
-    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'KO-1008' } })
+    await r.router.navigate({ to: '/admin/catalog/$externalId', params: { externalId: 'MN-1008' } })
     const sizes = await screen.findByRole('region', { name: /colours and sizes/i })
     await r.user.click(within(sizes).getAllByRole('button', { name: /^edit$/i })[0])
     const dialog = await screen.findByRole('dialog')
@@ -619,8 +619,8 @@ describe('brand admin', () => {
     await r.user.clear(weight)
     await r.user.type(weight, '2,4')
     await r.user.click(within(dialog).getByRole('button', { name: /^save$/i }))
-    await waitFor(() => expect(db().variants.find((v) => v.data.sku === 'KO-1008-BLK-CABIN')!.data.measurements).toEqual({ height_cm: 55, width_cm: 40, depth_cm: 20, weight_kg: 2.4, volume_l: 36, volume_expanded_l: 42 }))
-    expect(db().variants.find((v) => v.data.sku === 'KO-1008-BLK-CABIN')!.data.color.family).toBe('black')
+    await waitFor(() => expect(db().variants.find((v) => v.data.sku === 'MN-1008-BLK-CABIN')!.data.measurements).toEqual({ height_cm: 55, width_cm: 40, depth_cm: 20, weight_kg: 2.4, volume_l: 36, volume_expanded_l: 42 }))
+    expect(db().variants.find((v) => v.data.sku === 'MN-1008-BLK-CABIN')!.data.color.family).toBe('black')
   })
 
   it('does not call warnings skipped rows', async () => {
@@ -671,9 +671,9 @@ describe('brand admin', () => {
     await r.router.navigate({ to: '/admin/imports' })
     const rows = [
       ['style_number', 'name:en', 'ean', 'color_code', 'size'],
-      ['KO-9001', 'Rain Jacket', '2000100101019', 'NVY', 'M'],
-      ['KO-9002', 'Wind Jacket', '2000100909010', 'NVY', 'L'],
-      ['KO-9003', 'Fleece', '2000100909027', 'GRN', 'S'],
+      ['MN-9001', 'Rain Jacket', '2000100101019', 'NVY', 'M'],
+      ['MN-9002', 'Wind Jacket', '2000100909010', 'NVY', 'L'],
+      ['MN-9003', 'Fleece', '2000100909027', 'GRN', 'S'],
     ]
     const parts = workbookParts(rows).map(([name, xml]): [string, Uint8Array] => [
       name,

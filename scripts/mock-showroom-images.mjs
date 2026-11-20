@@ -140,8 +140,8 @@ const garments = {
 
 // Item type per style (products.csv) and how a view changes the drawing.
 const STYLES = {
-  'KO-1001': 'sweater', 'KO-1002': 'jacket', 'KO-1003': 't_shirt', 'KO-1004': 'jeans', 'KO-1005': 'bag', 'KO-1006': 'hat',
-  'KO-1008': 'luggage', 'KO-1009': 'messenger', 'KO-1010': 'shoes', 'KT-2001': 'shorts', 'KT-2002': 'rain_jacket',
+  'MN-1001': 'sweater', 'MN-1002': 'jacket', 'MN-1003': 't_shirt', 'MN-1004': 'jeans', 'MN-1005': 'bag', 'MN-1006': 'hat',
+  'MN-1008': 'luggage', 'MN-1009': 'messenger', 'MN-1010': 'shoes', 'NA-2001': 'shorts', 'NA-2002': 'rain_jacket',
 }
 
 function model(c, kind) {

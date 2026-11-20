@@ -104,7 +104,7 @@ describe('retailer portal limits', () => {
     db().selections.usr_buyer = Array.from({ length: 1000 }, (_, i) => `prd_filler_${i}`)
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getByRole('checkbox', { name: /select ko-1001/i }))
+    await r.user.click(screen.getByRole('checkbox', { name: /select mn-1001/i }))
     expect(await screen.findByText(/your selection is full: it holds at most 1000 articles/i)).toBeInTheDocument()
     expect(db().selections.usr_buyer).toHaveLength(1000)
   })
@@ -112,11 +112,11 @@ describe('retailer portal limits', () => {
   it('shows an inline error when removing from the selection fails', async () => {
     const r = await loginAs('retailer')
     await screen.findByRole('list', { name: /articles/i })
-    await r.user.click(screen.getByRole('checkbox', { name: /select ko-1001/i }))
+    await r.user.click(screen.getByRole('checkbox', { name: /select mn-1001/i }))
     await waitFor(() => expect(db().selections.usr_buyer).toHaveLength(1))
     await r.router.navigate({ to: '/selection' })
     server.use(http.put('*/admin/api/portal/selection', unavailable))
-    await r.user.click(await screen.findByRole('button', { name: /remove ko-1001 from the selection/i }))
+    await r.user.click(await screen.findByRole('button', { name: /remove mn-1001 from the selection/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/temporarily unavailable|try again/i)
   })
 })
@@ -128,7 +128,7 @@ describe('invitation page', () => {
     d.invites.inv_test = 'usr_new'
     localStorage.setItem('obx.lang', 'en')
     await renderApp('/invite/inv_test')
-    expect(await screen.findByText(new RegExp(`^Kestrel has given ${d.retailers[0].name} access to its product images and article data, and invited you`))).toBeInTheDocument()
+    expect(await screen.findByText(new RegExp(`^MAISON NOOR has given ${d.retailers[0].name} access to its product images and article data, and invited you`))).toBeInTheDocument()
   })
 })
 
@@ -140,7 +140,7 @@ describe('forms send merge patches that really clear what was removed', () => {
     const english = await screen.findByLabelText(/welcome text · english/i)
     await r.user.clear(english)
     await r.user.click(screen.getByRole('button', { name: /^save$/i }))
-    await waitFor(() => expect(db().settings.branding?.welcome_text).toEqual({ nl: 'Definitieve productbeelden en artikeldata voor Kestrel-retailers.' }))
+    await waitFor(() => expect(db().settings.branding?.welcome_text).toEqual({ nl: 'Definitieve productbeelden en artikeldata voor MAISON NOOR-retailers.' }))
   })
 
   it('removes the whole welcome text when every language is cleared', async () => {

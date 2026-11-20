@@ -25,7 +25,7 @@ export function urlProblem(url: string, { httpsOnly = false } = {}): MsgKey | nu
 }
 
 /**
- * A website typed without its scheme ("www.kestrel.example") gets https:// in front, the way a
+ * A website typed without its scheme ("www.maison-noor.example") gets https:// in front, the way a
  * browser's address bar reads it. Anything that already has a scheme is left alone.
  */
 export function withScheme(url: string): string {

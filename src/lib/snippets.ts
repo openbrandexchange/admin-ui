@@ -78,11 +78,11 @@ jobs:
     {
       id: 'http',
       lang: 'http',
-      code: `PUT ${ingest}/products/KO-1001
+      code: `PUT ${ingest}/products/MN-1001
 Authorization: Bearer ${tok}
 Content-Type: application/json
 
-{"style_number": "KO-1001", "name": {"en": "Merino Crew Sweater", "nl": "Merino trui"}}`,
+{"style_number": "MN-1001", "name": {"en": "Fine Merino Crew-Neck Sweater", "nl": "Fijne merino trui met ronde hals"}}`,
     },
   ]
 }

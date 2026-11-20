@@ -188,7 +188,7 @@ function UploadCard() {
         <h3 className="font-medium text-stone-800">{t('imports.namingTitle')}</h3>
         <p>{t('imports.namingIntro')}</p>
         <p className="font-mono text-xs text-stone-800">
-          <span className="font-semibold">KO-1001_NVY_1.jpg</span> · KO-1001_NVY_2_back.jpg · KO-1003_RST_3_model.png
+          <span className="font-semibold">MN-1001_NVY_1.jpg</span> · MN-1001_NVY_2_back.jpg · MN-1003_RST_3_model.png
         </p>
         <p className="text-xs">{t('imports.namingHint')}</p>
       </div>

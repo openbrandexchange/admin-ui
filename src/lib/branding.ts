@@ -7,7 +7,7 @@ import { localized } from './localized'
 import { applyTheme, resolveTheme, type ResolvedTheme } from './theme'
 
 /**
- * "<Brand name> · <local word>", e.g. "Kestrel · Beeldbank". The local word comes from the
+ * "<Brand name> · <local word>", e.g. "MAISON NOOR · Beeldbank". The local word comes from the
  * glossary per language unless the brand set its own.
  */
 export function usePortalTitle(branding: PublicBranding | undefined): { brand: string; word: string; full: string } {

@@ -99,7 +99,7 @@ const blocks: HomeBlock[] = [
     type: 'contact',
     title: { en: 'Your account manager', nl: 'Je accountmanager', fr: 'Votre responsable de compte' },
     name: 'Amira Haddad',
-    email: 'wholesale@maisonnoor.example',
+    email: 'wholesale@maison-noor.example',
     phone: '+33 1 84 88 00 00',
   },
 ]

@@ -1,8 +1,8 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 
-export const admin = { email: 'admin@kestrel.example', password: 'kestrel-admin-2026' }
-export const buyer = { email: 'buyer@shop.example', password: 'kestrel-shop-2026' }
+export const admin = { email: 'admin@maison-noor.example', password: 'noor-admin-2026' }
+export const buyer = { email: 'buyer@shop.example', password: 'noor-shop-2026' }
 
 /**
  * The demo accounts are Dutch; most checks read English, so they start from a device where

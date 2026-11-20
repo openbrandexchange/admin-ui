@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => chooseEnglish(page))
 
 test('a brand gives one fibre two claims and saves them', async ({ page, isMobile }) => {
   await logIn(page, admin)
-  await page.goto('./admin/catalog/KO-1004')
+  await page.goto('./admin/catalog/MN-1004')
   const main = page.getByRole('group', { name: 'Main fabric' })
   const claims = main.getByRole('group', { name: /^Sustainability\b.*98% cotton/ })
   await expect(claims).toBeVisible()
@@ -49,7 +49,7 @@ test('a brand gives one fibre two claims and saves them', async ({ page, isMobil
 test('adding and removing a material keeps the keyboard where the work continues', async ({ page, isMobile }) => {
   test.skip(isMobile, 'keyboard: desktop only')
   await logIn(page, admin)
-  await page.goto('./admin/catalog/KO-1001')
+  await page.goto('./admin/catalog/MN-1001')
   const main = page.getByRole('group', { name: 'Main fabric' })
   await main.getByRole('button', { name: 'Add material' }).click()
   await expect(main.getByLabel('Percentage').nth(1)).toBeFocused()
@@ -82,8 +82,8 @@ test('a retailer filters on two claims, keeps them in the address and downloads 
     await expect(post).toBeFocused()
   }
   await expect(list.getByRole('listitem')).toHaveCount(2)
-  await expect(list).toContainText('KO-1003')
-  await expect(list).toContainText('KO-1009')
+  await expect(list).toContainText('MN-1003')
+  await expect(list).toContainText('MN-1009')
   await expect.poll(() => new URL(page.url()).searchParams.get('qualifier')).toBe(JSON.stringify(['organic', 'post_consumer']))
   await expectAccessible(page, 'catalog filtered on two claims')
   await expectNoSideways(page)
