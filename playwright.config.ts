@@ -16,7 +16,7 @@ export default defineConfig({
     { name: 'phone', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: 'npm run build:mock && npm run preview:mock',
+    command: 'bun run build:mock && bun run preview:mock',
     url: 'http://localhost:4174',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

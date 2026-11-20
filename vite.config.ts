@@ -63,8 +63,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
-    // `npm run dev` against a node on this computer (every reference node listens on
-    // http://localhost:8080 by default); another address: OBX_NODE_URL=http://localhost:8787 npm run dev.
+    // `bun run dev` against a node on this computer (every reference node listens on
+    // http://localhost:8080 by default); another address: OBX_NODE_URL=http://localhost:8787 bun run dev.
     // Mock mode answers the API in the browser and needs no proxy.
     proxy:
       mode === 'mock'

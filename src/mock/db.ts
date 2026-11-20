@@ -1,5 +1,5 @@
 // In-memory mock node, seeded from the spec's Kestrel Outfitters fixtures. Used by
-// `npm run mock` (MSW in the browser), the vitest suite (MSW in Node) and Playwright.
+// `bun run mock` (MSW in the browser), the vitest suite (MSW in Node) and Playwright.
 // State survives reloads within a tab (sessionStorage). Everything is fictional.
 import productsCsv from './fixtures/products.csv?raw'
 import assetsCsv from './fixtures/assets.csv?raw'

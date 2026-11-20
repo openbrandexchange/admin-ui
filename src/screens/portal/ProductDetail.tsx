@@ -190,6 +190,8 @@ function ImageFacts({ asset }: { asset: Asset }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
   const r = asset.rights
+  // The embargo is shown as of this render; a re-render a moment later may lift it, which is fine.
+  // oxlint-disable-next-line react/purity
   const embargo = r.embargo_until && new Date(r.embargo_until) > new Date()
   return (
     <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs text-stone-600">

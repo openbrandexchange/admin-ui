@@ -78,7 +78,7 @@ function encodeMultipart() {
   }
 }
 
-// The mock node answers every /admin/api call, exactly as in `npm run mock`.
+// The mock node answers every /admin/api call, exactly as in `bun run mock`.
 export const server = setupServer(...handlers)
 
 beforeAll(() => {

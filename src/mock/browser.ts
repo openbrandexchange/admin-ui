@@ -1,4 +1,4 @@
-// Mock mode (`npm run mock`): the whole node API runs in a service worker, seeded with the
+// Mock mode (`bun run mock`): the whole node API runs in a service worker, seeded with the
 // spec's fictional Kestrel Outfitters fixtures. `?mock=fresh` starts a node that still needs
 // first-run setup (setup code: KESTREL-SETUP); `?mock=reset` restores the demo data.
 import { setupWorker } from 'msw/browser'

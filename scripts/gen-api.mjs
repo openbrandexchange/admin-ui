@@ -1,7 +1,7 @@
 // Regenerates the typed REST client types from the spec:
 //   src/api/admin.d.ts     <- openapi/node-admin.yaml   (brand admin + portal API)
 //   src/api/protocol.d.ts  <- openapi/obx-protocol.yaml (public access-request form)
-// Usage: npm run gen:api [-- path-to-spec]   (default: ../spec)
+// Usage: bun run gen:api [path-to-spec]   (default: ../spec)
 //
 // Post-processing: the CSRF header is marked required in the spec, but the client adds it
 // in one middleware (src/api/client.ts), so callers never pass it by hand.

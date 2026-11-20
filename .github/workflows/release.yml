@@ -17,13 +17,16 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # Node.js runs Vite and Vitest (see ci.yml) and provides npm for the CycloneDX SBOM.
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+      - run: bun install --frozen-lockfile
       - name: Checks
-        run: npm run check
+        run: bun run check
       - name: The tagged dist/ is the build of the tagged commit
         run: git diff --exit-code -- dist
       - name: Pack archives, SBOM and checksums
