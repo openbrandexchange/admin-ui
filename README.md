@@ -12,10 +12,10 @@ Stack: React 19, TypeScript, Vite, TanStack Query (all server state: caching, op
 
 ## Run it locally
 
-Needs Node.js 20.19 or newer. No Docker, no database.
+Needs [Bun](https://bun.sh) 1.3 or newer (package manager and scripts) and Node.js 20.19 or newer (Vite, Vitest and Playwright run on it). No Docker, no database.
 
 ```sh
-npm install && npm run mock        # the whole portal in your browser, with demo data
+bun install && bun run mock        # the whole portal in your browser, with demo data
 ```
 
 Open the printed URL (http://localhost:5173). The portal API runs in your browser (a service worker seeded with the spec's fictional *Kestrel Outfitters* fixtures), so nothing else is needed. Changes to the code reload at once.
@@ -23,8 +23,8 @@ Open the printed URL (http://localhost:5173). The portal API runs in your browse
 Against a real node on your computer (node-go, node-ts or node-php, which all listen on http://localhost:8080):
 
 ```sh
-npm install && npm run dev         # proxies /admin/api, /obx and /.well-known to http://localhost:8080
-OBX_NODE_URL=http://localhost:8787 npm run dev   # a node on another address (e.g. wrangler dev)
+bun install && bun run dev         # proxies /admin/api, /obx and /.well-known to http://localhost:8080
+OBX_NODE_URL=http://localhost:8787 bun run dev   # a node on another address (e.g. wrangler dev)
 ```
 
 The first time, the node asks for its setup code (printed in the node's terminal) on the setup page.
@@ -47,7 +47,7 @@ The UI ships all 24 official EU languages plus Norwegian Bokmål: bg cs da de el
 
 ## For node implementers
 
-`npm run build` produces `dist/`, which you serve as static files. `dist/` is committed on `main` and on every release tag (CI checks it is the build of that commit), so you can vendor it without Node.js. Each GitHub release also has a tarball and zip of it, an SBOM and checksums.
+`bun run build` produces `dist/`, which you serve as static files. `dist/` is committed on `main` and on every release tag (CI checks it is the build of that commit), so you can vendor it without Node.js. Each GitHub release also has a tarball and zip of it, an SBOM and checksums.
 
 The full guide is [docs/node-integration.md](docs/node-integration.md): routes and SPA fallback, sub-paths, the Content-Security-Policy and other headers the UI works under, caching, what the UI expects from your API (CSRF, merge patches, errors), e-mail strings, upgrading and browser support. In short:
 
@@ -62,15 +62,15 @@ The full guide is [docs/node-integration.md](docs/node-integration.md): routes a
 ## Development
 
 ```sh
-npm run dev                                   # against a node on http://localhost:8080 (OBX_NODE_URL=… for another)
-npm run mock                                  # against the in-browser mock node
-npm test                                      # unit, component (React Testing Library) and language tests
-npm run e2e                                   # Playwright on the mock build: both roles' flows, axe, keyboard, UX hunt, desktop + phone
-npm run e2e:hunt                              # only the UX hunt (every screen, both roles, desktop + phone)
-npm run check                                 # lint + typecheck + tests + production build + bundle budget
-npm run licenses                              # licences of all dependencies
-npm run gen:api -- ../spec                    # regenerate src/api/*.d.ts from the OpenAPI files
-npm run sync-fixtures -- ../spec              # refresh the mock data from the spec fixtures
+bun run dev                                   # against a node on http://localhost:8080 (OBX_NODE_URL=… for another)
+bun run mock                                  # against the in-browser mock node
+bun run test                                  # unit, component (React Testing Library) and language tests
+bun run e2e                                   # Playwright on the mock build: both roles' flows, axe, keyboard, UX hunt, desktop + phone
+bun run e2e:hunt                              # only the UX hunt (every screen, both roles, desktop + phone)
+bun run check                                 # lint + typecheck + tests + production build + bundle budget
+bun run licenses                              # licences of all dependencies
+bun run gen:api ../spec                       # regenerate src/api/*.d.ts from the OpenAPI files
+bun run sync-fixtures ../spec                 # refresh the mock data from the spec fixtures
 ```
 
 Code layout: `src/api` (typed client), `src/queries` (TanStack Query hooks, one file per area), `src/router.tsx` (routes and guards), `src/screens/{public,portal,admin}`, `src/ui` (small in-house controls), `src/i18n` and `src/locales`, `src/mock` (MSW handlers and in-memory node), `tests/` (Vitest), `e2e/` (Playwright).
@@ -79,18 +79,18 @@ Code layout: `src/api` (typed client), `src/queries` (TanStack Query hooks, one 
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push and pull request, and every step also runs locally:
 
-- ESLint (TypeScript, React hooks, jsx-a11y) and `tsc`, on Node 20, 22 and 24;
+- oxlint (TypeScript, React hooks, jsx-a11y; rules in [`.oxlintrc.json`](.oxlintrc.json)) and its type check (`oxlint --type-aware --type-check`), with Node 20, 22 and 24;
 - unit and component tests, including a completeness check of all 25 languages (keys, plural forms, placeholders, glossary words);
 - the production build, a gzip bundle budget (`scripts/check-bundle.mjs`) and a check that the committed `dist/` is that build;
 - Playwright end-to-end tests of the main flows of both roles, axe-core (WCAG 2.1 AA) on every screen and open dialog, keyboard paths, all under a strict Content-Security-Policy;
-- licence check of all dependencies and `npm audit` of what ships;
+- licence check of all dependencies and `bun audit` of what ships;
 - the generated API types and the glossary checked against the spec (with the `OBX_READ_TOKEN` secret, or without one now that the spec repository is public).
 
 Dependabot proposes dependency updates weekly.
 
 ### Releases
 
-Versions follow [semantic versioning](https://semver.org/); see [CHANGELOG.md](CHANGELOG.md). To release: set the version in `package.json`, add its section to the changelog, run `npm run build`, commit `dist/`, then tag `vX.Y.Z` on that commit and push the tag. [`.github/workflows/release.yml`](.github/workflows/release.yml) then builds the archives, the SBOM and checksums with build provenance, and opens a draft GitHub release to review. `scripts/package-release.sh` makes the same files locally in `release/`.
+Versions follow [semantic versioning](https://semver.org/); see [CHANGELOG.md](CHANGELOG.md). To release: set the version in `package.json`, add its section to the changelog, run `bun run build`, commit `dist/`, then tag `vX.Y.Z` on that commit and push the tag. [`.github/workflows/release.yml`](.github/workflows/release.yml) then builds the archives, the SBOM and checksums with build provenance, and opens a draft GitHub release to review. `scripts/package-release.sh` makes the same files locally in `release/`.
 
 ## Contributing and security
 

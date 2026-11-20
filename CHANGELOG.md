@@ -4,6 +4,12 @@ All notable changes to the admin UI. The format follows [Keep a Changelog](https
 
 Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the static `dist/` build plus this changelog), a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`. `dist/` on `main` and on every tag is the same build.
 
+## Unreleased
+
+### Changed
+
+- Development tooling: Bun installs the dependencies and runs the scripts (`bun install`, `bun run …`, `bun.lock` instead of `package-lock.json`), and oxlint replaces ESLint for lint and type check (`.oxlintrc.json`). The build is the same; only `dist/NOTICE` now says `bun run mock`.
+
 ## [0.3.0] - 2026-11-17
 
 Materials and care as terms with names, following spec 0.3.0 ([proposal 0004](https://github.com/openbrandexchange/spec/blob/main/docs/proposals/0004-terms-with-names.md)). **Breaking for nodes**: the article form writes the 0.3 shapes, so a node has to accept them (a 0.2 node's answers are still read).

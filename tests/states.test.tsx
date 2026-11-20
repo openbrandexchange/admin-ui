@@ -1,5 +1,5 @@
 // Error, retry and edge states of the main screens, and merge-patch behaviour of the forms,
-// all against the mock node (the same API as `npm run mock`).
+// all against the mock node (the same API as `bun run mock`).
 import { describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'

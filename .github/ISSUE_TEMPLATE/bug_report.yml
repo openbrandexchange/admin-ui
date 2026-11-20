@@ -17,7 +17,7 @@ body:
     id: steps
     attributes:
       label: Steps to reproduce
-      description: Ideally in the mock mode (`npm run mock`), so anyone can follow them.
+      description: Ideally in the mock mode (`bun run mock`), so anyone can follow them.
       placeholder: |
         1. Log in as buyer@shop.example
         2. …

@@ -1,19 +1,39 @@
 // Licence check of the dependencies. Runtime dependencies end up in dist/ (served to every
 // visitor), so they must be permissive and compatible with Apache-2.0. Build and test tools
 // never ship; they may also use weak-copyleft or documentation licences, never GPL/AGPL.
-//   node scripts/check-licenses.mjs            (fails on anything outside the lists)
-import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+//   bun scripts/check-licenses.mjs             (fails on anything outside the lists)
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 
 const RUNTIME_OK = ['MIT', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', '0BSD', 'MIT-0', 'CC0-1.0', 'Unlicense', 'BlueOak-1.0.0']
 const TOOLING_OK = [...RUNTIME_OK, 'MPL-2.0', 'CC-BY-4.0', 'CC-BY-3.0', 'Python-2.0', 'Artistic-2.0', 'BSD', 'WTFPL']
 
+const root = realpathSync(join(import.meta.dirname, '..'))
+const readPkg = (dir) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+
+/** Directory of package `name` as Node resolves it from `from`: the nearest node_modules up the tree. */
+function resolveDir(name, from) {
+  for (let dir = from; ; dir = dirname(dir)) {
+    const candidate = join(dir, 'node_modules', name)
+    if (existsSync(join(candidate, 'package.json'))) return realpathSync(candidate)
+    if (dir === root || dir === dirname(dir)) return null
+  }
+}
+
+/** Installed package directories reachable from the root (dependencies, optional and peer, transitively). */
 function packages(omitDev) {
-  const args = ['ls', '--all', '--parseable', ...(omitDev ? ['--omit=dev'] : [])]
-  const out = execFileSync('npm', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-  const [root, ...paths] = out.trim().split('\n')
-  return paths.filter((p) => p && p !== root)
+  const top = readPkg(root)
+  const queue = Object.keys({ ...top.dependencies, ...(omitDev ? {} : top.devDependencies) }).map((n) => [n, root])
+  const seen = new Set()
+  while (queue.length) {
+    const [name, from] = queue.shift()
+    const dir = resolveDir(name, from)
+    if (!dir || seen.has(dir)) continue // an optional dependency for another platform is not installed
+    seen.add(dir)
+    const pkg = readPkg(dir)
+    for (const dep of Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies, ...pkg.peerDependencies })) queue.push([dep, dir])
+  }
+  return [...seen]
 }
 
 /** SPDX ids in a licence field; an expression like "(MIT OR Apache-2.0)" passes when one option does. */

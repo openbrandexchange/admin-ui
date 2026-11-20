@@ -11,9 +11,11 @@ Thank you for helping. This is the shared web interface of every Open Brand Exch
 
 ## Setting up
 
+You need [Bun](https://bun.sh) 1.3 or newer and Node.js 20.19 or newer (Vite, Vitest and Playwright run on Node; Bun installs and runs the scripts). Use `bun run test`, not `bun test`, which is Bun's own test runner.
+
 ```sh
-npm install
-npm run mock          # the whole portal in your browser, no server needed
+bun install
+bun run mock          # the whole portal in your browser, no server needed
 ```
 
 Log in as `admin@kestrel.example` / `kestrel-admin-2026` (brand) or `buyer@shop.example` / `kestrel-shop-2026` (retailer).
@@ -21,16 +23,17 @@ Log in as `admin@kestrel.example` / `kestrel-admin-2026` (brand) or `buyer@shop.
 ## What every change needs
 
 ```sh
-npm run check         # lint, types, unit + component + language tests, build, bundle budget
-npm run e2e           # Playwright: flows of both roles, accessibility (axe) and keyboard, desktop + phone
+bun run check         # lint, types, unit + component + language tests, build, bundle budget
+bun run e2e           # Playwright: flows of both roles, accessibility (axe) and keyboard, desktop + phone
 ```
 
 - **Tests test behaviour.** Component tests render the real app against the mock node (`tests/`); end-to-end tests drive a browser (`e2e/`). Do not assert on source code.
-- **Words.** Follow the [glossary](https://github.com/openbrandexchange/spec/blob/main/docs/glossary.md): no protocol terms in the UI (say *EAN*, *automatic upload*, *API key for your software*). A new text needs all 25 languages in `src/locales/`; `npm test` fails on a missing key, plural form or placeholder. If you cannot translate a language, say so in the pull request and a maintainer will help.
+- **Words.** Follow the [glossary](https://github.com/openbrandexchange/spec/blob/main/docs/glossary.md): no protocol terms in the UI (say *EAN*, *automatic upload*, *API key for your software*). A new text needs all 25 languages in `src/locales/`; `bun run test` fails on a missing key, plural form or placeholder. If you cannot translate a language, say so in the pull request and a maintainer will help.
 - **States.** Every screen that loads data has a loading, empty and error state; forms validate next to the field; destructive actions ask first; success is confirmed where it happened (no success toasts).
 - **Accessibility.** Keyboard reachable, visible focus, labels on every control, 4.5:1 text contrast. The axe tests must stay clean.
-- **Size.** `npm run size` enforces the bundle budget. If you must raise it, do it in the same commit and say why.
-- **`dist/`.** It is committed, because portals vendor it. Run `npm run build` and commit `dist/` with your change; CI checks that it matches.
+- **Lint and types.** `bun run lint` is oxlint with the rules in [`.oxlintrc.json`](.oxlintrc.json) (TypeScript, React hooks, jsx-a11y); warnings fail. `bun run typecheck` is oxlint's type check (`--type-aware --type-check`).
+- **Size.** `bun run size` enforces the bundle budget. If you must raise it, do it in the same commit and say why.
+- **`dist/`.** It is committed, because portals vendor it. Run `bun run build` and commit `dist/` with your change; CI checks that it matches.
 - **Changelog.** Add a line under a new "Unreleased" heading in [CHANGELOG.md](CHANGELOG.md) for anything a user or a portal implementer notices.
 
 ## Sign your commits (DCO)

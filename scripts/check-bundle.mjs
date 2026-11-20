@@ -1,4 +1,4 @@
-// Bundle size budget for the production build (run after `npm run build`; CI fails above it).
+// Bundle size budget for the production build (run after `bun run build`; CI fails above it).
 // Sizes are gzip, as a browser downloads them. Raise a budget only on purpose, in the same
 // commit as the change that needs it, and say why in the commit message.
 //   node scripts/check-bundle.mjs [dist]

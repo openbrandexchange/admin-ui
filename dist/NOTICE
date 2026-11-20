@@ -15,6 +15,6 @@ under the same licence (Developer Certificate of Origin, see CONTRIBUTING.md).
 Built copies (dist/) include third-party software; their licences and notices
 are listed in dist/THIRD-PARTY-LICENSES.txt.
 
-The mock mode (npm run mock, not part of dist/) uses the fictional Kestrel
+The mock mode (bun run mock, not part of dist/) uses the fictional Kestrel
 Outfitters fixtures of the Open Brand Exchange specification
 (https://github.com/openbrandexchange/spec), licensed under CC-BY-4.0.

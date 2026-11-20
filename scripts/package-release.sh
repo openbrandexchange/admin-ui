@@ -2,18 +2,18 @@
 # Packs the built dist/ into release assets: a tarball and a zip of the static files, a
 # CycloneDX SBOM of the runtime dependencies, and SHA-256 checksums of all of them.
 # Used by .github/workflows/release.yml; runs the same locally (nothing is uploaded):
-#   npm ci && npm run build && scripts/package-release.sh [version]
+#   bun install --frozen-lockfile && bun run build && scripts/package-release.sh [version]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-version="${1:-$(node -p "require('./package.json').version")}"
+version="${1:-$(bun -p "require('./package.json').version")}"
 version="${version#v}"
-pkg_version="$(node -p "require('./package.json').version")"
+pkg_version="$(bun -p "require('./package.json').version")"
 if [[ "$version" != "$pkg_version" ]]; then
   echo "✗ tag v$version does not match package.json version $pkg_version" >&2
   exit 1
 fi
-[[ -f dist/index.html && -d dist/locales ]] || { echo "✗ dist/ is missing; run npm run build first" >&2; exit 1; }
+[[ -f dist/index.html && -d dist/locales ]] || { echo "✗ dist/ is missing; run bun run build first" >&2; exit 1; }
 
 name="obx-admin-ui-$version"
 out="release"
@@ -31,7 +31,9 @@ else
 fi
 ( cd "$out" && find "$name" -print | LC_ALL=C sort | TZ=UTC zip -q -X -@ "$name.zip" )
 
-# SBOM of what ships (runtime dependencies only).
+# SBOM of what ships (runtime dependencies only). cyclonedx-npm reads the installed
+# node_modules through `npm ls`, so it needs real npm (it comes with Node.js); under bunx
+# it would find Bun posing as npm and refuse.
 npx --yes @cyclonedx/cyclonedx-npm@4 --omit dev --output-reproducible --output-format JSON --output-file "$out/$name.sbom.cdx.json" >/dev/null
 
 rm -rf "$out/${name:?}"
