@@ -103,7 +103,7 @@ function baseSettings(): MockDb['settings'] {
       public_url: origin,
       discovery_url: `${origin}/.well-known/obx`,
       software: 'mock node (admin-ui)',
-      version: '0.3.0',
+      version: '0.3.1',
       email_configured: false,
       renditions_server_generated: true,
       max_upload_bytes: 200 * 1024 * 1024,
