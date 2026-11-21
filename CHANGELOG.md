@@ -6,6 +6,10 @@ Each release on GitHub has `obx-admin-ui-<version>.tar.gz` and `.zip` (the stati
 
 ## Unreleased
 
+## [0.3.1] - 2026-11-21
+
+Portal appearance, following spec 0.3.1 (Node Admin API: `branding.theme`, `branding.login`, `branding.home`, branding images and the favicon). Additive: a node without these members shows the default look, which is new as well. The mock, tests and examples use the spec's new test data, MAISON NOOR.
+
 ### Added
 
 - **Appearance** (brand admin, spec 0.3.1): the brand gives its portal its own look without code, with a live preview of the real retailer screens (computer or phone) before saving. Colours (main, highlight, background, panels, text) with a warning when text would be hard to read (WCAG AA) and readable button text chosen automatically; light, dark or following the device; ten bundled fonts for headings and text (SIL OFL, self-hosted, loaded only when used); corners, article grid size, tile style, image fit and background; logo and browser icon. The login page: form in the middle or beside an image, with a title and text per language. The start page: blocks to add, reorder (drag, or arrow keys on the handle), duplicate and delete — large image, image tiles, text, image and text, articles (newest, a filter, or picked), notice, contact person — with texts per language and links to catalogue filters, an article or an https address. An image library (upload, see what is in use, delete). Leaving with unsaved changes asks first. The editor's texts are a separate file per language, loaded only with the editor.
